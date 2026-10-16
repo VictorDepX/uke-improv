@@ -8,6 +8,8 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 const singleFile = process.env.SINGLE_FILE === '1';
 
 export default defineConfig({
+  // Caminhos relativos: o build funciona na raiz de um domínio ou numa subpasta (GitHub Pages).
+  base: './',
   plugins: [react(), ...(singleFile ? [viteSingleFile()] : [])],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
