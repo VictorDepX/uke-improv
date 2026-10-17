@@ -13,24 +13,42 @@ type Matrix = Record<string, Record<string, number>>;
 
 /** Pesos de transição grau → grau, extraídos das progressões mais comuns do pop. */
 const MAJOR_MATRIX: Matrix = {
-  I: { ii: 0.5, iii: 0.3, IV: 0.9, V: 0.9, vi: 0.8, 'vii°': 0.1 },
-  ii: { V: 1, IV: 0.3, 'vii°': 0.4, I: 0.3, vi: 0.2, iii: 0.1 },
+  I: { ii: 0.5, iii: 0.3, IV: 0.9, V: 0.9, vi: 0.8, 'vii°': 0.1, bVII: 0.7, v: 0.4 },
+  ii: { V: 1, IV: 0.3, 'vii°': 0.4, I: 0.3, vi: 0.2, iii: 0.1, bVII: 0.3, v: 0.4 },
   iii: { vi: 0.9, IV: 0.7, ii: 0.4, I: 0.2, V: 0.2 },
-  IV: { V: 0.9, I: 0.8, ii: 0.4, vi: 0.5, iii: 0.2, 'vii°': 0.3 },
+  IV: { V: 0.9, I: 0.8, ii: 0.4, vi: 0.5, iii: 0.2, 'vii°': 0.3, bVII: 0.5, v: 0.3 },
   V: { I: 1, vi: 0.7, IV: 0.4, iii: 0.2, ii: 0.1 },
-  vi: { IV: 0.9, ii: 0.7, V: 0.6, iii: 0.4, I: 0.3 },
+  vi: { IV: 0.9, ii: 0.7, V: 0.6, iii: 0.4, I: 0.3, bVII: 0.3 },
   'vii°': { I: 1, iii: 0.4, vi: 0.2 },
+  // Mixolídio
+  v: { I: 0.7, IV: 0.6, bVII: 0.4, vi: 0.3 },
+  bVII: { I: 0.9, IV: 0.6, v: 0.3 },
 };
 
 const MINOR_MATRIX: Matrix = {
-  i: { iv: 0.8, VI: 0.8, VII: 0.7, V: 0.7, III: 0.6, v: 0.4, 'ii°': 0.3 },
+  i: {
+    iv: 0.8,
+    VI: 0.8,
+    VII: 0.7,
+    V: 0.7,
+    III: 0.6,
+    v: 0.4,
+    'ii°': 0.3,
+    IV: 0.8,
+    ii: 0.4,
+    'vii°': 0.3,
+  },
   'ii°': { V: 0.9, i: 0.4, III: 0.2 },
-  III: { VI: 0.8, iv: 0.6, VII: 0.6, i: 0.4 },
+  III: { VI: 0.8, iv: 0.6, VII: 0.6, i: 0.4, IV: 0.5 },
   iv: { V: 0.8, i: 0.7, VII: 0.7, VI: 0.4, v: 0.4 },
-  v: { i: 0.8, VI: 0.6, iv: 0.4 },
+  v: { i: 0.8, VI: 0.6, iv: 0.4, IV: 0.5 },
   V: { i: 1, VI: 0.6 },
-  VI: { VII: 0.8, iv: 0.6, V: 0.5, III: 0.5, i: 0.5, 'ii°': 0.3 },
-  VII: { III: 0.8, i: 0.8, VI: 0.5 },
+  VI: { VII: 0.8, iv: 0.6, V: 0.5, III: 0.5, i: 0.5, 'ii°': 0.3, 'vii°': 0.3 },
+  VII: { III: 0.8, i: 0.8, VI: 0.5, IV: 0.4 },
+  // Dórico e menor harmônica
+  ii: { v: 0.6, IV: 0.5, i: 0.4, VII: 0.4 },
+  IV: { i: 0.8, VII: 0.6, v: 0.4, ii: 0.3 },
+  'vii°': { i: 1, VI: 0.3 },
 };
 
 interface BorrowedSpec {
@@ -90,6 +108,9 @@ const DIATONIC_REASON: Record<string, string> = {
   'IV>I': 'cadência plagal (IV → I)',
   'ii>V': 'preparação clássica (ii → V)',
   'vii°>I': 'resolve a tensão na tônica',
+  'vii°>i': 'resolve a tensão na tônica',
+  'bVII>I': 'cadência mixolídia (bVII → I)',
+  'IV>i': 'IV maior do dórico de volta à tônica',
   'VII>i': 'subtônica voltando para casa',
 };
 

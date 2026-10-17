@@ -26,6 +26,8 @@ export interface Settings {
   weights: ScoreWeights;
   extras: ChordExtras;
   /** Primeira casa da janela de 5 casas, ou null para o braço inteiro. */
+  /** Só as notas do acorde contam como "dentro" (treino de arpejo). */
+  arpeggio: boolean;
   /** Formas diferentes por classe de nota, além da cor. */
   shapes: boolean;
   /** null = braço inteiro, 'auto' = segue a última nota, número = casa inicial fixa. */
@@ -117,6 +119,7 @@ export const useMusicStore = create<MusicState>()(
         extras: { secondaryDominants: false, modalBorrowing: false },
         fretWindow: null,
         shapes: true,
+        arpeggio: false,
       },
       customProgressions: [],
       jam: {

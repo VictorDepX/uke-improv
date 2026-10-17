@@ -11,8 +11,9 @@ import { useMusicStore } from './useMusicStore';
 export function useNoteContext(chordOverride?: string) {
   const key = useMusicStore((s) => s.key);
   const current = useMusicStore((s) => s.currentChord);
+  const arpeggio = useMusicStore((s) => s.settings.arpeggio);
   const chord = chordOverride ?? current;
-  return useMemo(() => buildNoteContext(key, chord), [key, chord]);
+  return useMemo(() => buildNoteContext(key, chord, arpeggio), [key, chord, arpeggio]);
 }
 
 export function useNoteSuggestions() {

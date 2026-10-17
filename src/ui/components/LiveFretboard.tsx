@@ -87,6 +87,7 @@ export function LiveFretboard({
           ctx={ctx}
           keyContext={key}
           chordSymbol={currentChord}
+          scaleLabel={settings.arpeggio ? `arpejo de ${currentChord}` : undefined}
           onPlay={() => onPlay(inspected)}
           onClose={closeInfo}
         />

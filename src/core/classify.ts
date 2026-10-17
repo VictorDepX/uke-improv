@@ -7,11 +7,20 @@ export interface NoteContext {
   chord: ChordInfo;
 }
 
-export function buildNoteContext(key: KeyContext, chordSymbol: string): NoteContext {
+/**
+ * Contexto para classificar notas. Com `arpeggio`, a "escala" passa a ser só as
+ * notas do acorde: tudo fora dele vira cromatismo.
+ */
+export function buildNoteContext(
+  key: KeyContext,
+  chordSymbol: string,
+  arpeggio = false,
+): NoteContext {
+  const chord = chordInfo(chordSymbol);
   return {
     tonic: chromaOf(key.tonic),
-    scale: new Set(scaleChromas(key)),
-    chord: chordInfo(chordSymbol),
+    scale: new Set(arpeggio ? chord.chromas : scaleChromas(key)),
+    chord,
   };
 }
 

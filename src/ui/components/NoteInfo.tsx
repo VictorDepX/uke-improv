@@ -11,17 +11,27 @@ interface NoteInfoProps {
   ctx: NoteContext;
   keyContext: KeyContext;
   chordSymbol: string;
+  /** Rótulo da escala usada; padrão: o tom atual. */
+  scaleLabel?: string;
   onPlay: () => void;
   onClose: () => void;
 }
 
 /** Painel "por que essa cor?": explica a classe de uma casa do braço. */
-export function NoteInfo({ pos, ctx, keyContext, chordSymbol, onPlay, onClose }: NoteInfoProps) {
+export function NoteInfo({
+  pos,
+  ctx,
+  keyContext,
+  chordSymbol,
+  scaleLabel,
+  onPlay,
+  onClose,
+}: NoteInfoProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const flats = prefersFlats(keyContext);
   const e = explainNote(pos.chroma, ctx, {
     chordSymbol,
-    keyLabel: keyLabelOf(keyContext),
+    keyLabel: scaleLabel ?? keyLabelOf(keyContext),
     flats,
   });
 

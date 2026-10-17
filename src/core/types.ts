@@ -1,7 +1,15 @@
 /** Classe de pitch como inteiro 0–11 (C = 0, C# = 1, … B = 11). */
 export type Chroma = number;
 
-export type ScaleName = 'major' | 'minor' | 'majorPentatonic' | 'minorPentatonic' | 'blues';
+export type ScaleName =
+  | 'major'
+  | 'minor'
+  | 'majorPentatonic'
+  | 'minorPentatonic'
+  | 'blues'
+  | 'dorian'
+  | 'mixolydian'
+  | 'harmonicMinor';
 
 export type Mode = 'major' | 'minor';
 

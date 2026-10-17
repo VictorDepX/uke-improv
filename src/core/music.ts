@@ -9,6 +9,9 @@ export const SCALES: Record<ScaleName, { label: string; tonal: string; mode: Mod
   majorPentatonic: { label: 'Pentatônica maior', tonal: 'major pentatonic', mode: 'major' },
   minorPentatonic: { label: 'Pentatônica menor', tonal: 'minor pentatonic', mode: 'minor' },
   blues: { label: 'Blues', tonal: 'blues', mode: 'minor' },
+  dorian: { label: 'Dórico', tonal: 'dorian', mode: 'minor' },
+  mixolydian: { label: 'Mixolídio', tonal: 'mixolydian', mode: 'major' },
+  harmonicMinor: { label: 'Menor harmônica', tonal: 'harmonic minor', mode: 'minor' },
 };
 
 const SHARP_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];

@@ -24,6 +24,13 @@ export const PROGRESSIONS: readonly Progression[] = [
     mode: 'minor',
     numerals: ['i', 'bVII', 'bVI', 'V'],
   },
+  { id: 'dorian-vamp', name: 'Groove dórico (i–IV)', mode: 'minor', numerals: ['i', 'IV'] },
+  {
+    id: 'mixo-vamp',
+    name: 'Mixolídio (I–bVII–IV–I)',
+    mode: 'major',
+    numerals: ['I', 'bVII', 'IV', 'I'],
+  },
 ];
 
 export function progressionChords(progression: Progression, key: KeyContext): string[] {

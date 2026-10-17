@@ -53,6 +53,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
   const registerNote = useMusicStore((s) => s.registerNote);
   const followHand = useMusicStore((s) => s.settings.fretWindow === 'auto');
   const updateSettings = useMusicStore((s) => s.updateSettings);
+  const arpeggio = useMusicStore((s) => s.settings.arpeggio);
   const suggestions = useNoteSuggestions();
   const diatonic = useDiatonicChords();
   const { chords: progression } = useActiveProgression();
@@ -189,6 +190,14 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
           </div>
         )}
         <PresetSelect />
+        <button
+          type="button"
+          className="practice-region"
+          aria-pressed={arpeggio}
+          onClick={() => updateSettings({ arpeggio: !arpeggio })}
+        >
+          Só arpejo
+        </button>
         <button
           type="button"
           className="practice-region"

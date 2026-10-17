@@ -1,5 +1,5 @@
 import { chordInfo, chromaName, chromaOf, mod12, modeOf, prefersFlats } from './music';
-import type { DiatonicChord, HarmonicFunction, KeyContext, Mode } from './types';
+import type { DiatonicChord, HarmonicFunction, KeyContext, Mode, ScaleName } from './types';
 
 interface DegreeSpec {
   numeral: string;
@@ -31,15 +31,54 @@ const MINOR_DEGREES: DegreeSpec[] = [
   { numeral: 'VII', semis: 10, quality: '', func: 'D' },
 ];
 
+/** Dórico: o IV maior e o ii menor dão a cor do modo. */
+const DORIAN_DEGREES: DegreeSpec[] = [
+  { numeral: 'i', semis: 0, quality: 'm', func: 'T' },
+  { numeral: 'ii', semis: 2, quality: 'm', func: 'S' },
+  { numeral: 'III', semis: 3, quality: '', func: 'T' },
+  { numeral: 'IV', semis: 5, quality: '', func: 'S' },
+  { numeral: 'v', semis: 7, quality: 'm', func: 'D' },
+  { numeral: 'VII', semis: 10, quality: '', func: 'D' },
+];
+
+/** Mixolídio: o bVII maior e o v menor no lugar da dominante. */
+const MIXOLYDIAN_DEGREES: DegreeSpec[] = [
+  { numeral: 'I', semis: 0, quality: '', func: 'T' },
+  { numeral: 'ii', semis: 2, quality: 'm', func: 'S' },
+  { numeral: 'IV', semis: 5, quality: '', func: 'S' },
+  { numeral: 'v', semis: 7, quality: 'm', func: 'D' },
+  { numeral: 'vi', semis: 9, quality: 'm', func: 'T' },
+  { numeral: 'bVII', semis: 10, quality: '', func: 'D' },
+];
+
+/** Menor harmônica: V maior e vii° com a sensível. */
+const HARMONIC_MINOR_DEGREES: DegreeSpec[] = [
+  { numeral: 'i', semis: 0, quality: 'm', func: 'T' },
+  { numeral: 'ii°', semis: 2, quality: 'dim', func: 'S' },
+  { numeral: 'iv', semis: 5, quality: 'm', func: 'S' },
+  { numeral: 'V', semis: 7, quality: '', func: 'D' },
+  { numeral: 'V7', semis: 7, quality: '7', func: 'D' },
+  { numeral: 'VI', semis: 8, quality: '', func: 'S' },
+  { numeral: 'vii°', semis: 11, quality: 'dim', func: 'D' },
+];
+
 export function degreesFor(mode: Mode): readonly DegreeSpec[] {
   return mode === 'major' ? MAJOR_DEGREES : MINOR_DEGREES;
+}
+
+/** Campo harmônico de cada escala; pentatônicas e blues usam o do tom pai. */
+export function degreesForScale(scale: ScaleName): readonly DegreeSpec[] {
+  if (scale === 'dorian') return DORIAN_DEGREES;
+  if (scale === 'mixolydian') return MIXOLYDIAN_DEGREES;
+  if (scale === 'harmonicMinor') return HARMONIC_MINOR_DEGREES;
+  return degreesFor(modeOf(scale));
 }
 
 /** Campo harmônico do tom (tríades + dominante com sétima; no menor inclui o V harmônico). */
 export function diatonicChords(key: KeyContext): DiatonicChord[] {
   const tonic = chromaOf(key.tonic);
   const flats = prefersFlats(key);
-  return degreesFor(modeOf(key.scale)).map((d) => ({
+  return degreesForScale(key.scale).map((d) => ({
     symbol: chromaName(tonic + d.semis, flats) + d.quality,
     numeral: d.numeral,
     func: d.func,

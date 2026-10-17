@@ -52,6 +52,22 @@ export const PRESETS: readonly Preset[] = [
     progressionId: 'andaluz',
     bpm: 100,
   },
+  {
+    id: 'dorico-dm',
+    name: 'Groove dórico em Dm',
+    tonic: 'D',
+    scale: 'dorian',
+    progressionId: 'dorian-vamp',
+    bpm: 92,
+  },
+  {
+    id: 'mixo-g',
+    name: 'Mixolídio em G',
+    tonic: 'G',
+    scale: 'mixolydian',
+    progressionId: 'mixo-vamp',
+    bpm: 104,
+  },
 ];
 
 export interface PresetState {

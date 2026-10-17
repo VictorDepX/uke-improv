@@ -56,6 +56,13 @@ export function SettingsPage() {
               onChange={(labels) => update({ labels })}
             />
             <Toggle
+              id="set-arpeggio"
+              label="Só arpejo"
+              hint="Só as notas do acorde contam como dentro. Bom para treinar alvos."
+              checked={settings.arpeggio}
+              onChange={(arpeggio) => update({ arpeggio })}
+            />
+            <Toggle
               id="set-shapes"
               label="Formas além da cor"
               hint="Círculo = repouso, quadrado = passagem, losango = tensão."
