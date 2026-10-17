@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { playNote } from '@/audio/engine/sound';
-import { MAX_WINDOW_START, WINDOW_SIZE } from '@/core/fretboard';
+import { WINDOW_SIZE, maxWindowStart } from '@/core/fretboard';
 import type { FretPosition } from '@/core/types';
 import { useNoteContext, useNoteSuggestions } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
@@ -28,7 +28,7 @@ export function LiveFretboard({
   const [inspected, setInspected] = useState<FretPosition | null>(null);
   const closeInfo = useCallback(() => setInspected(null), []);
 
-  const { fretWindow } = settings;
+  const { fretWindow, capo } = settings;
   const auto = fretWindow === 'auto';
   const windowStart: number | null = fretWindow === 'auto' ? autoWindowStart : fretWindow;
 
@@ -42,6 +42,11 @@ export function LiveFretboard({
 
   return (
     <div className="live-fretboard">
+      {capo && windowStart === null ? (
+        <div className="fb-window-nav fb-capo-row">
+          <span className="capo-badge">Capo {capo}</span>
+        </div>
+      ) : null}
       {windowStart !== null ? (
         <div className="fb-window-nav">
           <button
@@ -54,14 +59,15 @@ export function LiveFretboard({
             ‹
           </button>
           <span className="fb-window-label" aria-live="polite">
-            Casas {windowStart}–{windowStart + WINDOW_SIZE - 1}
+            Casas {windowStart + capo}–{windowStart + capo + WINDOW_SIZE - 1}
             {auto ? <span className="tag">segue a mão</span> : null}
+            {capo ? <span className="capo-badge">Capo {capo}</span> : null}
           </span>
           <button
             type="button"
             className="icon-button"
             aria-label="Casas mais agudas"
-            disabled={windowStart >= MAX_WINDOW_START}
+            disabled={windowStart >= maxWindowStart(capo)}
             onClick={() => shiftWindow(1)}
           >
             ›
@@ -72,6 +78,7 @@ export function LiveFretboard({
         ctx={ctx}
         keyContext={key}
         tuning={settings.tuning}
+        capo={capo}
         labels={settings.labels}
         fretWindow={windowStart}
         suggestions={suggestions}
@@ -88,6 +95,7 @@ export function LiveFretboard({
           keyContext={key}
           chordSymbol={currentChord}
           scaleLabel={settings.arpeggio ? `arpejo de ${currentChord}` : undefined}
+          capo={capo}
           onPlay={() => onPlay(inspected)}
           onClose={closeInfo}
         />

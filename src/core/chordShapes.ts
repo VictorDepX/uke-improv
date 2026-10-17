@@ -1,5 +1,5 @@
 import { TUNINGS } from './fretboard';
-import { chordInfo, mod12 } from './music';
+import { chordInfo, chromaName, mod12 } from './music';
 import type { TuningName } from './types';
 
 /** Casas por corda, da 4ª (G) para a 1ª (A). */
@@ -119,9 +119,37 @@ export function shapesFor(symbol: string, tuning: TuningName = 'GCEA', limit = 3
   return (canonical ? [canonical, ...rest] : rest).slice(0, limit);
 }
 
-export function shapeToMidis(shape: Shape, tuning: TuningName = 'GCEA'): number[] {
+export function shapeToMidis(shape: Shape, tuning: TuningName = 'GCEA', capo = 0): number[] {
   const open = TUNINGS[tuning].open;
-  return shape.map((f, i) => open[i]! + f);
+  return shape.map((f, i) => open[i]! + capo + f);
+}
+
+export interface Voicing {
+  /** Acorde que soa. */
+  symbol: string;
+  /** Forma que a mão faz (a partir do capo). Igual a `symbol` sem capo. */
+  shapeName: string;
+  shapes: Shape[];
+  /** Notas da forma principal, já com o capo. */
+  midis: number[];
+}
+
+/**
+ * Como tocar um acorde com capotraste: a mão faz a forma do acorde `capo`
+ * semitons abaixo, e o capo leva o som ao acorde pedido.
+ */
+export function voicingFor(
+  symbol: string,
+  tuning: TuningName = 'GCEA',
+  capo = 0,
+  flats = false,
+  limit = 3,
+): Voicing {
+  const info = chordInfo(symbol);
+  const shapeName = capo ? chromaName(mod12(info.root - capo), flats) + qualityOf(symbol) : symbol;
+  const shapes = shapesFor(shapeName, tuning, limit);
+  const main = shapes[0] ?? ([0, 0, 0, 0] as const);
+  return { symbol, shapeName, shapes, midis: shapeToMidis(main, tuning, capo) };
 }
 
 export const canonicalEntries = (): [string, Shape][] => Object.entries(CANONICAL);

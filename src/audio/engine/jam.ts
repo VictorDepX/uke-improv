@@ -1,5 +1,5 @@
 import type * as ToneNS from 'tone';
-import { shapesFor, shapeToMidis } from '@/core/chordShapes';
+import { voicingFor } from '@/core/chordShapes';
 import { chordInfo } from '@/core/music';
 import type { TuningName } from '@/core/types';
 import { ensureAudio, strum, type Instruments } from './sound';
@@ -8,6 +8,8 @@ export interface JamConfig {
   chords: readonly string[];
   bpm: number;
   tuning: TuningName;
+  /** Casa do capotraste: a base toca as mesmas formas que a mão, soando no tom certo. */
+  capo?: number;
   /** Chamado no tempo exato de cada batida, sincronizado com o áudio. bar = -1 na contagem. */
   onPosition: (bar: number, beat: number) => void;
 }
@@ -42,7 +44,7 @@ export class JamEngine {
     const inst = await ensureAudio();
     this.inst = inst;
     this.config = config;
-    this.voicings = this.buildVoicings(config.chords, config.tuning);
+    this.voicings = this.buildVoicings(config.chords, config.tuning, config.capo ?? 0);
     this.step = 0;
 
     const { Tone } = inst;
@@ -69,14 +71,14 @@ export class JamEngine {
   }
 
   /** Troca a progressão sem parar (vale a partir do próximo compasso). */
-  updateChords(chords: readonly string[], tuning: TuningName): void {
+  updateChords(chords: readonly string[], tuning: TuningName, capo = 0): void {
     if (!this.config) return;
-    this.config = { ...this.config, chords, tuning };
-    this.voicings = this.buildVoicings(chords, tuning);
+    this.config = { ...this.config, chords, tuning, capo };
+    this.voicings = this.buildVoicings(chords, tuning, capo);
   }
 
-  private buildVoicings(chords: readonly string[], tuning: TuningName): number[][] {
-    return chords.map((c) => shapeToMidis(shapesFor(c, tuning)[0] ?? [0, 0, 0, 0], tuning));
+  private buildVoicings(chords: readonly string[], tuning: TuningName, capo: number): number[][] {
+    return chords.map((c) => voicingFor(c, tuning, capo).midis);
   }
 
   private tick(time: number): void {

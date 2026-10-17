@@ -1,8 +1,7 @@
 import { useCallback } from 'react';
 import { playChord } from '@/audio/engine/sound';
-import { shapesFor, shapeToMidis } from '@/core/chordShapes';
 import { chordToNumeral } from '@/core/harmony';
-import { useChordSuggestions } from '@/store/selectors';
+import { useChordSuggestions, useVoicing } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 import { FUNC_LABEL } from '../format';
 import { ChordDiagram } from './ChordDiagram';
@@ -14,17 +13,16 @@ export function ChordSuggestions() {
   const suggestions = useChordSuggestions(5);
   const current = useMusicStore((s) => s.currentChord);
   const key = useMusicStore((s) => s.key);
-  const tuning = useMusicStore((s) => s.settings.tuning);
+  const capo = useMusicStore((s) => s.settings.capo);
+  const voicing = useVoicing();
   const extras = useMusicStore((s) => s.settings.extras);
   const setExtras = useMusicStore((s) => s.setExtras);
   const setChord = useMusicStore((s) => s.setChord);
 
-  const play = useCallback(
-    (symbol: string) => void playChord(shapeToMidis(shapesFor(symbol, tuning)[0]!, tuning)),
-    [tuning],
-  );
+  const play = useCallback((symbol: string) => void playChord(voicing(symbol).midis), [voicing]);
 
-  const currentShapes = shapesFor(current, tuning);
+  const currentVoicing = voicing(current);
+  const currentShapes = currentVoicing.shapes;
 
   return (
     <Panel title="Próximo acorde">
@@ -41,6 +39,11 @@ export function ChordSuggestions() {
           <span className="eyebrow">Agora</span>
           <span className="current-chord-symbol">{current}</span>
           <span className="mono muted">{chordToNumeral(current, key)}</span>
+          {capo ? (
+            <span className="chord-shape-of">
+              forma de <strong>{currentVoicing.shapeName}</strong> · capo {capo}
+            </span>
+          ) : null}
           {currentShapes.length > 1 ? (
             <span className="alt-shapes" aria-label="Outras formas">
               {currentShapes.slice(1).map((s) => (
@@ -55,7 +58,8 @@ export function ChordSuggestions() {
 
       <ol className="chord-suggestions">
         {suggestions.map((s) => {
-          const shape = shapesFor(s.symbol, tuning)[0];
+          const v = voicing(s.symbol);
+          const shape = v.shapes[0];
           return (
             <li key={s.symbol}>
               <button
@@ -73,6 +77,7 @@ export function ChordSuggestions() {
                     <strong>{s.symbol}</strong>
                     <span className="mono muted">{s.numeral}</span>
                     {KIND_LABEL[s.kind] ? <span className="tag">{KIND_LABEL[s.kind]}</span> : null}
+                    {capo ? <span className="chord-shape-of">forma de {v.shapeName}</span> : null}
                   </span>
                   <span className="chord-suggestion-reason">{s.reason}</span>
                   <span className="func-label" data-func={s.func}>

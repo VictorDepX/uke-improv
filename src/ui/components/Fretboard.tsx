@@ -26,6 +26,8 @@ export interface FretboardProps {
   ctx: NoteContext;
   keyContext: KeyContext;
   tuning: TuningName;
+  /** Casa do capotraste (0 = sem). As casas do braço contam a partir dele. */
+  capo?: number;
   labels: LabelMode;
   fretWindow: number | null;
   suggestions?: readonly NoteSuggestion[];
@@ -45,6 +47,7 @@ export const Fretboard = memo(function Fretboard({
   ctx,
   keyContext,
   tuning,
+  capo = 0,
   labels,
   fretWindow,
   suggestions = [],
@@ -62,11 +65,11 @@ export const Fretboard = memo(function Fretboard({
   const flats = prefersFlats(keyContext);
 
   const frets = useMemo(() => {
-    const all = Array.from({ length: FRET_COUNT + 1 }, (_, f) => f);
+    const all = Array.from({ length: FRET_COUNT - capo + 1 }, (_, f) => f);
     if (fretWindow === null) return all;
-    const start = clampWindowStart(fretWindow);
+    const start = clampWindowStart(fretWindow, capo);
     return [0, ...all.filter((f) => f >= start && f < start + WINDOW_SIZE)];
-  }, [fretWindow]);
+  }, [fretWindow, capo]);
 
   const rank = useMemo(() => {
     const m = new Map<number, number>();
@@ -80,9 +83,9 @@ export const Fretboard = memo(function Fretboard({
   }, [previewChord]);
 
   const byString = useMemo(() => {
-    const positions = fretPositions(tuning);
+    const positions = fretPositions(tuning, capo);
     return [0, 1, 2, 3].map((s) => positions.filter((p) => p.string === s));
-  }, [tuning]);
+  }, [tuning, capo]);
 
   // Horizontal: 1ª corda (A) em cima, como tablatura. Vertical: G à esquerda, como diagrama.
   const strings = vertical ? [0, 1, 2, 3] : [3, 2, 1, 0];
@@ -137,7 +140,7 @@ export const Fretboard = memo(function Fretboard({
           cancelPress();
           onInspect(pos);
         }}
-        aria-label={`${name}, corda ${STRING_NAMES[pos.string]}, casa ${pos.fret}: ${CLASS_SHORT[cls]}${r ? `, sugestão ${r}` : ''}`}
+        aria-label={`${name}, corda ${STRING_NAMES[pos.string]}, ${pos.fret === 0 && capo ? `capo na casa ${capo}` : `casa ${pos.fret + capo}`}: ${CLASS_SHORT[cls]}${r ? `, sugestão ${r}` : ''}`}
       >
         <span
           className="fb-dot"
@@ -158,6 +161,7 @@ export const Fretboard = memo(function Fretboard({
         className="fb"
         data-orientation={vertical ? 'vertical' : 'horizontal'}
         data-windowed={(frets[1] ?? 1) > 1 || undefined}
+        data-capo={capo || undefined}
         style={
           vertical
             ? { gridTemplateRows: `auto repeat(${frets.length}, var(--fb-cell-v))` }
@@ -188,10 +192,11 @@ export const Fretboard = memo(function Fretboard({
           <span
             key={`fret-${f}`}
             className="fb-fret-num"
-            data-inlay={INLAY_FRETS.has(f) || undefined}
+            data-inlay={INLAY_FRETS.has(f + capo) || undefined}
+            data-capo={(f === 0 && capo > 0) || undefined}
             style={vertical ? { gridRow: i + 2, gridColumn: 1 } : { gridColumn: i + 2, gridRow: 1 }}
           >
-            {f === 0 ? '' : f}
+            {f === 0 ? (capo ? `C${capo}` : '') : f + capo}
           </span>
         ))}
         {strings.flatMap((s) => byString[s]!.filter((p) => frets.includes(p.fret)).map(cell))}

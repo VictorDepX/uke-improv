@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { voicingFor, type Voicing } from '@/core/chordShapes';
 import { buildNoteContext } from '@/core/classify';
 import { midiRange } from '@/core/fretboard';
 import { diatonicChords } from '@/core/harmony';
+import { prefersFlats } from '@/core/music';
 import { PROGRESSIONS, progressionChords } from '@/core/progressions';
 import { suggestNextChords } from '@/core/suggestChords';
 import { suggestNextNotes } from '@/core/suggestNotes';
@@ -19,12 +21,16 @@ export function useNoteContext(chordOverride?: string) {
 export function useNoteSuggestions() {
   const ctx = useNoteContext();
   const lastNotes = useMusicStore((s) => s.lastNotes);
-  const { tuning, weights } = useMusicStore(
-    useShallow((s) => ({ tuning: s.settings.tuning, weights: s.settings.weights })),
+  const { tuning, weights, capo } = useMusicStore(
+    useShallow((s) => ({
+      tuning: s.settings.tuning,
+      weights: s.settings.weights,
+      capo: s.settings.capo,
+    })),
   );
   return useMemo(
-    () => suggestNextNotes(lastNotes, ctx, { range: midiRange(tuning), weights }),
-    [lastNotes, ctx, tuning, weights],
+    () => suggestNextNotes(lastNotes, ctx, { range: midiRange(tuning, capo), weights }),
+    [lastNotes, ctx, tuning, weights, capo],
   );
 }
 
@@ -52,4 +58,16 @@ export function useActiveProgression() {
     const progression = [...PROGRESSIONS, ...custom].find((p) => p.id === id) ?? PROGRESSIONS[0]!;
     return { progression, chords: progressionChords(progression, key) };
   }, [key, id, custom]);
+}
+
+/** Como tocar cada acorde com a afinação e o capotraste atuais. */
+export function useVoicing(): (symbol: string) => Voicing {
+  const tuning = useMusicStore((s) => s.settings.tuning);
+  const capo = useMusicStore((s) => s.settings.capo);
+  const key = useMusicStore((s) => s.key);
+  const flats = prefersFlats(key);
+  return useCallback(
+    (symbol: string) => voicingFor(symbol, tuning, capo, flats),
+    [tuning, capo, flats],
+  );
 }

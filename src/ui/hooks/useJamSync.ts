@@ -14,16 +14,17 @@ export function useJamSync(): void {
   const bpm = useMusicStore((s) => s.jam.bpm);
   const layers = useMusicStore((s) => s.jam.layers);
   const tuning = useMusicStore((s) => s.settings.tuning);
+  const capo = useMusicStore((s) => s.settings.capo);
   const setJamPosition = useMusicStore((s) => s.setJamPosition);
   const setChord = useMusicStore((s) => s.setChord);
   const setJamPlaying = useMusicStore((s) => s.setJamPlaying);
   const { chords } = useActiveProgression();
-  const latest = useLatest({ chords, bpm, tuning, layers });
+  const latest = useLatest({ chords, bpm, tuning, capo, layers });
 
   useEffect(() => {
     if (!playing) return;
     let cancelled = false;
-    const { chords: c, bpm: b, tuning: t, layers: l } = latest.current;
+    const { chords: c, bpm: b, tuning: t, capo: k, layers: l } = latest.current;
     void (async () => {
       try {
         const inst = await ensureAudio();
@@ -35,6 +36,7 @@ export function useJamSync(): void {
           chords: c,
           bpm: b,
           tuning: t,
+          capo: k,
           onPosition: (bar, beat) => {
             setJamPosition(bar, beat);
             const current = latest.current.chords;
@@ -56,8 +58,8 @@ export function useJamSync(): void {
   }, [playing, bpm]);
 
   useEffect(() => {
-    if (playing) jamEngine.updateChords(chords, tuning);
-  }, [playing, chords, tuning]);
+    if (playing) jamEngine.updateChords(chords, tuning, capo);
+  }, [playing, chords, tuning, capo]);
 
   useEffect(() => {
     if (!playing) return;

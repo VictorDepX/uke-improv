@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useMusicStore } from '@/store/useMusicStore';
@@ -188,6 +188,27 @@ describe('App', () => {
     }
     expect(useMusicStore.getState().jam.bpm).toBe(120);
     now.mockRestore();
+  });
+
+  it('com capo na casa 2, o braço começa no capo e D usa a forma de C', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('link', { name: 'Ajustes' }));
+    await user.selectOptions(screen.getByLabelText('Capotraste'), '2');
+    await user.click(screen.getByRole('link', { name: 'Explorar' }));
+    expect(screen.getAllByText('Capo 2').length).toBeGreaterThan(0);
+    // Corda G presa no capo soa A4; a 1ª casa depois dele é a casa 3 física.
+    expect(
+      screen.getByRole('button', { name: /^A4, corda G, capo na casa 2/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /^A#4, corda G, casa 3:|^Bb4, corda G, casa 3:/ }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /corda G, casa 16/ })).not.toBeInTheDocument();
+    act(() => useMusicStore.getState().setTonic('D'));
+    expect(document.querySelector('.current-chord .chord-shape-of')).toHaveTextContent(
+      'forma de C · capo 2',
+    );
   });
 
   it('em Ajustes, trocar rótulos para grau muda o texto das casas', async () => {

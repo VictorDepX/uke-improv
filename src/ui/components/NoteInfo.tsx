@@ -13,6 +13,8 @@ interface NoteInfoProps {
   chordSymbol: string;
   /** Rótulo da escala usada; padrão: o tom atual. */
   scaleLabel?: string;
+  /** Casa do capotraste, para mostrar a casa física. */
+  capo?: number;
   onPlay: () => void;
   onClose: () => void;
 }
@@ -24,6 +26,7 @@ export function NoteInfo({
   keyContext,
   chordSymbol,
   scaleLabel,
+  capo = 0,
   onPlay,
   onClose,
 }: NoteInfoProps) {
@@ -62,7 +65,7 @@ export function NoteInfo({
             {midiName(pos.midi, flats)} · {CLASS_SHORT[e.cls]}
           </strong>
           <span className="muted small">
-            corda {STRING_NAMES[pos.string]}, casa {pos.fret} · {e.degree} em{' '}
+            corda {STRING_NAMES[pos.string]}, casa {pos.fret + capo} · {e.degree} em{' '}
             {keyLabelOf(keyContext)} · {e.interval} de {chordSymbol}
           </span>
         </div>

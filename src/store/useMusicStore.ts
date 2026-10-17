@@ -25,13 +25,14 @@ export interface Settings {
   labels: LabelMode;
   weights: ScoreWeights;
   extras: ChordExtras;
-  /** Primeira casa da janela de 5 casas, ou null para o braço inteiro. */
   /** Só as notas do acorde contam como "dentro" (treino de arpejo). */
   arpeggio: boolean;
   /** Formas diferentes por classe de nota, além da cor. */
   shapes: boolean;
   /** null = braço inteiro, 'auto' = segue a última nota, número = casa inicial fixa. */
   fretWindow: number | null | 'auto';
+  /** Casa do capotraste (0 = sem). Casas de janela e de nota contam a partir dele. */
+  capo: number;
 }
 
 export interface JamState {
@@ -120,6 +121,7 @@ export const useMusicStore = create<MusicState>()(
         fretWindow: null,
         shapes: true,
         arpeggio: false,
+        capo: 0,
       },
       customProgressions: [],
       jam: {
@@ -154,20 +156,41 @@ export const useMusicStore = create<MusicState>()(
         set((s) => {
           const lastNotes = [...s.lastNotes, midi].slice(-MAX_NOTES);
           const ref = s.lastFret ?? s.autoWindowStart + 2;
-          const at = fret ?? nearestPosition(midi, s.settings.tuning, ref)?.fret;
+          const { tuning, capo } = s.settings;
+          const at = fret ?? nearestPosition(midi, tuning, ref, capo)?.fret;
           if (at === undefined) return { lastNotes };
-          return { lastNotes, lastFret: at, autoWindowStart: followWindow(s.autoWindowStart, at) };
+          return {
+            lastNotes,
+            lastFret: at,
+            autoWindowStart: followWindow(s.autoWindowStart, at, capo),
+          };
         }),
       shiftWindow: (delta) =>
         set((s) => {
-          const w = s.settings.fretWindow;
-          if (w === 'auto') return { autoWindowStart: clampWindowStart(s.autoWindowStart + delta) };
+          const { fretWindow: w, capo } = s.settings;
+          if (w === 'auto')
+            return { autoWindowStart: clampWindowStart(s.autoWindowStart + delta, capo) };
           if (typeof w === 'number')
-            return { settings: { ...s.settings, fretWindow: clampWindowStart(w + delta) } };
+            return { settings: { ...s.settings, fretWindow: clampWindowStart(w + delta, capo) } };
           return {};
         }),
       clearNotes: () => set({ lastNotes: [] }),
-      updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
+      updateSettings: (patch) =>
+        set((s) => {
+          const settings = { ...s.settings, ...patch };
+          if (patch.capo === undefined || patch.capo === s.settings.capo) return { settings };
+          // Casas relativas ao capo mudam de sentido: mantém a mão na mesma casa física.
+          const shift = s.settings.capo - settings.capo;
+          const w = settings.fretWindow;
+          return {
+            settings: {
+              ...settings,
+              fretWindow: typeof w === 'number' ? clampWindowStart(w + shift, settings.capo) : w,
+            },
+            autoWindowStart: clampWindowStart(s.autoWindowStart + shift, settings.capo),
+            lastFret: null,
+          };
+        }),
       setWeights: (patch) =>
         set((s) => ({ settings: { ...s.settings, weights: { ...s.settings.weights, ...patch } } })),
       setExtras: (patch) =>

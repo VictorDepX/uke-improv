@@ -1,23 +1,22 @@
 import { useCallback } from 'react';
 import { playChord } from '@/audio/engine/sound';
-import { shapesFor, shapeToMidis } from '@/core/chordShapes';
 import { sameChord } from '@/core/harmony';
-import { useDiatonicChords } from '@/store/selectors';
+import { useDiatonicChords, useVoicing } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 
 /** Campo harmônico do tom; tocar um acorde o torna o acorde atual. */
 export function ChordStrip() {
   const chords = useDiatonicChords();
   const current = useMusicStore((s) => s.currentChord);
-  const tuning = useMusicStore((s) => s.settings.tuning);
+  const voicing = useVoicing();
   const setChord = useMusicStore((s) => s.setChord);
 
   const choose = useCallback(
     (symbol: string) => {
       setChord(symbol);
-      void playChord(shapeToMidis(shapesFor(symbol, tuning)[0]!, tuning));
+      void playChord(voicing(symbol).midis);
     },
-    [setChord, tuning],
+    [setChord, voicing],
   );
 
   return (

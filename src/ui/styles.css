@@ -2077,6 +2077,41 @@ input[type='range'] {
   background: repeating-linear-gradient(to right, var(--fret) 0 5px, transparent 5px 10px);
 }
 
+/* Capotraste: a pestana vira a barra do capo, na cor de destaque. */
+.fb[data-capo]:not([data-windowed])[data-orientation='horizontal']
+  .fb-cell[data-fret='open']::after,
+.fb[data-capo]:not([data-windowed])[data-orientation='vertical'] .fb-cell[data-fret='open']::after {
+  background: var(--accent);
+}
+
+.fb-fret-num[data-capo] {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.capo-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* No modo prática o braço vem primeiro: a casa "C2" e a barra azul já indicam o capo. */
+.practice-board .fb-capo-row {
+  display: none;
+}
+
+.chord-shape-of {
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
 /* ---------- Presets ---------- */
 .preset-bar {
   display: flex;

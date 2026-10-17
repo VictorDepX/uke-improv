@@ -1,4 +1,4 @@
-import { FRET_COUNT, TUNINGS } from '@/core/fretboard';
+import { MAX_CAPO, TUNINGS, WINDOW_SIZE, maxWindowStart } from '@/core/fretboard';
 import { DEFAULT_WEIGHTS } from '@/core/suggestNotes';
 import type { LabelMode, ScoreWeights, TuningName } from '@/core/types';
 import { useMusicStore } from '@/store/useMusicStore';
@@ -15,14 +15,22 @@ const TUNING_OPTIONS = (Object.keys(TUNINGS) as TuningName[]).map((t) => ({
   label: TUNINGS[t].label,
 }));
 
-const WINDOW_OPTIONS = [
+/** Janelas contam a partir do capo; o rótulo mostra a casa física. */
+const windowOptions = (capo: number) => [
   { value: 'all', label: 'Braço inteiro' },
-  { value: 'auto', label: 'Seguir a última nota (5 casas)' },
-  ...Array.from({ length: FRET_COUNT - 4 }, (_, i) => ({
+  { value: 'auto', label: `Seguir a última nota (${WINDOW_SIZE} casas)` },
+  ...Array.from({ length: maxWindowStart(capo) }, (_, i) => ({
     value: String(i + 1),
-    label: `Casas ${i + 1}–${i + 5}`,
+    label: `Casas ${i + 1 + capo}–${i + capo + WINDOW_SIZE}`,
   })),
 ];
+
+const CAPO_SOUNDS = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G'];
+
+const CAPO_OPTIONS = Array.from({ length: MAX_CAPO + 1 }, (_, c) => ({
+  value: String(c),
+  label: c === 0 ? 'Sem capo' : `Casa ${c}`,
+}));
 
 const WEIGHT_LABELS: Record<keyof ScoreWeights, string> = {
   cls: 'Classe da nota',
@@ -49,6 +57,20 @@ export function SettingsPage() {
               options={TUNING_OPTIONS}
               onChange={(tuning) => update({ tuning })}
             />
+            <Select
+              id="set-capo"
+              label="Capotraste"
+              value={String(settings.capo)}
+              options={CAPO_OPTIONS}
+              onChange={(v) => update({ capo: Number(v) })}
+            />
+            {settings.capo ? (
+              <p className="small muted">
+                O braço começa no capo e as casas mostram a posição real. Os diagramas mostram a
+                forma que a mão faz: com capo na casa {settings.capo}, a forma de C soa{' '}
+                {CAPO_SOUNDS[settings.capo]}.
+              </p>
+            ) : null}
             <Segmented
               label="Rótulos nas casas"
               value={settings.labels}
@@ -73,7 +95,7 @@ export function SettingsPage() {
               id="set-window"
               label="Região do braço"
               value={settings.fretWindow === null ? 'all' : String(settings.fretWindow)}
-              options={WINDOW_OPTIONS}
+              options={windowOptions(settings.capo)}
               onChange={(v) =>
                 update({ fretWindow: v === 'all' ? null : v === 'auto' ? 'auto' : Number(v) })
               }

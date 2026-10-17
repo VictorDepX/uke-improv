@@ -99,3 +99,26 @@ describe('presets', () => {
     expect(useMusicStore.getState().key.scale).toBe('blues');
   });
 });
+
+describe('capotraste', () => {
+  beforeEach(() => useMusicStore.setState(initial, true));
+
+  it('ao pôr o capo, a janela fica na mesma casa física', () => {
+    const s = useMusicStore.getState();
+    s.updateSettings({ fretWindow: 5 });
+    s.updateSettings({ capo: 2 });
+    expect(useMusicStore.getState().settings.fretWindow).toBe(3); // casa 5 física
+    useMusicStore.getState().updateSettings({ capo: 0 });
+    expect(useMusicStore.getState().settings.fretWindow).toBe(5);
+  });
+
+  it('a nota do microfone acha a posição a partir do capo', () => {
+    useMusicStore.getState().updateSettings({ capo: 2, fretWindow: 'auto' });
+    // A4 perto da mão (casa 3 a partir do capo): corda E, casa 3 do capo = 5 física.
+    useMusicStore.getState().registerNote(69);
+    expect(useMusicStore.getState().lastFret).toBe(3);
+    useMusicStore.getState().registerNote(60); // C4 soa abaixo do capo: não há posição
+    expect(useMusicStore.getState().lastFret).toBe(3);
+    expect(useMusicStore.getState().lastNotes).toEqual([69, 60]);
+  });
+});
