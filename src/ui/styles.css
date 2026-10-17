@@ -2112,6 +2112,172 @@ input[type='range'] {
   color: var(--fg-muted);
 }
 
+/* ---------- Exercícios guiados ---------- */
+.exercise-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.exercise-picks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 8px;
+}
+
+.exercise-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.exercise-pick:hover {
+  border-color: var(--accent);
+}
+
+.exercise-pick:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.exercise-pick strong {
+  font-size: 14px;
+}
+
+.exercise-pick span {
+  font-size: 12px;
+  color: var(--fg-muted);
+  line-height: 1.35;
+}
+
+.exercise-bar[data-active] {
+  border-color: var(--accent);
+}
+
+.exercise-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.exercise-title {
+  flex: none;
+  font-size: 14px;
+}
+
+.exercise-meter {
+  flex: 1;
+  min-width: 48px;
+  max-width: 220px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  overflow: hidden;
+}
+
+.exercise-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
+
+.exercise-bar[data-done] .exercise-meter span {
+  background: var(--c-rest);
+}
+
+.exercise-count,
+.exercise-misses {
+  flex: none;
+  font-size: 12px;
+}
+
+.exercise-misses {
+  color: var(--c-tens);
+}
+
+.exercise-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.exercise-close {
+  width: 28px;
+  height: 28px;
+}
+
+.exercise-feedback {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg-muted);
+  border-left: 3px solid var(--line);
+  padding-left: 8px;
+}
+
+.exercise-feedback[data-kind='hit'] {
+  color: var(--fg);
+  border-left-color: var(--c-rest);
+}
+
+.exercise-feedback[data-kind='miss'] {
+  color: var(--fg);
+  border-left-color: var(--c-tens);
+}
+
+/* Modo prática: uma linha só, para não roubar altura do braço. */
+.exercise-bar[data-compact] {
+  flex: none;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.exercise-bar[data-compact] .exercise-head {
+  flex: none;
+  gap: 8px;
+}
+
+.exercise-bar[data-compact] .exercise-meter {
+  width: 64px;
+  flex: none;
+}
+
+.exercise-bar[data-compact] .exercise-feedback {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.exercise-bar[data-compact] .exercise-actions {
+  order: 2;
+}
+
+@media (max-width: 640px) {
+  .exercise-head {
+    flex-wrap: wrap;
+  }
+}
+
 /* ---------- Presets ---------- */
 .preset-bar {
   display: flex;

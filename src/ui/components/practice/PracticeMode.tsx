@@ -6,6 +6,7 @@ import { useActiveProgression, useDiatonicChords, useNoteSuggestions } from '@/s
 import { useMusicStore } from '@/store/useMusicStore';
 import { useJamPreview } from '../../hooks/useJamPreview';
 import { useToggleJam } from '../../hooks/useJamSync';
+import { ExerciseBar, ExerciseSelect } from '../ExerciseBar';
 import { LiveFretboard } from '../LiveFretboard';
 import { PresetSelect } from '../PresetBar';
 import { TapTempo } from '../jam/TapTempo';
@@ -192,6 +193,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
           </div>
         )}
         <PresetSelect />
+        <ExerciseSelect />
         <button
           type="button"
           className="practice-region"
@@ -209,6 +211,8 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
           {followHand ? 'Braço inteiro' : 'Seguir a mão'}
         </button>
       </div>
+
+      <ExerciseBar compact />
 
       <div className="practice-board">
         <LiveFretboard previewChord={preview} legend={false} />

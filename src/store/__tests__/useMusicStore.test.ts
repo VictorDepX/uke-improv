@@ -122,3 +122,32 @@ describe('capotraste', () => {
     expect(useMusicStore.getState().lastNotes).toEqual([69, 60]);
   });
 });
+
+describe('exercícios', () => {
+  beforeEach(() => useMusicStore.setState(initial, true));
+
+  it('as notas tocadas são avaliadas pelo exercício em andamento', () => {
+    const s = useMusicStore.getState();
+    s.startExercise('repouso');
+    s.registerNote(64); // E sobre C
+    s.registerNote(62); // D sobre C: passagem
+    const ex = useMusicStore.getState().exercise!;
+    expect([ex.hits, ex.misses]).toEqual([1, 1]);
+  });
+
+  it('o alvo na troca usa o compasso da base', () => {
+    const s = useMusicStore.getState();
+    s.startExercise('alvo');
+    useMusicStore.setState((st) => ({ jam: { ...st.jam, playing: true, bar: 0 } }));
+    s.registerNote(60);
+    s.registerNote(61); // mesmo compasso: livre
+    expect(useMusicStore.getState().exercise!.hits).toBe(1);
+    expect(useMusicStore.getState().exercise!.misses).toBe(0);
+  });
+
+  it('o exercício não é salvo entre sessões', () => {
+    useMusicStore.getState().startExercise('passo');
+    const saved = JSON.parse(localStorage.getItem('uke-improv') ?? '{}');
+    expect(saved.state.exercise).toBeUndefined();
+  });
+});

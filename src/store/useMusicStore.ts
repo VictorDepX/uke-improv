@@ -1,8 +1,15 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { buildNoteContext, classifyNote } from '@/core/classify';
+import {
+  startExercise as freshExercise,
+  stepExercise,
+  type ExerciseId,
+  type ExerciseState,
+} from '@/core/exercises';
 import { clampWindowStart, followWindow, nearestPosition } from '@/core/fretboard';
 import { diatonicChords } from '@/core/harmony';
-import { modeOf } from '@/core/music';
+import { chromaName, mod12, modeOf, prefersFlats } from '@/core/music';
 import type { Preset } from '@/core/presets';
 import { PROGRESSIONS, progressionChords } from '@/core/progressions';
 import { DEFAULT_WEIGHTS } from '@/core/suggestNotes';
@@ -68,6 +75,8 @@ export interface MusicState {
   customProgressions: Progression[];
   jam: JamState;
   mic: MicState;
+  /** Exercício guiado em andamento (não é salvo). */
+  exercise: ExerciseState | null;
 
   setTonic: (tonic: string) => void;
   setScale: (scale: ScaleName) => void;
@@ -90,6 +99,8 @@ export interface MusicState {
   setLayerVolume: (layer: Layer, value: number) => void;
 
   setMic: (patch: Partial<MicState>) => void;
+  /** Começa (ou recomeça) um exercício; null encerra. */
+  startExercise: (id: ExerciseId | null) => void;
   /** Tom, escala, progressão e andamento de uma vez. */
   applyPreset: (preset: Preset) => void;
 }
@@ -99,6 +110,20 @@ const MAX_HISTORY = 4;
 export const BPM_RANGE = { min: 60, max: 160 } as const;
 
 const tonicChord = (key: KeyContext): string => diatonicChords(key)[0]!.symbol;
+
+/** A nota tocada, classificada como o braço mostra agora, vai para o exercício. */
+function evaluateExercise(s: MusicState, ex: ExerciseState, midi: number): ExerciseState {
+  if (ex.done) return ex;
+  const ctx = buildNoteContext(s.key, s.currentChord, s.settings.arpeggio);
+  const chroma = mod12(midi);
+  return stepExercise(ex, {
+    midi,
+    name: chromaName(chroma, prefersFlats(s.key)),
+    cls: classifyNote(chroma, ctx),
+    chord: s.currentChord,
+    bar: s.jam.playing ? s.jam.bar : null,
+  });
+}
 
 const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
 
@@ -133,6 +158,7 @@ export const useMusicStore = create<MusicState>()(
         layers: { chords: 0.8, bass: 0.7, drums: 0.5 },
       },
       mic: { status: 'off', error: null, note: null, chord: null, level: 0, followChords: true },
+      exercise: null,
 
       setTonic: (tonic) => {
         const key = { ...get().key, tonic };
@@ -155,12 +181,14 @@ export const useMusicStore = create<MusicState>()(
       registerNote: (midi, fret) =>
         set((s) => {
           const lastNotes = [...s.lastNotes, midi].slice(-MAX_NOTES);
+          const exercise = s.exercise && evaluateExercise(s, s.exercise, midi);
           const ref = s.lastFret ?? s.autoWindowStart + 2;
           const { tuning, capo } = s.settings;
           const at = fret ?? nearestPosition(midi, tuning, ref, capo)?.fret;
-          if (at === undefined) return { lastNotes };
+          if (at === undefined) return { lastNotes, exercise };
           return {
             lastNotes,
+            exercise,
             lastFret: at,
             autoWindowStart: followWindow(s.autoWindowStart, at, capo),
           };
@@ -232,6 +260,7 @@ export const useMusicStore = create<MusicState>()(
           jam: { ...s.jam, layers: { ...s.jam.layers, [layer]: clamp(value, 0, 1) } },
         })),
 
+      startExercise: (id) => set({ exercise: id ? freshExercise(id) : null }),
       setMic: (patch) => set((s) => ({ mic: { ...s.mic, ...patch } })),
 
       applyPreset: (preset) => {

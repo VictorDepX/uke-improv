@@ -10,6 +10,7 @@ import { NoteSuggestions } from '../components/NoteSuggestions';
 import { playNote } from '@/audio/engine/sound';
 import { useJamPreview } from '../hooks/useJamPreview';
 import { PresetBar } from '../components/PresetBar';
+import { ExerciseBar } from '../components/ExerciseBar';
 
 /** Módulo 4: base em loop; o braço acompanha o acorde e avisa o próximo no 4º tempo. */
 export function JamPage() {
@@ -22,6 +23,7 @@ export function JamPage() {
       <PresetBar />
       <JamTransport chords={chords} />
       <LiveFretboard previewChord={preview} />
+      <ExerciseBar />
       <p className="hint small muted">
         No 4º tempo, as notas do próximo acorde ganham contorno; contorno duplo marca as notas que
         servem nos dois.

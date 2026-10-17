@@ -3,6 +3,7 @@ import { playNote } from '@/audio/engine/sound';
 import { useMusicStore } from '@/store/useMusicStore';
 import { ChordStrip } from '../components/ChordStrip';
 import { ChordSuggestions } from '../components/ChordSuggestions';
+import { ExerciseBar } from '../components/ExerciseBar';
 import { LiveFretboard } from '../components/LiveFretboard';
 import { MicPanel } from '../components/MicPanel';
 import { NoteSuggestions } from '../components/NoteSuggestions';
@@ -22,6 +23,7 @@ export function ExplorePage() {
     <div className="page page-explore">
       <ChordStrip />
       <LiveFretboard />
+      <ExerciseBar />
       <div className="columns">
         <NoteSuggestions onPlayMidi={playMidi} />
         <ChordSuggestions />

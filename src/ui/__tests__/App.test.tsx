@@ -211,6 +211,22 @@ describe('App', () => {
     );
   });
 
+  it('um exercício guiado avalia as notas tocadas no braço', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: /Só repouso/ }));
+    const bar = screen.getByRole('region', { name: 'Exercício: Só repouso' });
+    expect(within(bar).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
+    await user.click(screen.getByRole('button', { name: /^E4, corda C, casa 4/ }));
+    expect(within(bar).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '1');
+    expect(bar).toHaveTextContent('E é do acorde C.');
+    await user.click(screen.getByRole('button', { name: /^F4, corda E, casa 1/ }));
+    expect(bar).toHaveTextContent('F é tensão. Procure uma verde.');
+    expect(within(bar).getByLabelText('1 erros')).toBeInTheDocument();
+    await user.click(within(bar).getByRole('button', { name: 'Encerrar exercício' }));
+    expect(screen.getByRole('region', { name: 'Exercícios guiados' })).toBeInTheDocument();
+  });
+
   it('em Ajustes, trocar rótulos para grau muda o texto das casas', async () => {
     const user = userEvent.setup();
     render(<App />);
