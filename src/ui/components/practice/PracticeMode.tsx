@@ -7,6 +7,7 @@ import { useMusicStore } from '@/store/useMusicStore';
 import { useJamPreview } from '../../hooks/useJamPreview';
 import { useToggleJam } from '../../hooks/useJamSync';
 import { LiveFretboard } from '../LiveFretboard';
+import { PresetSelect } from '../PresetBar';
 
 interface PracticeModeProps {
   onClose: () => void;
@@ -187,6 +188,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
             ))}
           </div>
         )}
+        <PresetSelect />
         <button
           type="button"
           className="practice-region"

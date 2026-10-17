@@ -2074,3 +2074,43 @@ input[type='range'] {
   bottom: -1px;
   background: repeating-linear-gradient(to right, var(--fret) 0 5px, transparent 5px 10px);
 }
+
+/* ---------- Presets ---------- */
+.preset-bar {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+}
+
+.preset {
+  flex: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.preset-bpm {
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
+.preset[aria-checked='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.practice-preset {
+  flex: none;
+  max-width: 11rem;
+  padding-block: 5px;
+  font-size: 13px;
+}

@@ -136,6 +136,22 @@ describe('App', () => {
     expect(screen.getAllByRole('button', { name: /casa 6:/ })).toHaveLength(4);
   });
 
+  it('um preset ajusta tom, progressão e andamento com um toque', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('link', { name: 'Jam' }));
+    await user.click(screen.getByRole('radio', { name: /Blues em A/ }));
+    expect(screen.getByRole('radio', { name: /Blues em A/ })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    const bars = screen.getByRole('list', { name: 'Compassos da progressão' });
+    expect(within(bars).getAllByRole('listitem')).toHaveLength(12);
+    expect(within(bars).getAllByRole('listitem')[0]).toHaveTextContent('A7');
+    expect(useMusicStore.getState().jam.bpm).toBe(96);
+    expect(screen.getByRole('button', { name: /A\s*Blues/ })).toBeInTheDocument();
+  });
+
   it('em Ajustes, trocar rótulos para grau muda o texto das casas', async () => {
     const user = userEvent.setup();
     render(<App />);

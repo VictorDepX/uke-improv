@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { PRESETS } from '@/core/presets';
 import { useMusicStore } from '../useMusicStore';
 
 const initial = useMusicStore.getState();
@@ -76,5 +77,25 @@ describe('janela automática', () => {
     s.updateSettings({ fretWindow: 'auto' });
     s.shiftWindow(-1);
     expect(useMusicStore.getState().autoWindowStart).toBe(1);
+  });
+});
+
+describe('presets', () => {
+  beforeEach(() => useMusicStore.setState(initial, true));
+
+  it('aplica tom, escala, progressão, andamento e o primeiro acorde', () => {
+    const blues = PRESETS.find((p) => p.id === 'blues-a')!;
+    useMusicStore.getState().applyPreset(blues);
+    const s = useMusicStore.getState();
+    expect(s.key).toEqual({ tonic: 'A', scale: 'blues' });
+    expect(s.jam.progressionId).toBe('blues');
+    expect(s.jam.bpm).toBe(96);
+    expect(s.currentChord).toBe('A7');
+  });
+
+  it('reescolher o blues não troca a escala blues por maior', () => {
+    useMusicStore.getState().applyPreset(PRESETS.find((p) => p.id === 'blues-a')!);
+    useMusicStore.getState().selectProgression('blues');
+    expect(useMusicStore.getState().key.scale).toBe('blues');
   });
 });

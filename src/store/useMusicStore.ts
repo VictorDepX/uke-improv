@@ -3,7 +3,8 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { clampWindowStart, followWindow, nearestPosition } from '@/core/fretboard';
 import { diatonicChords } from '@/core/harmony';
 import { modeOf } from '@/core/music';
-import { PROGRESSIONS } from '@/core/progressions';
+import type { Preset } from '@/core/presets';
+import { PROGRESSIONS, progressionChords } from '@/core/progressions';
 import { DEFAULT_WEIGHTS } from '@/core/suggestNotes';
 import type {
   ChordExtras,
@@ -84,6 +85,8 @@ export interface MusicState {
   setLayerVolume: (layer: Layer, value: number) => void;
 
   setMic: (patch: Partial<MicState>) => void;
+  /** Tom, escala, progressão e andamento de uma vez. */
+  applyPreset: (preset: Preset) => void;
 }
 
 const MAX_NOTES = 4;
@@ -169,7 +172,11 @@ export const useMusicStore = create<MusicState>()(
         if (!p) return;
         const { key } = get();
         const nextScale: ScaleName =
-          modeOf(key.scale) === p.mode ? key.scale : p.mode === 'major' ? 'major' : 'minor';
+          p.anyScale || modeOf(key.scale) === p.mode
+            ? key.scale
+            : p.mode === 'major'
+              ? 'major'
+              : 'minor';
         if (nextScale !== key.scale) get().setScale(nextScale);
         set((s) => ({ jam: { ...s.jam, progressionId: id, bar: 0, beat: 0 } }));
       },
@@ -197,6 +204,27 @@ export const useMusicStore = create<MusicState>()(
         })),
 
       setMic: (patch) => set((s) => ({ mic: { ...s.mic, ...patch } })),
+
+      applyPreset: (preset) => {
+        const progression = PROGRESSIONS.find((p) => p.id === preset.progressionId);
+        if (!progression) return;
+        const key: KeyContext = { tonic: preset.tonic, scale: preset.scale };
+        const first = progressionChords(progression, key)[0] ?? tonicChord(key);
+        set((s) => ({
+          key,
+          currentChord: first,
+          chordHistory: [],
+          lastNotes: [],
+          jam: {
+            ...s.jam,
+            progressionId: progression.id,
+            bpm: clamp(preset.bpm, BPM_RANGE.min, BPM_RANGE.max),
+            // Tocando, a base segue sem reiniciar; parado, volta ao primeiro compasso.
+            bar: s.jam.playing ? s.jam.bar : 0,
+            beat: s.jam.playing ? s.jam.beat : 0,
+          },
+        }));
+      },
     }),
     {
       name: 'uke-improv',

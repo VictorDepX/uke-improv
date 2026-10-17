@@ -82,4 +82,6 @@ export interface Progression {
   /** Numerais relativos à tônica, com intervalos da escala maior ("i bVI bIII bVII"). */
   numerals: string[];
   custom?: boolean;
+  /** Soa bem sobre escalas dos dois modos (ex.: blues com pentatônica menor). */
+  anyScale?: boolean;
 }

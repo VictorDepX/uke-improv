@@ -9,6 +9,7 @@ export const PROGRESSIONS: readonly Progression[] = [
     id: 'blues',
     name: 'Blues de 12 compassos',
     mode: 'major',
+    anyScale: true,
     numerals: ['I7', 'I7', 'I7', 'I7', 'IV7', 'IV7', 'I7', 'I7', 'V7', 'IV7', 'I7', 'V7'],
   },
   {

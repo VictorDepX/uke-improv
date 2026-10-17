@@ -9,6 +9,7 @@ import { LiveFretboard } from '../components/LiveFretboard';
 import { NoteSuggestions } from '../components/NoteSuggestions';
 import { playNote } from '@/audio/engine/sound';
 import { useJamPreview } from '../hooks/useJamPreview';
+import { PresetBar } from '../components/PresetBar';
 
 /** Módulo 4: base em loop; o braço acompanha o acorde e avisa o próximo no 4º tempo. */
 export function JamPage() {
@@ -18,6 +19,7 @@ export function JamPage() {
 
   return (
     <div className="page page-jam">
+      <PresetBar />
       <JamTransport chords={chords} />
       <LiveFretboard previewChord={preview} />
       <p className="hint small muted">
