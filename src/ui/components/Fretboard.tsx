@@ -1,6 +1,13 @@
 import { memo, useMemo, type CSSProperties } from 'react';
 import { classifyNote, type NoteContext } from '@/core/classify';
-import { FRET_COUNT, INLAY_FRETS, STRING_NAMES, fretPositions } from '@/core/fretboard';
+import {
+  FRET_COUNT,
+  INLAY_FRETS,
+  STRING_NAMES,
+  WINDOW_SIZE,
+  clampWindowStart,
+  fretPositions,
+} from '@/core/fretboard';
 import { chordInfo, midiName, prefersFlats } from '@/core/music';
 import type {
   FretPosition,
@@ -47,10 +54,8 @@ export const Fretboard = memo(function Fretboard({
   const frets = useMemo(() => {
     const all = Array.from({ length: FRET_COUNT + 1 }, (_, f) => f);
     if (fretWindow === null) return all;
-    return [
-      0,
-      ...all.filter((f) => f >= Math.max(1, fretWindow) && f < Math.max(1, fretWindow) + 5),
-    ];
+    const start = clampWindowStart(fretWindow);
+    return [0, ...all.filter((f) => f >= start && f < start + WINDOW_SIZE)];
   }, [fretWindow]);
 
   const rank = useMemo(() => {
@@ -114,6 +119,7 @@ export const Fretboard = memo(function Fretboard({
       <div
         className="fb"
         data-orientation={vertical ? 'vertical' : 'horizontal'}
+        data-windowed={(frets[1] ?? 1) > 1 || undefined}
         style={
           vertical
             ? { gridTemplateRows: `auto repeat(${frets.length}, var(--fb-cell-v))` }

@@ -50,6 +50,8 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
   const setChord = useMusicStore((s) => s.setChord);
   const setBpm = useMusicStore((s) => s.setBpm);
   const registerNote = useMusicStore((s) => s.registerNote);
+  const followHand = useMusicStore((s) => s.settings.fretWindow === 'auto');
+  const updateSettings = useMusicStore((s) => s.updateSettings);
   const suggestions = useNoteSuggestions();
   const diatonic = useDiatonicChords();
   const { chords: progression } = useActiveProgression();
@@ -155,35 +157,45 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
         </div>
       </div>
 
-      {jam.playing ? (
-        <ol className="practice-strip" aria-label="Compassos da progressão">
-          {progression.map((c, i) => (
-            <li
-              key={`${c}-${i}`}
-              className="practice-chip"
-              data-active={i === activeBar || undefined}
-            >
-              {c}
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <div className="practice-strip" role="radiogroup" aria-label="Acorde atual">
-          {diatonic.map((d) => (
-            <button
-              key={d.numeral}
-              type="button"
-              role="radio"
-              aria-checked={sameChord(d.symbol, current)}
-              className="practice-chip"
-              data-func={d.func}
-              onClick={() => setChord(d.symbol)}
-            >
-              {d.symbol}
-            </button>
-          ))}
-        </div>
-      )}
+      <div className="practice-row">
+        {jam.playing ? (
+          <ol className="practice-strip" aria-label="Compassos da progressão">
+            {progression.map((c, i) => (
+              <li
+                key={`${c}-${i}`}
+                className="practice-chip"
+                data-active={i === activeBar || undefined}
+              >
+                {c}
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <div className="practice-strip" role="radiogroup" aria-label="Acorde atual">
+            {diatonic.map((d) => (
+              <button
+                key={d.numeral}
+                type="button"
+                role="radio"
+                aria-checked={sameChord(d.symbol, current)}
+                className="practice-chip"
+                data-func={d.func}
+                onClick={() => setChord(d.symbol)}
+              >
+                {d.symbol}
+              </button>
+            ))}
+          </div>
+        )}
+        <button
+          type="button"
+          className="practice-region"
+          aria-pressed={followHand}
+          onClick={() => updateSettings({ fretWindow: followHand ? null : 'auto' })}
+        >
+          {followHand ? 'Braço inteiro' : 'Seguir a mão'}
+        </button>
+      </div>
 
       <div className="practice-board">
         <LiveFretboard previewChord={preview} legend={false} />

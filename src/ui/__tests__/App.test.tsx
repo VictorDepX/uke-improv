@@ -125,6 +125,17 @@ describe('App', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('com a região automática, o braço mostra 5 casas e anda com as setas', async () => {
+    const user = userEvent.setup();
+    useMusicStore.getState().updateSettings({ fretWindow: 'auto' });
+    render(<App />);
+    expect(screen.getByText(/Casas 1–5/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /casa 6:/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Casas mais agudas' }));
+    expect(screen.getByText(/Casas 2–6/)).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /casa 6:/ })).toHaveLength(4);
+  });
+
   it('em Ajustes, trocar rótulos para grau muda o texto das casas', async () => {
     const user = userEvent.setup();
     render(<App />);

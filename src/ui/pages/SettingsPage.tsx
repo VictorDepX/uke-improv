@@ -17,6 +17,7 @@ const TUNING_OPTIONS = (Object.keys(TUNINGS) as TuningName[]).map((t) => ({
 
 const WINDOW_OPTIONS = [
   { value: 'all', label: 'Braço inteiro' },
+  { value: 'auto', label: 'Seguir a última nota (5 casas)' },
   ...Array.from({ length: FRET_COUNT - 4 }, (_, i) => ({
     value: String(i + 1),
     label: `Casas ${i + 1}–${i + 5}`,
@@ -59,10 +60,13 @@ export function SettingsPage() {
               label="Região do braço"
               value={settings.fretWindow === null ? 'all' : String(settings.fretWindow)}
               options={WINDOW_OPTIONS}
-              onChange={(v) => update({ fretWindow: v === 'all' ? null : Number(v) })}
+              onChange={(v) =>
+                update({ fretWindow: v === 'all' ? null : v === 'auto' ? 'auto' : Number(v) })
+              }
             />
             <p className="small muted">
-              Limitar a 5 casas ajuda a treinar uma "caixa" de improviso de cada vez.
+              Limitar a 5 casas ajuda a treinar uma "caixa" de improviso de cada vez. "Seguir a
+              última nota" move a janela conforme você toca, pela tela ou pelo microfone.
             </p>
           </div>
         </Panel>

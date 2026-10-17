@@ -1926,10 +1926,6 @@ input[type='range'] {
   min-height: 0;
 }
 
-.practice-board .fb-scroll {
-  height: 100%;
-}
-
 .practice-board .fb[data-orientation='horizontal'] {
   height: 100%;
   min-height: 190px;
@@ -2002,4 +1998,79 @@ input[type='range'] {
   .practice-head {
     min-height: 44px;
   }
+}
+
+/* Navegação da janela de 5 casas. */
+.fb-window-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.fb-window-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.practice-row {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.practice-row .practice-strip {
+  flex: 1;
+  min-width: 0;
+}
+
+.practice-region {
+  flex: none;
+  padding: 5px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.practice-region[aria-pressed='true'] {
+  background: var(--accent-soft);
+}
+
+.practice-board .live-fretboard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.practice-board .fb-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.practice-board .fb-window-nav .icon-button {
+  width: 28px;
+  height: 28px;
+}
+
+/* Janela longe da pestana: o traste depois das cordas soltas vira tracejado (casas puladas). */
+.fb[data-windowed][data-orientation='horizontal'] .fb-cell[data-fret='open']::after {
+  width: 3px;
+  right: -1px;
+  background: repeating-linear-gradient(to bottom, var(--fret) 0 5px, transparent 5px 10px);
+}
+
+.fb[data-windowed][data-orientation='vertical'] .fb-cell[data-fret='open']::after {
+  height: 3px;
+  bottom: -1px;
+  background: repeating-linear-gradient(to right, var(--fret) 0 5px, transparent 5px 10px);
 }

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { clampWindowStart, followWindow, nearestPosition } from '@/core/fretboard';
 import { diatonicChords } from '@/core/harmony';
 import { modeOf } from '@/core/music';
 import { PROGRESSIONS } from '@/core/progressions';
@@ -24,7 +25,8 @@ export interface Settings {
   weights: ScoreWeights;
   extras: ChordExtras;
   /** Primeira casa da janela de 5 casas, ou null para o braço inteiro. */
-  fretWindow: number | null;
+  /** null = braço inteiro, 'auto' = segue a última nota, número = casa inicial fixa. */
+  fretWindow: number | null | 'auto';
 }
 
 export interface JamState {
@@ -51,6 +53,10 @@ export interface MusicState {
   key: KeyContext;
   currentChord: string;
   lastNotes: number[];
+  /** Casa da última nota tocada (para a janela automática). */
+  lastFret: number | null;
+  /** Casa inicial da janela automática. */
+  autoWindowStart: number;
   chordHistory: string[];
   settings: Settings;
   customProgressions: Progression[];
@@ -60,7 +66,10 @@ export interface MusicState {
   setTonic: (tonic: string) => void;
   setScale: (scale: ScaleName) => void;
   setChord: (symbol: string) => void;
-  registerNote: (midi: number) => void;
+  /** Registra uma nota. Sem `fret` (microfone), usa a posição mais próxima da mão. */
+  registerNote: (midi: number, fret?: number) => void;
+  /** Desloca a janela de casas (fixa ou automática). */
+  shiftWindow: (delta: number) => void;
   clearNotes: () => void;
   updateSettings: (patch: Partial<Settings>) => void;
   setWeights: (patch: Partial<ScoreWeights>) => void;
@@ -93,6 +102,8 @@ export const useMusicStore = create<MusicState>()(
       key: INITIAL_KEY,
       currentChord: tonicChord(INITIAL_KEY),
       lastNotes: [],
+      lastFret: null,
+      autoWindowStart: 1,
       chordHistory: [],
       settings: {
         tuning: 'GCEA',
@@ -130,7 +141,22 @@ export const useMusicStore = create<MusicState>()(
           chordHistory: [...chordHistory, currentChord].slice(-MAX_HISTORY),
         });
       },
-      registerNote: (midi) => set((s) => ({ lastNotes: [...s.lastNotes, midi].slice(-MAX_NOTES) })),
+      registerNote: (midi, fret) =>
+        set((s) => {
+          const lastNotes = [...s.lastNotes, midi].slice(-MAX_NOTES);
+          const ref = s.lastFret ?? s.autoWindowStart + 2;
+          const at = fret ?? nearestPosition(midi, s.settings.tuning, ref)?.fret;
+          if (at === undefined) return { lastNotes };
+          return { lastNotes, lastFret: at, autoWindowStart: followWindow(s.autoWindowStart, at) };
+        }),
+      shiftWindow: (delta) =>
+        set((s) => {
+          const w = s.settings.fretWindow;
+          if (w === 'auto') return { autoWindowStart: clampWindowStart(s.autoWindowStart + delta) };
+          if (typeof w === 'number')
+            return { settings: { ...s.settings, fretWindow: clampWindowStart(w + delta) } };
+          return {};
+        }),
       clearNotes: () => set({ lastNotes: [] }),
       updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
       setWeights: (patch) =>

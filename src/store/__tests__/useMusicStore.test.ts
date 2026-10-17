@@ -49,3 +49,32 @@ describe('useMusicStore', () => {
     expect(useMusicStore.getState().chordHistory).toEqual(['C', 'F']);
   });
 });
+
+describe('janela automática', () => {
+  beforeEach(() => useMusicStore.setState(initial, true));
+
+  it('segue a casa tocada na tela', () => {
+    const s = useMusicStore.getState();
+    s.updateSettings({ fretWindow: 'auto' });
+    s.registerNote(74, 7); // D5 na corda G, casa 7
+    expect(useMusicStore.getState().autoWindowStart).toBe(5);
+    expect(useMusicStore.getState().lastFret).toBe(7);
+  });
+
+  it('nota do microfone usa a posição mais próxima da mão', () => {
+    const s = useMusicStore.getState();
+    s.registerNote(72, 12); // C5 na casa 12 (corda C)
+    s.registerNote(76); // E5: a casa mais próxima de 12 é a 12 da corda E
+    expect(useMusicStore.getState().lastFret).toBe(12);
+  });
+
+  it('as setas deslocam a janela fixa e a automática', () => {
+    const s = useMusicStore.getState();
+    s.updateSettings({ fretWindow: 3 });
+    s.shiftWindow(1);
+    expect(useMusicStore.getState().settings.fretWindow).toBe(4);
+    s.updateSettings({ fretWindow: 'auto' });
+    s.shiftWindow(-1);
+    expect(useMusicStore.getState().autoWindowStart).toBe(1);
+  });
+});

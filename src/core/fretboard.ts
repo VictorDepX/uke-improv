@@ -48,3 +48,22 @@ export function nearestPosition(
     Math.abs(p.fret - ref) < Math.abs(best.fret - ref) ? p : best,
   );
 }
+
+/** Quantas casas a janela de prática mostra (além das cordas soltas). */
+export const WINDOW_SIZE = 5;
+
+/** Maior casa inicial possível para a janela. */
+export const MAX_WINDOW_START = FRET_COUNT - WINDOW_SIZE + 1;
+
+export const clampWindowStart = (start: number): number =>
+  Math.min(MAX_WINDOW_START, Math.max(1, Math.round(start)));
+
+/**
+ * Janela que segue a mão: só muda quando a casa tocada sai da janela atual
+ * (histerese), e então recentra a casa na janela. Cordas soltas não movem a janela.
+ */
+export function followWindow(start: number, fret: number): number {
+  if (fret <= 0) return start;
+  if (fret >= start && fret < start + WINDOW_SIZE) return start;
+  return clampWindowStart(fret - Math.floor(WINDOW_SIZE / 2));
+}
