@@ -4,12 +4,12 @@ Assistente de improviso e harmonia para ukulele. Dado o tom e o acorde atual, mo
 
 ## Módulos
 
-| Módulo | O que faz | Onde |
-| --- | --- | --- |
-| 1. Braço sugestivo | Colore cada casa (repouso, passagem, tensão, fora) e numera as 3 melhores próximas notas | `src/core/classify.ts`, `suggestNotes.ts`, `ui/components/Fretboard.tsx` |
-| 2. Escuta | Detecta nota (pitchy/McLeod) e acorde (cromagrama) pelo microfone; afinador; análise de gravação | `src/audio/analysis/`, `src/audio/engine/mic.ts` |
-| 3. Sugeridor de progressão | Próximos acordes por função harmônica, dominantes secundárias, empréstimo modal, diagramas GCEA | `src/core/suggestChords.ts`, `chordShapes.ts` |
-| 4. Modo jam | Base em loop (Tone.js) com acordes, baixo e bateria; o braço acompanha e avisa o próximo acorde | `src/audio/engine/jam.ts`, `ui/pages/JamPage.tsx` |
+| Módulo                     | O que faz                                                                                        | Onde                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| 1. Braço sugestivo         | Colore cada casa (repouso, passagem, tensão, fora) e numera as 3 melhores próximas notas         | `src/core/classify.ts`, `suggestNotes.ts`, `ui/components/Fretboard.tsx` |
+| 2. Escuta                  | Detecta nota (pitchy/McLeod) e acorde (cromagrama) pelo microfone; afinador; análise de gravação | `src/audio/analysis/`, `src/audio/engine/mic.ts`                         |
+| 3. Sugeridor de progressão | Próximos acordes por função harmônica, dominantes secundárias, empréstimo modal, diagramas GCEA  | `src/core/suggestChords.ts`, `chordShapes.ts`                            |
+| 4. Modo jam                | Base em loop (Tone.js) com acordes, baixo e bateria; o braço acompanha e avisa o próximo acorde  | `src/audio/engine/jam.ts`, `ui/pages/JamPage.tsx`                        |
 
 ## Onda 1: tocar sem atrito
 
@@ -19,6 +19,15 @@ Assistente de improviso e harmonia para ukulele. Dado o tom e o acorde atual, mo
 - **Tela acesa:** Wake Lock durante a base e o modo prática.
 - **Presets:** tom, escala, progressão e andamento com um toque.
 - **PWA:** instalável e offline; fontes servidas localmente e service worker gerado no build (`scripts/sw-plugin.ts`). Ícones: `python3 scripts/make-icons.py`.
+
+## Onda 2: aprender tocando
+
+- **Formas além da cor:** círculo = repouso, quadrado = passagem, losango = tensão (desligável em Ajustes).
+- **Por que essa cor?:** toque longo ou clique direito numa casa explica grau, intervalo e para onde a nota tende (`src/core/explain.ts`).
+- **Mais escalas:** dórico, mixolídio e menor harmônica, com campos harmônicos, progressões e presets próprios; modo "só arpejo".
+- **Tap tempo:** andamento pelo pulso tocado (mediana dos intervalos, `src/core/tempo.ts`).
+- **Capotraste:** casas 1–7; braço, janela, diagramas ("forma de C"), base e microfone contam a partir do capo.
+- **Exercícios guiados:** só repouso, resolva a tensão, passo a passo e alvo na troca; avaliam cada nota da tela ou do microfone (`src/core/exercises.ts`).
 
 ## Comandos
 
