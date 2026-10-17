@@ -17,6 +17,7 @@ export function Legend() {
           <span className="legend-hint">{i.hint}</span>
         </li>
       ))}
+      <li className="legend-tip">Segure uma casa para saber o porquê da cor.</li>
     </ul>
   );
 }

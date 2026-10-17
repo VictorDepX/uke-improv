@@ -2156,3 +2156,79 @@ input[type='range'] {
   height: 10px;
   transform: rotate(45deg);
 }
+
+/* ---------- "Por que essa cor?" ---------- */
+.legend-tip {
+  color: var(--fg-muted);
+  margin-left: auto;
+}
+
+.fb-cell {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.note-info {
+  position: fixed;
+  z-index: 30;
+  left: 50%;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: min(
+    520px,
+    calc(100vw - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))
+  );
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+}
+
+.note-info-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.note-info-badge {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+}
+
+.app[data-shapes] .note-info-badge[data-cls='passagem'] {
+  width: 36px;
+  height: 36px;
+}
+
+.note-info-title {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+}
+
+.note-info-title strong {
+  font-family: var(--font-display);
+  font-size: 18px;
+}
+
+.note-info-close {
+  width: 34px;
+  height: 34px;
+}
+
+.note-info-why {
+  margin: 0;
+  max-width: 60ch;
+}
+
+.note-info-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}

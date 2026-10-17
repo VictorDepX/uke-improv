@@ -1,4 +1,11 @@
-import { chromaName, degreeLabel, intervalLabel, prefersFlats, chromaOf } from '@/core/music';
+import {
+  SCALES,
+  chromaName,
+  degreeLabel,
+  intervalLabel,
+  prefersFlats,
+  chromaOf,
+} from '@/core/music';
 import type { ChordInfo, Chroma, KeyContext, LabelMode, NoteClass } from '@/core/types';
 
 export function noteLabel(
@@ -20,3 +27,6 @@ export const CLASS_SHORT: Record<NoteClass, string> = {
 };
 
 export const FUNC_LABEL = { T: 'Tônica', S: 'Subdominante', D: 'Dominante' } as const;
+
+export const keyLabelOf = (key: KeyContext): string =>
+  `${key.tonic} ${SCALES[key.scale].label.toLowerCase()}`;

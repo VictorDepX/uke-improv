@@ -161,6 +161,20 @@ describe('App', () => {
     expect(container.querySelector('.app')).not.toHaveAttribute('data-shapes');
   });
 
+  it('clique direito numa casa explica a cor sem tocar a nota', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('radio', { name: /G7/ }));
+    const cell = screen.getByRole('button', { name: /^F4, corda E, casa 1/ });
+    await user.pointer({ keys: '[MouseRight]', target: cell });
+    const info = screen.getByRole('dialog', { name: /Por que F é tensão/ });
+    expect(info).toHaveTextContent('7ª menor de G7');
+    expect(info).toHaveTextContent('Tende a ir para E');
+    expect(useMusicStore.getState().lastNotes).toEqual([]);
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('em Ajustes, trocar rótulos para grau muda o texto das casas', async () => {
     const user = userEvent.setup();
     render(<App />);

@@ -1,4 +1,4 @@
-import { memo, useMemo, type CSSProperties } from 'react';
+import { memo, useMemo, useRef, type CSSProperties } from 'react';
 import { classifyNote, type NoteContext } from '@/core/classify';
 import {
   FRET_COUNT,
@@ -20,6 +20,8 @@ import type {
 import { CLASS_SHORT, noteLabel } from '../format';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 
+const LONG_PRESS_MS = 450;
+
 export interface FretboardProps {
   ctx: NoteContext;
   keyContext: KeyContext;
@@ -31,6 +33,8 @@ export interface FretboardProps {
   /** Acorde seguinte (modo jam): suas notas aparecem contornadas. */
   previewChord?: string | null;
   onPlay?: (pos: FretPosition) => void;
+  /** Toque longo ou clique direito: pede a explicação da nota. */
+  onInspect?: (pos: FretPosition) => void;
 }
 
 /**
@@ -47,7 +51,13 @@ export const Fretboard = memo(function Fretboard({
   lastMidi = null,
   previewChord = null,
   onPlay,
+  onInspect,
 }: FretboardProps) {
+  // Toque longo: um só ponteiro por vez, então um ref basta para o braço inteiro.
+  const press = useRef<{ timer: number; x: number; y: number; fired: boolean } | null>(null);
+  const cancelPress = () => {
+    if (press.current) window.clearTimeout(press.current.timer);
+  };
   const vertical = useMediaQuery('(max-width: 640px)');
   const flats = prefersFlats(keyContext);
 
@@ -98,7 +108,35 @@ export const Fretboard = memo(function Fretboard({
         className="fb-cell"
         data-fret={pos.fret === 0 ? 'open' : undefined}
         style={style}
-        onClick={() => onPlay?.(pos)}
+        onClick={() => {
+          if (press.current?.fired) {
+            press.current = null;
+            return;
+          }
+          onPlay?.(pos);
+        }}
+        onPointerDown={(e) => {
+          if (!onInspect) return;
+          cancelPress();
+          const timer = window.setTimeout(() => {
+            if (press.current) press.current.fired = true;
+            onInspect(pos);
+          }, LONG_PRESS_MS);
+          press.current = { timer, x: e.clientX, y: e.clientY, fired: false };
+        }}
+        onPointerMove={(e) => {
+          const p = press.current;
+          if (p && !p.fired && Math.hypot(e.clientX - p.x, e.clientY - p.y) > 10) cancelPress();
+        }}
+        onPointerUp={cancelPress}
+        onPointerCancel={cancelPress}
+        onPointerLeave={cancelPress}
+        onContextMenu={(e) => {
+          if (!onInspect) return;
+          e.preventDefault();
+          cancelPress();
+          onInspect(pos);
+        }}
         aria-label={`${name}, corda ${STRING_NAMES[pos.string]}, casa ${pos.fret}: ${CLASS_SHORT[cls]}${r ? `, sugestão ${r}` : ''}`}
       >
         <span
