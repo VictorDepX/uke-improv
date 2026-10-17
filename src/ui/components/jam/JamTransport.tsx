@@ -1,5 +1,6 @@
 import { BPM_RANGE, useMusicStore } from '@/store/useMusicStore';
 import { useToggleJam } from '../../hooks/useJamSync';
+import { TapTempo } from './TapTempo';
 
 export function JamTransport({ chords }: { chords: readonly string[] }) {
   const { playing, bpm, bar, beat } = useMusicStore((s) => s.jam);
@@ -64,6 +65,7 @@ export function JamTransport({ chords }: { chords: readonly string[] }) {
         >
           +
         </button>
+        <TapTempo />
         <input
           id="jam-bpm"
           type="range"

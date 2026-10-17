@@ -175,6 +175,21 @@ describe('App', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('o tap tempo define o andamento pelo pulso tocado', async () => {
+    const user = userEvent.setup();
+    let t = 1000;
+    const now = vi.spyOn(performance, 'now').mockImplementation(() => t);
+    render(<App />);
+    await user.click(screen.getByRole('link', { name: 'Jam' }));
+    const tap = screen.getByRole('button', { name: /Tap tempo/ });
+    for (let i = 0; i < 4; i++) {
+      await user.click(tap);
+      t += 500; // 120 BPM
+    }
+    expect(useMusicStore.getState().jam.bpm).toBe(120);
+    now.mockRestore();
+  });
+
   it('em Ajustes, trocar rótulos para grau muda o texto das casas', async () => {
     const user = userEvent.setup();
     render(<App />);

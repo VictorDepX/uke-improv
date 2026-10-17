@@ -8,6 +8,7 @@ import { useJamPreview } from '../../hooks/useJamPreview';
 import { useToggleJam } from '../../hooks/useJamSync';
 import { LiveFretboard } from '../LiveFretboard';
 import { PresetSelect } from '../PresetBar';
+import { TapTempo } from '../jam/TapTempo';
 
 interface PracticeModeProps {
   onClose: () => void;
@@ -156,6 +157,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
           >
             +
           </button>
+          <TapTempo className="practice-tap" />
         </div>
       </div>
 

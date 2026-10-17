@@ -143,6 +143,8 @@ select {
 
 button {
   cursor: pointer;
+  /* Sem atraso de toque duplo: casas e tap tempo respondem na hora. */
+  touch-action: manipulation;
 }
 
 button:disabled {
@@ -1540,7 +1542,7 @@ input[type='range'] {
 
 .bpm {
   display: grid;
-  grid-template-columns: auto auto auto;
+  grid-template-columns: auto auto auto auto;
   align-items: center;
   justify-items: center;
   gap: 4px 10px;
@@ -2231,4 +2233,32 @@ input[type='range'] {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+/* ---------- Tap tempo ---------- */
+.tap-tempo {
+  min-width: 48px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--wood-label);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--string);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  touch-action: manipulation;
+}
+
+.tap-tempo:active {
+  background: var(--c-pass);
+  border-color: var(--c-pass);
+  color: var(--c-pass-fg);
+}
+
+.tap-tempo.practice-tap {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--fg);
 }
