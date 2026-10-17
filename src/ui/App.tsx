@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { preloadAudio } from '@/audio/engine/sound';
 import { SCALES } from '@/core/music';
 import { useMusicStore } from '@/store/useMusicStore';
 import { KeyPicker } from './components/KeyPicker';
+import { PracticeMode } from './components/practice/PracticeMode';
 import { useJamSync } from './hooks/useJamSync';
 import { ExplorePage } from './pages/ExplorePage';
 import { JamPage } from './pages/JamPage';
@@ -23,6 +24,8 @@ function initialTab(): TabId {
 export function App() {
   const [tab, setTab] = useState<TabId>(initialTab);
   const [keyOpen, setKeyOpen] = useState(false);
+  const [practiceOpen, setPracticeOpen] = useState(false);
+  const closePractice = useCallback(() => setPracticeOpen(false), []);
   const key = useMusicStore((s) => s.key);
   useJamSync();
 
@@ -58,6 +61,15 @@ export function App() {
           <div id="key-picker" className="key-picker-slot" data-open={keyOpen || undefined}>
             <KeyPicker />
           </div>
+          <button
+            type="button"
+            className="practice-open"
+            onClick={() => setPracticeOpen(true)}
+            aria-label="Abrir modo prática"
+          >
+            <span className="practice-open-icon" aria-hidden="true" />
+            <span className="practice-open-label">Praticar</span>
+          </button>
           <nav className="tabs" aria-label="Seções">
             {TABS.map((t) => (
               <a
@@ -79,6 +91,7 @@ export function App() {
       <main className="main">
         {tab === 'explorar' ? <ExplorePage /> : tab === 'jam' ? <JamPage /> : <SettingsPage />}
       </main>
+      {practiceOpen ? <PracticeMode onClose={closePractice} /> : null}
     </div>
   );
 }

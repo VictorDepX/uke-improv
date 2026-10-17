@@ -216,10 +216,39 @@ button:disabled {
   padding-right: var(--gutter-r);
   padding-block: 10px;
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-areas: 'brand key tabs';
+  grid-template-columns: auto 1fr auto auto;
+  grid-template-areas: 'brand key practice tabs';
   align-items: center;
-  gap: 12px 20px;
+  gap: 12px 16px;
+}
+
+.practice-open {
+  grid-area: practice;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Ícone de tela cheia: quatro cantos. */
+.practice-open-icon {
+  width: 14px;
+  height: 14px;
+  background:
+    linear-gradient(currentColor, currentColor) 0 0 / 5px 2px no-repeat,
+    linear-gradient(currentColor, currentColor) 0 0 / 2px 5px no-repeat,
+    linear-gradient(currentColor, currentColor) 100% 0 / 5px 2px no-repeat,
+    linear-gradient(currentColor, currentColor) 100% 0 / 2px 5px no-repeat,
+    linear-gradient(currentColor, currentColor) 0 100% / 5px 2px no-repeat,
+    linear-gradient(currentColor, currentColor) 0 100% / 2px 5px no-repeat,
+    linear-gradient(currentColor, currentColor) 100% 100% / 5px 2px no-repeat,
+    linear-gradient(currentColor, currentColor) 100% 100% / 2px 5px no-repeat;
 }
 
 .brand {
@@ -309,12 +338,16 @@ button:disabled {
     position: static;
   }
   .topbar-inner {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
     grid-template-areas:
-      'brand toggle tabs'
-      'key key key';
+      'brand toggle practice tabs'
+      'key key key key';
     padding-block: 6px;
-    gap: 6px 10px;
+    gap: 6px 8px;
+  }
+  .practice-open {
+    padding: 6px 12px;
+    font-size: 13px;
   }
   .brand-name {
     display: none;
@@ -1675,4 +1708,298 @@ input[type='range'] {
 .mixer {
   display: grid;
   gap: 14px;
+}
+
+@media (max-width: 420px) {
+  .practice-open-label {
+    display: none;
+  }
+  .practice-open {
+    padding: 8px 10px;
+  }
+}
+
+/* ---------- Modo prática ---------- */
+/* Tela inteira sobre o app: cabeçalho de uma linha, faixa de acordes e o braço no resto. */
+.practice {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg);
+  padding-top: max(8px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(12px, env(safe-area-inset-left, 0px));
+  padding-right: max(12px, env(safe-area-inset-right, 0px));
+  overflow: hidden;
+}
+
+.practice-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 48px;
+}
+
+.practice-close {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+}
+
+.practice-close span {
+  width: 14px;
+  height: 14px;
+  background:
+    linear-gradient(45deg, transparent 45%, currentColor 45% 55%, transparent 55%),
+    linear-gradient(-45deg, transparent 45%, currentColor 45% 55%, transparent 55%);
+}
+
+.practice-chord {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.practice-chord-now {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 38px;
+  line-height: 1;
+}
+
+.practice-chord-next {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+.practice-suggestions {
+  list-style: none;
+  margin: 0 0 0 auto;
+  padding: 0;
+  display: flex;
+  gap: 6px;
+}
+
+.practice-hint {
+  color: var(--fg-muted);
+  font-size: 14px;
+}
+
+.practice-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 4px;
+  border: 0;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.practice-note[data-cls='repouso'] {
+  background: var(--c-rest);
+  color: var(--c-rest-fg);
+}
+.practice-note[data-cls='passagem'] {
+  background: var(--c-pass);
+  color: var(--c-pass-fg);
+}
+.practice-note[data-cls='tensao'] {
+  background: var(--c-tens);
+  color: var(--c-tens-fg);
+}
+.practice-note[data-cls='fora'] {
+  background: var(--c-out);
+  color: #fff;
+}
+
+.practice-note-rank {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 0.22);
+  font: 600 11px var(--font-mono);
+}
+
+.practice-transport {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.practice-play {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--c-pass);
+  display: grid;
+  place-items: center;
+}
+
+.practice-play .play-icon {
+  width: 16px;
+  height: 18px;
+  margin-left: 3px;
+}
+
+.practice-play .play-icon[data-playing] {
+  width: 14px;
+  height: 14px;
+  margin-left: 0;
+}
+
+.practice-bpm {
+  min-width: 2.6em;
+  text-align: center;
+  font-size: 15px;
+}
+
+.practice-strip {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 2px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: none;
+}
+
+.practice-chip {
+  flex: none;
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  border-bottom: 3px solid var(--f-color, var(--line));
+  border-radius: 8px;
+  background: var(--surface);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.practice-chip[data-func='T'] {
+  --f-color: var(--c-rest);
+}
+.practice-chip[data-func='S'] {
+  --f-color: var(--c-pass);
+}
+.practice-chip[data-func='D'] {
+  --f-color: var(--c-tens);
+}
+
+.practice-chip[aria-checked='true'],
+.practice-chip[data-active] {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+
+/* O braço ocupa toda a altura restante; as casas crescem junto. */
+.practice-board {
+  --fb-cell-h: 40px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.practice-board .live-fretboard {
+  flex: 1;
+  min-height: 0;
+}
+
+.practice-board .fb-scroll {
+  height: 100%;
+}
+
+.practice-board .fb[data-orientation='horizontal'] {
+  height: 100%;
+  min-height: 190px;
+  grid-template-rows: 22px repeat(4, minmax(40px, 1fr));
+}
+
+.practice-board .fb-dot:not([data-cls='fora']) {
+  width: 34px;
+  height: 34px;
+  font-size: 13px;
+}
+
+.practice-board .fb-dot[data-cls='fora']:not(:empty),
+.practice-board .fb-dot[data-cls='fora'][data-preview] {
+  width: 30px;
+  height: 30px;
+}
+
+.practice-board .fb[data-orientation='vertical'] {
+  max-width: none;
+}
+
+.practice-rotate {
+  display: none;
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+/* Celular em pé: cabeçalho em duas linhas e braço vertical com rolagem. */
+@media (orientation: portrait) and (max-width: 640px) {
+  .practice {
+    overflow-y: auto;
+  }
+  .practice-head {
+    flex-wrap: wrap;
+  }
+  .practice-suggestions {
+    order: 3;
+    margin-left: 0;
+    width: 100%;
+  }
+  .practice-transport {
+    margin-left: auto;
+  }
+  .practice-board {
+    flex: none;
+  }
+  .practice-rotate {
+    display: block;
+    order: -1;
+  }
+}
+
+/* Celular deitado: telas baixas pedem cabeçalho menor. */
+@media (max-height: 420px) {
+  .practice {
+    gap: 6px;
+  }
+  .practice-chord-now {
+    font-size: 30px;
+  }
+  .practice-chord-next {
+    font-size: 17px;
+  }
+  .practice-note {
+    font-size: 16px;
+  }
+  .practice-head {
+    min-height: 44px;
+  }
 }

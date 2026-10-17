@@ -108,6 +108,23 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: /A\s*Maior/ })).toBeInTheDocument();
   });
 
+  it('o modo prática abre em tela cheia com braço e sugestões, e fecha com Esc', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Abrir modo prática' }));
+    const dialog = screen.getByRole('dialog', { name: 'Modo prática' });
+    expect(within(dialog).getByRole('group', { name: 'Braço do ukulele' })).toBeInTheDocument();
+    expect(within(dialog).getByText('Toque uma casa')).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('radio', { name: 'G7' }));
+    await user.click(within(dialog).getByRole('button', { name: /^B4, corda A, casa 2/ }));
+    const notes = within(dialog).getByRole('list', { name: 'Próximas notas sugeridas' });
+    expect(within(notes).getAllByRole('button')[0]).toHaveTextContent('C5');
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('em Ajustes, trocar rótulos para grau muda o texto das casas', async () => {
     const user = userEvent.setup();
     render(<App />);

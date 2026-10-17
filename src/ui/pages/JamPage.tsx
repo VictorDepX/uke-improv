@@ -8,17 +8,13 @@ import { ProgressionPicker } from '../components/jam/ProgressionPicker';
 import { LiveFretboard } from '../components/LiveFretboard';
 import { NoteSuggestions } from '../components/NoteSuggestions';
 import { playNote } from '@/audio/engine/sound';
+import { useJamPreview } from '../hooks/useJamPreview';
 
 /** Módulo 4: base em loop; o braço acompanha o acorde e avisa o próximo no 4º tempo. */
 export function JamPage() {
   const { chords } = useActiveProgression();
-  const { playing, bar, beat } = useMusicStore((s) => s.jam);
   const registerNote = useMusicStore((s) => s.registerNote);
-
-  const counting = playing && bar < 0;
-  const warn = playing && (counting || beat === 3);
-  const nextIdx = counting ? 0 : (Math.max(bar, 0) + 1) % chords.length;
-  const preview = warn ? (chords[nextIdx] ?? null) : null;
+  const { preview } = useJamPreview();
 
   return (
     <div className="page page-jam">

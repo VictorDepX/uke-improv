@@ -7,7 +7,13 @@ import { Fretboard } from './Fretboard';
 import { Legend } from './Legend';
 
 /** Braço ligado ao store: tocar uma casa soa a nota e alimenta as sugestões. */
-export function LiveFretboard({ previewChord = null }: { previewChord?: string | null }) {
+export function LiveFretboard({
+  previewChord = null,
+  legend = true,
+}: {
+  previewChord?: string | null;
+  legend?: boolean;
+}) {
   const ctx = useNoteContext();
   const suggestions = useNoteSuggestions();
   const key = useMusicStore((s) => s.key);
@@ -36,7 +42,7 @@ export function LiveFretboard({ previewChord = null }: { previewChord?: string |
         previewChord={previewChord}
         onPlay={onPlay}
       />
-      <Legend />
+      {legend ? <Legend /> : null}
     </div>
   );
 }
