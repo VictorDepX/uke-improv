@@ -5,6 +5,7 @@ import { useMusicStore } from '@/store/useMusicStore';
 import { KeyPicker } from './components/KeyPicker';
 import { PracticeMode } from './components/practice/PracticeMode';
 import { useJamSync } from './hooks/useJamSync';
+import { useWakeLock } from './hooks/useWakeLock';
 import { ExplorePage } from './pages/ExplorePage';
 import { JamPage } from './pages/JamPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -27,7 +28,10 @@ export function App() {
   const [practiceOpen, setPracticeOpen] = useState(false);
   const closePractice = useCallback(() => setPracticeOpen(false), []);
   const key = useMusicStore((s) => s.key);
+  const jamPlaying = useMusicStore((s) => s.jam.playing);
   useJamSync();
+  // Tocando, a tela não pode apagar: celular na estante, mãos no uke.
+  useWakeLock(practiceOpen || jamPlaying);
 
   useEffect(() => {
     preloadAudio();
