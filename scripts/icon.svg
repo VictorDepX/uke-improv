@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Braço de uke visto de frente: 4 cordas e 3 notas nas cores de repouso, passagem e tensão. -->
+  <rect width="512" height="512" fill="#3a281e"/>
+  <g stroke="#c3c8cc" stroke-width="10">
+    <line x1="96" y1="196" x2="416" y2="196"/>
+    <line x1="96" y1="316" x2="416" y2="316"/>
+  </g>
+  <rect x="96" y="100" width="320" height="14" rx="4" fill="#ece4d2"/>
+  <g stroke="#e9dfc9" stroke-width="8" stroke-linecap="round">
+    <line x1="152" y1="100" x2="152" y2="420"/>
+    <line x1="221" y1="100" x2="221" y2="420"/>
+    <line x1="291" y1="100" x2="291" y2="420"/>
+    <line x1="360" y1="100" x2="360" y2="420"/>
+  </g>
+  <circle cx="221" cy="256" r="36" fill="#23935a"/>
+  <circle cx="360" cy="256" r="36" fill="#e1ae2f"/>
+  <circle cx="291" cy="376" r="36" fill="#dc5f33"/>
+</svg>

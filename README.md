@@ -11,12 +11,21 @@ Assistente de improviso e harmonia para ukulele. Dado o tom e o acorde atual, mo
 | 3. Sugeridor de progressão | Próximos acordes por função harmônica, dominantes secundárias, empréstimo modal, diagramas GCEA | `src/core/suggestChords.ts`, `chordShapes.ts` |
 | 4. Modo jam | Base em loop (Tone.js) com acordes, baixo e bateria; o braço acompanha e avisa o próximo acorde | `src/audio/engine/jam.ts`, `ui/pages/JamPage.tsx` |
 
+## Onda 1: tocar sem atrito
+
+- **Menu recolhido no celular:** a barra não fica fixa e o seletor de tom abre sob demanda.
+- **Modo prática:** tela cheia pensada para o celular deitado, com acorde atual e próximo, 3 sugestões e o braço ocupando o resto.
+- **Região automática:** janela de 5 casas que segue a última nota (toque ou microfone), com setas para deslocar.
+- **Tela acesa:** Wake Lock durante a base e o modo prática.
+- **Presets:** tom, escala, progressão e andamento com um toque.
+- **PWA:** instalável e offline; fontes servidas localmente e service worker gerado no build (`scripts/sw-plugin.ts`). Ícones: `python3 scripts/make-icons.py`.
+
 ## Comandos
 
 ```bash
 npm install
 npm run dev            # servidor local (o microfone funciona em localhost)
-npm test               # 79 testes (núcleo, áudio sintetizado, store, interface)
+npm test               # 100 testes (núcleo, áudio sintetizado, store, interface)
 npm run lint
 npm run typecheck
 npm run build          # build normal em dist/

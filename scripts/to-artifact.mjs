@@ -11,7 +11,8 @@ const body = html.match(/<body>([\s\S]*?)<\/body>/i)?.[1] ?? '';
 const pick = (re) => [...head.matchAll(re)].map((m) => m[0]);
 const title = pick(/<title>[\s\S]*?<\/title>/gi);
 const metas = pick(/<meta name="(?:claude:viewport-fit-sides|description)"[^>]*>/gi);
-const links = pick(/<link[^>]*>/gi);
+// Manifesto e ícones não existem na página avulsa; as fontes já vão embutidas no CSS.
+const links = [];
 const styles = pick(/<style[^>]*>[\s\S]*?<\/style>/gi);
 const scripts = pick(/<script[^>]*>[\s\S]*?<\/script>/gi);
 
