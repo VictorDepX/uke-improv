@@ -152,6 +152,15 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: /A\s*Blues/ })).toBeInTheDocument();
   });
 
+  it('as formas por classe vêm ligadas e podem ser desligadas em Ajustes', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+    expect(container.querySelector('.app')).toHaveAttribute('data-shapes', 'true');
+    await user.click(screen.getByRole('link', { name: 'Ajustes' }));
+    await user.click(screen.getByRole('switch', { name: /Formas além da cor/ }));
+    expect(container.querySelector('.app')).not.toHaveAttribute('data-shapes');
+  });
+
   it('em Ajustes, trocar rótulos para grau muda o texto das casas', async () => {
     const user = userEvent.setup();
     render(<App />);

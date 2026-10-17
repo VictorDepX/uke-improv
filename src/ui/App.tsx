@@ -29,6 +29,7 @@ export function App() {
   const closePractice = useCallback(() => setPracticeOpen(false), []);
   const key = useMusicStore((s) => s.key);
   const jamPlaying = useMusicStore((s) => s.jam.playing);
+  const shapes = useMusicStore((s) => s.settings.shapes);
   useJamSync();
   // Tocando, a tela não pode apagar: celular na estante, mãos no uke.
   useWakeLock(practiceOpen || jamPlaying);
@@ -38,7 +39,7 @@ export function App() {
   }, []);
 
   return (
-    <div className="app">
+    <div className="app" data-shapes={shapes || undefined}>
       <header className="topbar">
         <div className="topbar-inner">
           <div className="brand">

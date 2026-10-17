@@ -2114,3 +2114,45 @@ input[type='range'] {
   padding-block: 5px;
   font-size: 13px;
 }
+
+/*
+ * Formas por classe (além da cor): repouso = círculo, passagem = quadrado,
+ * tensão = losango. Lê-se sob sol forte e com daltonismo.
+ */
+.app[data-shapes] .fb-dot[data-cls='passagem'] {
+  border-radius: 7px;
+  width: 27px;
+  height: 27px;
+}
+
+.app[data-shapes] .fb-dot[data-cls='tensao'] {
+  background: none;
+}
+
+.app[data-shapes] .fb-dot[data-cls='tensao']::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  z-index: -1;
+  border-radius: 4px;
+  background: var(--c-tens);
+  transform: rotate(45deg);
+}
+
+.app[data-shapes] .practice-board .fb-dot[data-cls='passagem'] {
+  width: 31px;
+  height: 31px;
+}
+
+.app[data-shapes] .legend-swatch[data-cls='passagem'] {
+  border-radius: 3px;
+  width: 11px;
+  height: 11px;
+}
+
+.app[data-shapes] .legend-swatch[data-cls='tensao'] {
+  border-radius: 2px;
+  width: 10px;
+  height: 10px;
+  transform: rotate(45deg);
+}

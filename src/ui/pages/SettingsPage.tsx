@@ -55,6 +55,13 @@ export function SettingsPage() {
               options={LABEL_OPTIONS}
               onChange={(labels) => update({ labels })}
             />
+            <Toggle
+              id="set-shapes"
+              label="Formas além da cor"
+              hint="Círculo = repouso, quadrado = passagem, losango = tensão."
+              checked={settings.shapes}
+              onChange={(shapes) => update({ shapes })}
+            />
             <Select
               id="set-window"
               label="Região do braço"

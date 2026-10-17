@@ -26,6 +26,8 @@ export interface Settings {
   weights: ScoreWeights;
   extras: ChordExtras;
   /** Primeira casa da janela de 5 casas, ou null para o braço inteiro. */
+  /** Formas diferentes por classe de nota, além da cor. */
+  shapes: boolean;
   /** null = braço inteiro, 'auto' = segue a última nota, número = casa inicial fixa. */
   fretWindow: number | null | 'auto';
 }
@@ -114,6 +116,7 @@ export const useMusicStore = create<MusicState>()(
         weights: DEFAULT_WEIGHTS,
         extras: { secondaryDominants: false, modalBorrowing: false },
         fretWindow: null,
+        shapes: true,
       },
       customProgressions: [],
       jam: {
