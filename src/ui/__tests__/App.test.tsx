@@ -96,6 +96,18 @@ describe('App', () => {
     expect(saved[0]!.numerals).toEqual(['vi', 'IV']);
   });
 
+  it('o botão de tom resume o tom atual e abre o seletor recolhido', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const toggle = screen.getByRole('button', { name: /C\s*Maior/ });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(document.getElementById('key-picker')).toHaveAttribute('data-open', 'true');
+    await user.selectOptions(screen.getByLabelText('Tom'), 'A');
+    expect(screen.getByRole('button', { name: /A\s*Maior/ })).toBeInTheDocument();
+  });
+
   it('em Ajustes, trocar rótulos para grau muda o texto das casas', async () => {
     const user = userEvent.setup();
     render(<App />);

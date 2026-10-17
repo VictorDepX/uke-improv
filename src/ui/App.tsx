@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { preloadAudio } from '@/audio/engine/sound';
+import { SCALES } from '@/core/music';
+import { useMusicStore } from '@/store/useMusicStore';
 import { KeyPicker } from './components/KeyPicker';
 import { useJamSync } from './hooks/useJamSync';
 import { ExplorePage } from './pages/ExplorePage';
@@ -20,6 +22,8 @@ function initialTab(): TabId {
 
 export function App() {
   const [tab, setTab] = useState<TabId>(initialTab);
+  const [keyOpen, setKeyOpen] = useState(false);
+  const key = useMusicStore((s) => s.key);
   useJamSync();
 
   useEffect(() => {
@@ -39,7 +43,21 @@ export function App() {
             </span>
             <span className="brand-name">Uke Improv</span>
           </div>
-          <KeyPicker />
+          {/* No celular o seletor de tom fica recolhido atrás deste botão. */}
+          <button
+            type="button"
+            className="key-toggle"
+            aria-expanded={keyOpen}
+            aria-controls="key-picker"
+            onClick={() => setKeyOpen((o) => !o)}
+          >
+            <span className="key-toggle-tonic">{key.tonic}</span>
+            <span className="key-toggle-scale">{SCALES[key.scale].label}</span>
+            <span className="key-toggle-caret" aria-hidden="true" />
+          </button>
+          <div id="key-picker" className="key-picker-slot" data-open={keyOpen || undefined}>
+            <KeyPicker />
+          </div>
           <nav className="tabs" aria-label="Seções">
             {TABS.map((t) => (
               <a

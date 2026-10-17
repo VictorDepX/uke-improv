@@ -89,8 +89,8 @@ export function MicPanel() {
         <div className="mic-off">
           {status === 'denied' || status === 'error' ? (
             <p className="notice" role="status">
-              {mic.error} Nesta página o navegador pode bloquear o microfone; rodando o app direto
-              no navegador ele funciona. Enquanto isso, analise uma gravação:
+              {mic.error} Verifique a permissão do microfone no navegador. Enquanto isso, analise
+              uma gravação:
             </p>
           ) : (
             <p className="empty">

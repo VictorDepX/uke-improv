@@ -257,10 +257,8 @@ button:disabled {
 }
 
 .key-picker {
-  grid-area: key;
   display: flex;
   gap: 10px;
-  justify-self: center;
 }
 
 .key-picker .field {
@@ -293,15 +291,79 @@ button:disabled {
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
 }
 
-@media (max-width: 760px) {
-  .topbar-inner {
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-      'brand tabs'
-      'key key';
+.key-picker-slot {
+  grid-area: key;
+  justify-self: center;
+}
+
+.key-toggle {
+  display: none;
+}
+
+/*
+ * Celular (retrato ou deitado): a barra deixa de ser fixa, ocupa uma linha só
+ * e o seletor de tom abre sob demanda. Assim o braço fica livre.
+ */
+@media (max-width: 760px), (max-height: 540px) {
+  .topbar {
+    position: static;
   }
-  .key-picker {
+  .topbar-inner {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'brand toggle tabs'
+      'key key key';
+    padding-block: 6px;
+    gap: 6px 10px;
+  }
+  .brand-name {
+    display: none;
+  }
+  .brand-mark span {
+    height: 14px;
+  }
+  .key-toggle {
+    grid-area: toggle;
+    justify-self: start;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 5px 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    min-width: 0;
+  }
+  .key-toggle-tonic {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 16px;
+  }
+  .key-toggle-scale {
+    font-size: 13px;
+    color: var(--fg-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .key-toggle-caret {
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid var(--fg-muted);
+    border-bottom: 2px solid var(--fg-muted);
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform 0.15s;
+  }
+  .key-toggle[aria-expanded='true'] .key-toggle-caret {
+    transform: translateY(1px) rotate(225deg);
+  }
+  .key-picker-slot {
+    display: none;
     justify-self: stretch;
+    padding-bottom: 4px;
+  }
+  .key-picker-slot[data-open] {
+    display: block;
   }
   .key-picker .field {
     flex: 1;
@@ -309,14 +371,15 @@ button:disabled {
   .key-picker .select {
     flex: 1;
   }
+  .tab {
+    padding: 5px 10px;
+    font-size: 13px;
+  }
 }
 
-@media (max-width: 420px) {
-  .brand-name {
-    font-size: 17px;
-  }
-  .tab {
-    padding: 6px 10px;
+@media (prefers-reduced-motion: reduce) {
+  .key-toggle-caret {
+    transition: none;
   }
 }
 
@@ -326,6 +389,12 @@ button:disabled {
   padding-left: var(--gutter-l);
   padding-right: var(--gutter-r);
   padding-block: 18px 48px;
+}
+
+@media (max-width: 760px), (max-height: 540px) {
+  .main {
+    padding-block: 10px 32px;
+  }
 }
 
 .page {
