@@ -7,12 +7,14 @@ import { PracticeMode } from './components/practice/PracticeMode';
 import { useJamSync } from './hooks/useJamSync';
 import { useWakeLock } from './hooks/useWakeLock';
 import { ExplorePage } from './pages/ExplorePage';
+import { EarPage } from './pages/EarPage';
 import { JamPage } from './pages/JamPage';
 import { SettingsPage } from './pages/SettingsPage';
 
 const TABS = [
   { id: 'explorar', label: 'Explorar' },
   { id: 'jam', label: 'Jam' },
+  { id: 'ouvido', label: 'Ouvido' },
   { id: 'ajustes', label: 'Ajustes' },
 ] as const;
 type TabId = (typeof TABS)[number]['id'];
@@ -94,7 +96,15 @@ export function App() {
         </div>
       </header>
       <main className="main">
-        {tab === 'explorar' ? <ExplorePage /> : tab === 'jam' ? <JamPage /> : <SettingsPage />}
+        {tab === 'explorar' ? (
+          <ExplorePage />
+        ) : tab === 'jam' ? (
+          <JamPage />
+        ) : tab === 'ouvido' ? (
+          <EarPage />
+        ) : (
+          <SettingsPage />
+        )}
       </main>
       {practiceOpen ? <PracticeMode onClose={closePractice} /> : null}
     </div>

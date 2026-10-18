@@ -11,6 +11,7 @@ vi.mock('@/audio/engine/sound', () => ({
   playChord: vi.fn(() => Promise.resolve()),
   setLayerVolume: vi.fn(),
   strum: vi.fn(),
+  playSequence: vi.fn(() => Promise.resolve()),
 }));
 
 const initial = useMusicStore.getState();
@@ -173,6 +174,35 @@ describe('App', () => {
         .map((li) => li.textContent?.replace(/^\d+/, '')),
     ).toEqual(['Am', 'Dm', 'E7', 'Am', 'F', 'Dm', 'E7', 'Am']);
     expect(within(panel).getByRole('status')).toHaveTextContent('8 compassos em A menor natural');
+  });
+
+  it('no treino de ouvido, acertar o intervalo marca a resposta e soma no placar', async () => {
+    const user = userEvent.setup();
+    const { playSequence } = await import('@/audio/engine/sound');
+    render(<App />);
+    await user.click(screen.getByRole('link', { name: 'Ouvido' }));
+    await user.click(screen.getByRole('button', { name: 'Ouvir' }));
+    const events = vi.mocked(playSequence).mock.lastCall![0];
+    const semis = events[1]!.midis[0]! - events[0]!.midis[0]!;
+    const labels: Record<number, string> = {
+      3: '3ª menor',
+      4: '3ª maior',
+      5: '4ª justa',
+      7: '5ª justa',
+      12: 'Oitava',
+    };
+    const q = screen.getByRole('group', { name: 'Que intervalo você ouviu?' });
+    await user.click(within(q).getByRole('button', { name: labels[semis]! }));
+    expect(screen.getByRole('status')).toHaveTextContent(`Isso. ${labels[semis]}`);
+    expect(screen.getByLabelText('Placar')).toHaveTextContent('1/1');
+    // Depois de responder, as opções travam até a próxima pergunta.
+    expect(
+      within(q)
+        .getAllByRole('button')
+        .every((b) => b.hasAttribute('disabled')),
+    ).toBe(true);
+    await user.click(screen.getByRole('button', { name: 'Próxima' }));
+    expect(vi.mocked(playSequence)).toHaveBeenCalledTimes(2);
   });
 
   it('o botão de tom resume o tom atual e abre o seletor recolhido', async () => {

@@ -122,3 +122,24 @@ export function setLayerVolume(inst: Instruments, layer: Layer, value: number): 
   inst.buses[layer].mute = value <= 0;
   inst.buses[layer].volume.rampTo(value > 0 ? inst.Tone.gainToDb(value) - 4 : -Infinity, 0.05);
 }
+
+/** Toca uma sequência de notas/acordes a partir de agora (treino de ouvido). */
+export async function playSequence(
+  events: readonly { midis: readonly number[]; at: number; dur: number; strum?: boolean }[],
+): Promise<void> {
+  const inst = await ensureAudio();
+  const start = inst.Tone.now() + 0.05;
+  for (const e of events) {
+    if (e.strum) {
+      strum(inst, e.midis, start + e.at, 'down', 0.75);
+      continue;
+    }
+    for (const m of e.midis)
+      inst.uke.triggerAttackRelease(
+        inst.Tone.Frequency(m, 'midi').toFrequency(),
+        e.dur,
+        start + e.at,
+        0.8,
+      );
+  }
+}

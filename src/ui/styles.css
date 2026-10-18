@@ -412,6 +412,24 @@ button:disabled {
   }
 }
 
+/* Retrato estreito: as 4 abas não cabem ao lado do tom; vão para uma linha própria. */
+@media (max-width: 480px) and (min-height: 541px) {
+  .topbar-inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'brand toggle practice'
+      'tabs tabs tabs'
+      'key key key';
+  }
+  .tabs {
+    justify-self: stretch;
+  }
+  .tab {
+    flex: 1;
+    text-align: center;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .key-toggle-caret {
     transition: none;
@@ -2260,6 +2278,95 @@ input[type='range'] {
       'note note note note';
     row-gap: 2px;
   }
+}
+
+/* ---------- Treino de ouvido ---------- */
+.page-ear .panel {
+  max-width: 760px;
+}
+
+.ear-score {
+  font-size: 13px;
+}
+
+.ear-options-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
+
+.ear-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.ear-play {
+  min-width: 140px;
+}
+
+.ear-question {
+  display: grid;
+  gap: 10px;
+}
+
+.ear-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+.ear-choice {
+  min-height: 48px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ear-choice:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.ear-choice:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ear-choice:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.ear-choice[data-state='right'] {
+  opacity: 1;
+  border-color: var(--c-rest);
+  background: var(--c-rest);
+  color: var(--c-rest-fg);
+}
+
+.ear-choice[data-state='wrong'] {
+  opacity: 1;
+  border-color: var(--c-tens);
+  background: var(--c-tens);
+  color: var(--c-tens-fg);
+}
+
+.ear-feedback {
+  margin: 0;
+  padding-left: 10px;
+  border-left: 3px solid var(--line);
+}
+
+.ear-feedback[data-kind='hit'] {
+  border-left-color: var(--c-rest);
+}
+
+.ear-feedback[data-kind='miss'] {
+  border-left-color: var(--c-tens);
 }
 
 /* ---------- Exercícios guiados ---------- */
