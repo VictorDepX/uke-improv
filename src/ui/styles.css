@@ -2307,6 +2307,157 @@ input[type='range'] {
   background: color-mix(in srgb, var(--c-rest) 18%, transparent);
 }
 
+/* ---------- Gravações ---------- */
+.takes {
+  display: grid;
+  gap: 10px;
+}
+
+.takes-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.take-rec {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.take-rec-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--danger);
+}
+
+.take-rec[data-on] {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.take-rec[data-on] .take-rec-dot {
+  animation: rec-blink 1s steps(2, start) infinite;
+}
+
+@keyframes rec-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .take-rec[data-on] .take-rec-dot {
+    animation: none;
+  }
+}
+
+.take {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.take-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.take-head audio {
+  flex: 1;
+  min-width: 220px;
+  height: 36px;
+}
+
+.take-timeline {
+  position: relative;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+.take-note {
+  position: absolute;
+  top: 6px;
+  width: 10px;
+  height: 16px;
+  margin-left: -5px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: var(--c-out);
+  cursor: pointer;
+}
+
+.take-note[data-cls='repouso'] {
+  background: var(--c-rest);
+}
+.take-note[data-cls='passagem'] {
+  background: var(--c-pass);
+}
+.take-note[data-cls='tensao'] {
+  background: var(--c-tens);
+}
+
+.take-note[data-current] {
+  outline: 2px solid var(--fg);
+  outline-offset: 1px;
+  z-index: 1;
+}
+
+.take-note:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+.take-cursor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.take-now {
+  margin: 0;
+}
+
+.take-cls[data-cls='repouso'] {
+  color: var(--c-rest);
+  font-weight: 600;
+}
+.take-cls[data-cls='passagem'] {
+  color: color-mix(in srgb, var(--c-pass) 70%, var(--fg));
+  font-weight: 600;
+}
+.take-cls[data-cls='tensao'] {
+  color: var(--c-tens);
+  font-weight: 600;
+}
+.take-cls[data-cls='fora'] {
+  color: var(--fg-muted);
+  font-weight: 600;
+}
+
+.take-board {
+  --fb-cell-h: 34px;
+  --fb-cell-v: 34px;
+}
+
+.take-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 13px;
+}
+
 /* ---------- Treino de ouvido ---------- */
 .page-ear .panel {
   max-width: 760px;

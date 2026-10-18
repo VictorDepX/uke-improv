@@ -50,6 +50,11 @@ export class MicInput {
     return this.ctx !== null;
   }
 
+  /** Fluxo do microfone (para gravar), quando ligado. */
+  get mediaStream(): MediaStream | null {
+    return this.stream;
+  }
+
   /** Aplica ganho e limiar (vale na hora, com o microfone ligado ou não). */
   setCalibration(c: MicCalibration): void {
     this.calibration = c;
