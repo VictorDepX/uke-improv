@@ -7,6 +7,8 @@ export interface Preset {
   scale: ScaleName;
   progressionId: string;
   bpm: number;
+  /** Estilo da base; sem ele, a batida padrão do compasso. */
+  grooveId?: string;
 }
 
 /** Combinações prontas para começar a tocar com um toque. */
@@ -42,7 +44,8 @@ export const PRESETS: readonly Preset[] = [
     tonic: 'F',
     scale: 'major',
     progressionId: 'jazz',
-    bpm: 110,
+    bpm: 132,
+    grooveId: 'swing',
   },
   {
     id: 'andaluza-em',
@@ -68,12 +71,48 @@ export const PRESETS: readonly Preset[] = [
     progressionId: 'mixo-vamp',
     bpm: 104,
   },
+  {
+    id: 'reggae-g',
+    name: 'Reggae em G',
+    tonic: 'G',
+    scale: 'major',
+    progressionId: 'pop',
+    bpm: 76,
+    grooveId: 'reggae',
+  },
+  {
+    id: 'bossa-c',
+    name: 'Bossa em C',
+    tonic: 'C',
+    scale: 'major',
+    progressionId: 'turnaround',
+    bpm: 120,
+    grooveId: 'bossa',
+  },
+  {
+    id: 'valsa-d',
+    name: 'Valsa em D',
+    tonic: 'D',
+    scale: 'major',
+    progressionId: 'valsa',
+    bpm: 132,
+    grooveId: 'valsa',
+  },
+  {
+    id: 'balada-68-c',
+    name: 'Balada 6/8 em C',
+    tonic: 'C',
+    scale: 'majorPentatonic',
+    progressionId: 'balada-68',
+    bpm: 60,
+  },
 ];
 
 export interface PresetState {
   key: { tonic: string; scale: ScaleName };
   progressionId: string;
   bpm: number;
+  grooveId?: string | null;
 }
 
 /** O preset que descreve exatamente o estado atual, se houver. */
@@ -83,6 +122,7 @@ export function matchPreset(state: PresetState): Preset | undefined {
       p.tonic === state.key.tonic &&
       p.scale === state.key.scale &&
       p.progressionId === state.progressionId &&
-      p.bpm === state.bpm,
+      p.bpm === state.bpm &&
+      (p.grooveId ?? null) === (state.grooveId ?? null),
   );
 }

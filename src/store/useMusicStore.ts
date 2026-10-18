@@ -52,6 +52,8 @@ export interface JamState {
   beat: number;
   /** Índice absoluto do acorde da base desde o play (−1 na contagem). */
   segment: number;
+  /** Estilo da base (null = batida padrão do compasso). */
+  grooveId: string | null;
   layers: Record<Layer, number>;
 }
 
@@ -98,6 +100,7 @@ export interface MusicState {
   setBpm: (bpm: number) => void;
   setJamPlaying: (playing: boolean) => void;
   setJamPosition: (pos: { bar: number; beat: number; segment: number }) => void;
+  setGroove: (id: string | null) => void;
   setLayerVolume: (layer: Layer, value: number) => void;
 
   setMic: (patch: Partial<MicState>) => void;
@@ -158,6 +161,7 @@ export const useMusicStore = create<MusicState>()(
         bar: 0,
         beat: 0,
         segment: 0,
+        grooveId: null,
         layers: { chords: 0.8, bass: 0.7, drums: 0.5 },
       },
       mic: { status: 'off', error: null, note: null, chord: null, level: 0, followChords: true },
@@ -258,6 +262,7 @@ export const useMusicStore = create<MusicState>()(
       setJamPlaying: (playing) =>
         set((s) => ({ jam: { ...s.jam, playing, bar: playing ? -1 : 0, beat: 0, segment: -1 } })),
       setJamPosition: (pos) => set((s) => ({ jam: { ...s.jam, ...pos } })),
+      setGroove: (grooveId) => set((s) => ({ jam: { ...s.jam, grooveId } })),
       setLayerVolume: (layer, value) =>
         set((s) => ({
           jam: { ...s.jam, layers: { ...s.jam.layers, [layer]: clamp(value, 0, 1) } },
@@ -280,6 +285,7 @@ export const useMusicStore = create<MusicState>()(
             ...s.jam,
             progressionId: progression.id,
             bpm: clamp(preset.bpm, BPM_RANGE.min, BPM_RANGE.max),
+            grooveId: preset.grooveId ?? null,
             // Tocando, a base segue sem reiniciar; parado, volta ao primeiro compasso.
             bar: s.jam.playing ? s.jam.bar : 0,
             beat: s.jam.playing ? s.jam.beat : 0,
@@ -296,7 +302,12 @@ export const useMusicStore = create<MusicState>()(
         currentChord: s.currentChord,
         settings: s.settings,
         customProgressions: s.customProgressions,
-        jam: { bpm: s.jam.bpm, progressionId: s.jam.progressionId, layers: s.jam.layers },
+        jam: {
+          bpm: s.jam.bpm,
+          progressionId: s.jam.progressionId,
+          layers: s.jam.layers,
+          grooveId: s.jam.grooveId,
+        },
         mic: { followChords: s.mic.followChords },
       }),
       merge: (persisted, current) => {

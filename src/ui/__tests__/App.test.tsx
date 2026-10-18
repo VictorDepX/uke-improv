@@ -124,6 +124,29 @@ describe('App', () => {
     expect(document.querySelectorAll('.beats .beat')).toHaveLength(3);
   });
 
+  it('o estilo da base muda com o preset e pode ser escolhido na aba Jam', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('link', { name: 'Jam' }));
+    await user.click(screen.getByRole('radio', { name: /Bossa em C/ }));
+    expect(useMusicStore.getState().jam.grooveId).toBe('bossa');
+    expect(screen.getByRole('radio', { name: 'Bossa nova' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await user.click(screen.getByRole('radio', { name: 'Swing' }));
+    expect(useMusicStore.getState().jam.grooveId).toBe('swing');
+    // O preset deixa de bater e sai de destaque.
+    expect(screen.getByRole('radio', { name: /Bossa em C/ })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
+    // Valsa em 3/4 só oferece os estilos de 3/4.
+    await user.click(screen.getByRole('radio', { name: /Valsa \(I–IV–V7–I\)/ }));
+    expect(screen.getByRole('radiogroup', { name: 'Estilo (3/4)' })).toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: 'Swing' })).not.toBeInTheDocument();
+  });
+
   it('o botão de tom resume o tom atual e abre o seletor recolhido', async () => {
     const user = userEvent.setup();
     render(<App />);

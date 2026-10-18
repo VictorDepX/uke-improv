@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { jamEngine } from '@/audio/engine/jam';
+import { resolveGroove } from '@/core/grooves';
 import { ensureAudio, setLayerVolume } from '@/audio/engine/sound';
 import { useActiveProgression } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
@@ -19,12 +20,22 @@ export function useJamSync(): void {
   const setChord = useMusicStore((s) => s.setChord);
   const setJamPlaying = useMusicStore((s) => s.setJamPlaying);
   const { bars, meter } = useActiveProgression();
-  const latest = useLatest({ bars, meter, bpm, tuning, capo, layers });
+  const grooveId = useMusicStore((s) => s.jam.grooveId);
+  const groove = resolveGroove(grooveId, meter);
+  const latest = useLatest({ bars, meter, groove, bpm, tuning, capo, layers });
 
   useEffect(() => {
     if (!playing) return;
     let cancelled = false;
-    const { bars: b, meter: m, bpm: tempo, tuning: t, capo: k, layers: l } = latest.current;
+    const {
+      bars: b,
+      meter: m,
+      groove: g,
+      bpm: tempo,
+      tuning: t,
+      capo: k,
+      layers: l,
+    } = latest.current;
     void (async () => {
       try {
         const inst = await ensureAudio();
@@ -35,6 +46,7 @@ export function useJamSync(): void {
         await jamEngine.start({
           bars: b,
           meter: m,
+          groove: g,
           bpm: tempo,
           tuning: t,
           capo: k,
@@ -56,8 +68,8 @@ export function useJamSync(): void {
   }, [playing, bpm]);
 
   useEffect(() => {
-    if (playing) jamEngine.update({ bars, meter, tuning, capo });
-  }, [playing, bars, meter, tuning, capo]);
+    if (playing) jamEngine.update({ bars, meter, groove, tuning, capo });
+  }, [playing, bars, meter, groove, tuning, capo]);
 
   useEffect(() => {
     if (!playing) return;

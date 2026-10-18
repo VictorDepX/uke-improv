@@ -4,6 +4,7 @@ import { JamTransport } from '../components/jam/JamTransport';
 import { LayerMixer } from '../components/jam/LayerMixer';
 import { ProgressionEditor } from '../components/jam/ProgressionEditor';
 import { ProgressionPicker } from '../components/jam/ProgressionPicker';
+import { StylePicker } from '../components/jam/StylePicker';
 import { LiveFretboard } from '../components/LiveFretboard';
 import { NoteSuggestions } from '../components/NoteSuggestions';
 import { playNote } from '@/audio/engine/sound';
@@ -28,6 +29,7 @@ export function JamPage() {
       </p>
       <div className="columns">
         <Panel title="Progressão">
+          <StylePicker />
           <ProgressionPicker />
         </Panel>
         <NoteSuggestions

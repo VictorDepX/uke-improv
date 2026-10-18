@@ -5,7 +5,8 @@ function useActivePresetId(): string | undefined {
   const key = useMusicStore((s) => s.key);
   const progressionId = useMusicStore((s) => s.jam.progressionId);
   const bpm = useMusicStore((s) => s.jam.bpm);
-  return matchPreset({ key, progressionId, bpm })?.id;
+  const grooveId = useMusicStore((s) => s.jam.grooveId);
+  return matchPreset({ key, progressionId, bpm, grooveId })?.id;
 }
 
 /** Faixa de presets: um toque ajusta tom, escala, progressão e andamento. */

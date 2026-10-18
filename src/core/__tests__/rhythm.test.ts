@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_GROOVES, outOfRangeSteps } from '../grooves';
+import {
+  DEFAULT_GROOVES,
+  STYLE_GROOVES,
+  groovesFor,
+  outOfRangeSteps,
+  resolveGroove,
+} from '../grooves';
 import { PROGRESSIONS, makeCustomProgression, progressionBars } from '../progressions';
 import { buildTimeline, parseBar, splitBar, stepsPerBar, upcoming } from '../rhythm';
 import { stepEvents } from '../sequencer';
@@ -110,5 +116,50 @@ describe('sequenciador', () => {
     const bar = Array.from({ length: 12 }, (_, s) => stepEvents(12 + s, t, '3/4', g));
     expect(bar.flatMap((e, s) => (e.bass ? [s] : []))).toEqual([0]);
     expect(bar.flatMap((e, s) => (e.strum?.dir === 'down' ? [s] : []))).toEqual([0, 4, 8]);
+  });
+});
+
+describe('estilos de base', () => {
+  const bar = (chords: string[][], meter: '4/4' | '3/4', id: string) => {
+    const t = buildTimeline(chords, meter);
+    const g = resolveGroove(id, meter);
+    const n = stepsPerBar(meter);
+    return Array.from({ length: n }, (_, s) => stepEvents(n + s, t, meter, g));
+  };
+
+  it('todos os estilos cabem no compasso e aparecem só no compasso certo', () => {
+    for (const g of STYLE_GROOVES) expect(outOfRangeSteps(g)).toEqual([]);
+    expect(groovesFor('4/4').map((g) => g.id)).toEqual(['pop', 'reggae', 'bossa', 'swing']);
+    expect(groovesFor('3/4').map((g) => g.id)).toEqual(['tres', 'valsa']);
+    expect(groovesFor('6/8').map((g) => g.id)).toEqual(['seis-oito']);
+  });
+
+  it('estilo de outro compasso cai na batida padrão', () => {
+    expect(resolveGroove('valsa', '4/4').id).toBe('pop');
+    expect(resolveGroove(null, '3/4').id).toBe('tres');
+  });
+
+  it('reggae: acorde só nas colcheias fracas e one drop no 3', () => {
+    const evs = bar([['C']], '4/4', 'reggae');
+    expect(evs.flatMap((e, s) => (e.strum ? [s] : []))).toEqual([2, 6, 10, 14]);
+    expect(evs.flatMap((e, s) => (e.kick ? [s] : []))).toEqual([8]);
+  });
+
+  it('swing: colcheias fracas atrasadas em tercina e baixo caminhante até o próximo acorde', () => {
+    const evs = bar([['C'], ['F']], '4/4', 'swing');
+    expect(evs[6]!.delay).toBeCloseTo(0.66);
+    expect(evs[4]!.delay).toBe(0);
+    // C2, E2, G2 e E2 (meio tom abaixo de F2).
+    expect(evs.flatMap((e) => (e.bass ? [e.bass.midi] : []))).toEqual([36, 40, 43, 40]);
+  });
+
+  it('swing em acorde menor caminha pela terça menor', () => {
+    const evs = bar([['Am'], ['Dm']], '4/4', 'swing');
+    expect(evs[4]!.bass!.midi).toBe(36 + 9 + 3);
+  });
+
+  it('com 2 acordes no compasso, o segundo entra com a fundamental no baixo', () => {
+    const evs = bar([['C', 'G7']], '4/4', 'bossa');
+    expect(evs[8]!.bass!.midi).toBe(43); // G2, não a quinta de G
   });
 });
