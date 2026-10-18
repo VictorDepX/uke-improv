@@ -26,7 +26,7 @@
   "rewrites": [
     {
       "source": "/api/auth/:path*",
-      "destination": "https://ep-spring-river-b61bz03f.neonauth.c-2.sa-east-1.aws.neon.tech/neondb/auth/:path*"
+      "destination": "/api/neon-auth?path=:path*"
     },
     {
       "source": "/api/data/:path*",
