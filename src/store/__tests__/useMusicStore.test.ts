@@ -135,14 +135,16 @@ describe('exercícios', () => {
     expect([ex.hits, ex.misses]).toEqual([1, 1]);
   });
 
-  it('o alvo na troca usa o compasso da base', () => {
+  it('o alvo na troca avalia a primeira nota de cada acorde da base', () => {
     const s = useMusicStore.getState();
     s.startExercise('alvo');
-    useMusicStore.setState((st) => ({ jam: { ...st.jam, playing: true, bar: 0 } }));
+    useMusicStore.setState((st) => ({ jam: { ...st.jam, playing: true, bar: 0, segment: 0 } }));
     s.registerNote(60);
-    s.registerNote(61); // mesmo compasso: livre
+    s.registerNote(61); // mesmo acorde: livre
+    useMusicStore.setState((st) => ({ jam: { ...st.jam, segment: 1 } }));
+    s.registerNote(62); // troca: D sobre C não é do acorde
     expect(useMusicStore.getState().exercise!.hits).toBe(1);
-    expect(useMusicStore.getState().exercise!.misses).toBe(0);
+    expect(useMusicStore.getState().exercise!.misses).toBe(1);
   });
 
   it('o exercício não é salvo entre sessões', () => {

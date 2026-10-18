@@ -99,13 +99,15 @@ export function strum(
   time: number,
   direction: 'down' | 'up' = 'down',
   velocity = 0.7,
+  /** Abafado: notas curtas e cordas quase juntas (chop do reggae). */
+  muted = false,
 ): void {
   const order = direction === 'down' ? midis : [...midis].reverse();
   order.forEach((m, i) => {
     inst.uke.triggerAttackRelease(
       inst.Tone.Frequency(m, 'midi').toFrequency(),
-      '8n',
-      time + i * 0.014,
+      muted ? '32n' : '8n',
+      time + i * (muted ? 0.006 : 0.014),
       velocity,
     );
   });

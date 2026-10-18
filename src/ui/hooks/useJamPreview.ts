@@ -1,17 +1,18 @@
+import { upcoming, type Upcoming } from '@/core/rhythm';
 import { useActiveProgression } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 
 /**
- * Acorde a destacar como "próximo" no braço: durante a contagem e no 4º tempo
- * de cada compasso, enquanto a base toca. Fora disso, null.
+ * Acorde atual e próximo da base. `preview` é o próximo enquanto é hora de antecipá-lo
+ * (contagem e último tempo antes da troca); fora disso, null. Com a base parada, tudo null.
  */
-export function useJamPreview(): { next: string | null; preview: string | null } {
-  const { chords } = useActiveProgression();
+export function useJamPreview(): Upcoming & { previewChord: string | null } {
+  const { timeline, meter } = useActiveProgression();
   const playing = useMusicStore((s) => s.jam.playing);
   const bar = useMusicStore((s) => s.jam.bar);
   const beat = useMusicStore((s) => s.jam.beat);
-  if (!playing || chords.length === 0) return { next: null, preview: null };
-  const counting = bar < 0;
-  const next = chords[counting ? 0 : (bar + 1) % chords.length] ?? null;
-  return { next, preview: counting || beat === 3 ? next : null };
+  if (!playing || timeline.length === 0)
+    return { current: null, next: null, preview: false, previewChord: null };
+  const u = upcoming(timeline, meter, bar, beat);
+  return { ...u, previewChord: u.preview ? u.next : null };
 }

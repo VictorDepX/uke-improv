@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { playNote } from '@/audio/engine/sound';
 import { sameChord } from '@/core/harmony';
+import { barLabel } from '@/core/progressions';
 import { midiName, prefersFlats } from '@/core/music';
 import { useActiveProgression, useDiatonicChords, useNoteSuggestions } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
@@ -58,11 +59,11 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
   const arpeggio = useMusicStore((s) => s.settings.arpeggio);
   const suggestions = useNoteSuggestions();
   const diatonic = useDiatonicChords();
-  const { chords: progression } = useActiveProgression();
-  const { next, preview } = useJamPreview();
+  const { bars } = useActiveProgression();
+  const { next, previewChord } = useJamPreview();
   const toggleJam = useToggleJam();
   const flats = prefersFlats(key);
-  const activeBar = jam.playing && jam.bar >= 0 ? jam.bar % progression.length : -1;
+  const activeBar = jam.playing && jam.bar >= 0 ? jam.bar % bars.length : -1;
 
   useEffect(() => {
     void enterImmersive();
@@ -165,13 +166,13 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
       <div className="practice-row">
         {jam.playing ? (
           <ol className="practice-strip" aria-label="Compassos da progressão">
-            {progression.map((c, i) => (
+            {bars.map((b, i) => (
               <li
-                key={`${c}-${i}`}
+                key={`${barLabel(b)}-${i}`}
                 className="practice-chip"
                 data-active={i === activeBar || undefined}
               >
-                {c}
+                {barLabel(b)}
               </li>
             ))}
           </ol>
@@ -215,7 +216,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
       <ExerciseBar compact />
 
       <div className="practice-board">
-        <LiveFretboard previewChord={preview} legend={false} />
+        <LiveFretboard previewChord={previewChord} legend={false} />
       </div>
       <p className="practice-rotate">Gire o celular para ver o braço inteiro.</p>
     </div>

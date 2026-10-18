@@ -5,7 +5,8 @@ import { buildNoteContext } from '@/core/classify';
 import { midiRange } from '@/core/fretboard';
 import { diatonicChords } from '@/core/harmony';
 import { prefersFlats } from '@/core/music';
-import { PROGRESSIONS, progressionChords } from '@/core/progressions';
+import { PROGRESSIONS, meterOf, progressionBars } from '@/core/progressions';
+import { buildTimeline } from '@/core/rhythm';
 import { suggestNextChords } from '@/core/suggestChords';
 import { suggestNextNotes } from '@/core/suggestNotes';
 import { useMusicStore } from './useMusicStore';
@@ -56,7 +57,9 @@ export function useActiveProgression() {
   const custom = useMusicStore((s) => s.customProgressions);
   return useMemo(() => {
     const progression = [...PROGRESSIONS, ...custom].find((p) => p.id === id) ?? PROGRESSIONS[0]!;
-    return { progression, chords: progressionChords(progression, key) };
+    const bars = progressionBars(progression, key);
+    const meter = meterOf(progression);
+    return { progression, bars, meter, timeline: buildTimeline(bars, meter) };
   }, [key, id, custom]);
 }
 

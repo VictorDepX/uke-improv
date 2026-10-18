@@ -96,6 +96,34 @@ describe('App', () => {
     expect(saved[0]!.numerals).toEqual(['vi', 'IV']);
   });
 
+  it('monta uma progressão em 3/4 com dois acordes no mesmo compasso', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('link', { name: 'Jam' }));
+    const editor = screen.getByRole('region', { name: 'Montar progressão' });
+    await user.click(within(editor).getByRole('radio', { name: '3/4' }));
+    const field = within(editor).getAllByRole('button', { name: 'Dm' });
+    await user.click(field[field.length - 1]!);
+    await user.click(within(editor).getByRole('button', { name: '2 acordes neste compasso' }));
+    const g7 = within(editor).getAllByRole('button', { name: 'G7' });
+    await user.click(g7[g7.length - 1]!);
+    const c = within(editor).getAllByRole('button', { name: 'C' });
+    await user.click(c[c.length - 1]!);
+    expect(within(editor).getByLabelText('Compassos montados')).toHaveTextContent('Dm G7C');
+    await user.click(within(editor).getByRole('button', { name: 'Salvar progressão' }));
+    const saved = useMusicStore.getState().customProgressions[0]!;
+    expect(saved.numerals).toEqual(['ii V7', 'I']);
+    expect(saved.meter).toBe('3/4');
+    // A progressão salva fica ativa: o transporte mostra 3 tempos e os compassos.
+    const bars = screen.getByRole('list', { name: 'Compassos da progressão' });
+    expect(
+      within(bars)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent),
+    ).toEqual(['1Dm G7', '2C']);
+    expect(document.querySelectorAll('.beats .beat')).toHaveLength(3);
+  });
+
   it('o botão de tom resume o tom atual e abre o seletor recolhido', async () => {
     const user = userEvent.setup();
     render(<App />);

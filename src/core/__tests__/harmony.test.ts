@@ -8,6 +8,7 @@ import {
   toAbsoluteNumeral,
 } from '../harmony';
 import { PROGRESSIONS, progressionChords } from '../progressions';
+import { parseBar } from '../rhythm';
 
 describe('campo harmônico', () => {
   it('gera o campo de C maior', () => {
@@ -72,7 +73,8 @@ describe('numerais', () => {
         tonic: 'D',
         scale: p.mode === 'major' ? 'major' : 'minor',
       });
-      expect(chords).toHaveLength(p.numerals.length);
+      expect(chords).toHaveLength(p.numerals.flatMap(parseBar).length);
+      for (const c of chords) expect(c).toMatch(/^[A-G][#b]?/);
     }
     expect(progressionChords(PROGRESSIONS[0]!, { tonic: 'C', scale: 'major' })).toEqual([
       'C',

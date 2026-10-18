@@ -1,47 +1,79 @@
 import { useState } from 'react';
 import { toAbsoluteNumeral } from '@/core/harmony';
 import { modeOf } from '@/core/music';
-import { makeCustomProgression } from '@/core/progressions';
+import { barLabel, makeCustomProgression } from '@/core/progressions';
+import { MAX_CHORDS_PER_BAR, METERS, type Meter } from '@/core/rhythm';
 import { suggestNextChords } from '@/core/suggestChords';
 import { useDiatonicChords } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
+import { Segmented } from '../controls';
 
 const MAX_BARS = 16;
 
+const METER_OPTIONS = (Object.keys(METERS) as Meter[]).map((m) => ({ value: m, label: m }));
+
 /** Monta uma progressão própria; pode usar o sugeridor para escolher cada próximo acorde. */
 export function ProgressionEditor() {
-  const [draft, setDraft] = useState<string[]>([]);
+  /** Compassos; cada um com 1 ou 2 acordes. */
+  const [draft, setDraft] = useState<string[][]>([]);
+  const [meter, setMeter] = useState<Meter>('4/4');
+  /** O próximo acorde entra no mesmo compasso do último. */
+  const [split, setSplit] = useState(false);
   const diatonic = useDiatonicChords();
   const key = useMusicStore((s) => s.key);
   const extras = useMusicStore((s) => s.settings.extras);
   const add = useMusicStore((s) => s.addCustomProgression);
 
-  const last = draft.at(-1);
+  const flat = draft.flat();
+  const last = flat.at(-1);
+  const lastBar = draft.at(-1);
+  const canSplit = !!lastBar && lastBar.length < MAX_CHORDS_PER_BAR;
   const suggested = last
-    ? suggestNextChords(last, key, { extras, history: draft.slice(0, -1), count: 3 })
+    ? suggestNextChords(last, key, { extras, history: flat.slice(0, -1), count: 3 })
     : [];
-  const push = (symbol: string) => setDraft((d) => (d.length < MAX_BARS ? [...d, symbol] : d));
+  const push = (symbol: string) => {
+    setDraft((d) => {
+      const tail = d.at(-1);
+      if (split && tail && tail.length < MAX_CHORDS_PER_BAR)
+        return [...d.slice(0, -1), [...tail, symbol]];
+      return d.length < MAX_BARS ? [...d, [symbol]] : d;
+    });
+    setSplit(false);
+  };
+  const undo = () =>
+    setDraft((d) => {
+      const tail = d.at(-1);
+      if (!tail) return d;
+      return tail.length > 1 ? [...d.slice(0, -1), tail.slice(0, -1)] : d.slice(0, -1);
+    });
 
   const save = () => {
-    if (draft.length < 2) return;
+    if (flat.length < 2) return;
     add(
       makeCustomProgression(
-        draft.map((c) => toAbsoluteNumeral(c, key)),
+        draft.map((bar) => bar.map((c) => toAbsoluteNumeral(c, key))),
         modeOf(key.scale),
+        meter,
       ),
     );
     setDraft([]);
+    setSplit(false);
   };
 
   return (
     <div className="editor">
-      <div className="editor-draft" aria-live="polite">
+      <Segmented label="Compasso" value={meter} options={METER_OPTIONS} onChange={setMeter} />
+      <div className="editor-draft" aria-live="polite" aria-label="Compassos montados">
         {draft.length === 0 ? (
           <span className="muted">Escolha os acordes na ordem dos compassos.</span>
         ) : (
-          draft.map((c, i) => (
-            <span key={`${c}-${i}`} className="pill">
-              {c}
+          draft.map((bar, i) => (
+            <span
+              key={`${barLabel(bar)}-${i}`}
+              className="pill"
+              data-split={bar.length > 1 || undefined}
+            >
+              {barLabel(bar)}
             </span>
           ))
         )}
@@ -73,19 +105,24 @@ export function ProgressionEditor() {
       </div>
 
       <div className="editor-actions">
+        <button type="button" className="button" onClick={undo} disabled={!draft.length}>
+          Desfazer
+        </button>
         <button
           type="button"
           className="button"
-          onClick={() => setDraft((d) => d.slice(0, -1))}
-          disabled={!draft.length}
+          aria-pressed={split}
+          onClick={() => setSplit((v) => !v)}
+          disabled={!canSplit}
+          title="O próximo acorde divide o último compasso com o anterior"
         >
-          Desfazer
+          2 acordes neste compasso
         </button>
         <button
           type="button"
           className="button button-primary"
           onClick={save}
-          disabled={draft.length < 2}
+          disabled={flat.length < 2}
         >
           Salvar progressão
         </button>

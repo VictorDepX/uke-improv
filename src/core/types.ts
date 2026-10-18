@@ -1,3 +1,4 @@
+import type { Meter } from './rhythm';
 /** Classe de pitch como inteiro 0–11 (C = 0, C# = 1, … B = 11). */
 export type Chroma = number;
 
@@ -87,8 +88,13 @@ export interface Progression {
   id: string;
   name: string;
   mode: Mode;
-  /** Numerais relativos à tônica, com intervalos da escala maior ("i bVI bIII bVII"). */
+  /**
+   * Um item por compasso, com numerais relativos à tônica e intervalos da escala maior
+   * ("i", "bVI"). Dois acordes no mesmo compasso vão separados por espaço ("ii V7").
+   */
   numerals: string[];
+  /** Fórmula de compasso; padrão 4/4. */
+  meter?: Meter;
   custom?: boolean;
   /** Soa bem sobre escalas dos dois modos (ex.: blues com pentatônica menor). */
   anyScale?: boolean;

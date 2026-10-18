@@ -1668,6 +1668,18 @@ input[type='range'] {
   min-width: 0;
 }
 
+.progression-tags {
+  display: flex;
+  gap: 4px;
+  flex: none;
+}
+
+.button[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 .progression-option[aria-checked='true'] {
   border-color: var(--accent);
   box-shadow: inset 0 0 0 1px var(--accent);
@@ -2110,6 +2122,40 @@ input[type='range'] {
 .chord-shape-of {
   font-size: 11px;
   color: var(--fg-muted);
+}
+
+/* ---------- Compassos ---------- */
+.beat[data-accent] {
+  outline: 1px solid var(--wood-label);
+  outline-offset: 2px;
+}
+
+.beats[data-meter='6/8'] {
+  gap: 6px;
+}
+
+.beats[data-meter='6/8'] .beat:nth-child(4) {
+  margin-left: 6px;
+}
+
+.meter-tag {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--wood-label);
+}
+
+.bar[data-split] strong,
+.pill[data-split] {
+  letter-spacing: -0.01em;
+}
+
+.bar[data-split] strong {
+  font-size: 0.9em;
+  word-spacing: 0.35em;
+}
+
+.dotted-quarter {
+  letter-spacing: -0.15em;
 }
 
 /* ---------- Exercícios guiados ---------- */

@@ -1,15 +1,20 @@
+import { METERS } from '@/core/rhythm';
+import { useActiveProgression } from '@/store/selectors';
 import { BPM_RANGE, useMusicStore } from '@/store/useMusicStore';
+import { useJamPreview } from '../../hooks/useJamPreview';
 import { useToggleJam } from '../../hooks/useJamSync';
 import { TapTempo } from './TapTempo';
 
-export function JamTransport({ chords }: { chords: readonly string[] }) {
+export function JamTransport() {
   const { playing, bpm, bar, beat } = useMusicStore((s) => s.jam);
   const setBpm = useMusicStore((s) => s.setBpm);
   const toggle = useToggleJam();
+  const { timeline, meter } = useActiveProgression();
+  const live = useJamPreview();
+  const info = METERS[meter];
   const counting = playing && bar < 0;
-  const idx = bar >= 0 ? bar % chords.length : 0;
-  const current = chords[idx] ?? '—';
-  const next = counting ? chords[0] : chords[(idx + 1) % chords.length];
+  const current = live.current ?? timeline[0]?.chord ?? '—';
+  const next = live.next ?? timeline[1 % Math.max(1, timeline.length)]?.chord ?? '—';
 
   return (
     <div className="transport">
@@ -27,21 +32,23 @@ export function JamTransport({ chords }: { chords: readonly string[] }) {
         <span className="eyebrow">
           {counting ? 'Contagem' : playing ? `Compasso ${bar + 1}` : 'Parado'}
         </span>
-        <span className="transport-chord">{counting ? 4 - beat : current}</span>
+        <span className="transport-chord">{counting ? info.beats - beat : current}</span>
         <span className="transport-next">
           a seguir <strong>{next}</strong>
         </span>
       </div>
 
-      <div className="beats" aria-hidden="true">
-        {[0, 1, 2, 3].map((b) => (
+      <div className="beats" aria-hidden="true" data-meter={meter}>
+        {Array.from({ length: info.beats }, (_, b) => (
           <span
             key={b}
             className="beat"
             data-on={(playing && b === beat) || undefined}
-            data-warn={b === 3 || undefined}
+            data-accent={info.accents.includes(b) || undefined}
+            data-warn={(playing && !counting && b === beat && live.preview) || undefined}
           />
         ))}
+        {meter !== '4/4' ? <span className="meter-tag mono">{meter}</span> : null}
       </div>
 
       <div className="bpm">
@@ -55,7 +62,7 @@ export function JamTransport({ chords }: { chords: readonly string[] }) {
         </button>
         <label htmlFor="jam-bpm" className="bpm-value">
           <span className="mono">{bpm}</span>
-          <small>BPM</small>
+          <small>BPM{meter === '6/8' ? <span className="dotted-quarter"> ♩.</span> : null}</small>
         </label>
         <button
           type="button"

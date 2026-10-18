@@ -1,39 +1,70 @@
 import type * as ToneNS from 'tone';
 import { voicingFor } from '@/core/chordShapes';
-import { chordInfo } from '@/core/music';
+import { DEFAULT_GROOVES, type Groove } from '@/core/grooves';
+import { METERS, type Meter, type Segment, buildTimeline } from '@/core/rhythm';
+import { stepEvents } from '@/core/sequencer';
 import type { TuningName } from '@/core/types';
 import { ensureAudio, strum, type Instruments } from './sound';
 
-export interface JamConfig {
-  chords: readonly string[];
-  bpm: number;
+export interface JamPosition {
+  /** Compasso absoluto; −1 na contagem. */
+  bar: number;
+  beat: number;
+  /** Índice absoluto do acorde (−1 na contagem). */
+  segment: number;
+}
+
+export interface JamSong {
+  /** Acordes de cada compasso (1 ou 2). */
+  bars: readonly (readonly string[])[];
+  meter: Meter;
+  /** Batida; padrão: a do compasso. */
+  groove?: Groove;
   tuning: TuningName;
   /** Casa do capotraste: a base toca as mesmas formas que a mão, soando no tom certo. */
   capo?: number;
-  /** Chamado no tempo exato de cada batida, sincronizado com o áudio. bar = -1 na contagem. */
-  onPosition: (bar: number, beat: number) => void;
 }
 
-/** Batida "baixo, baixo-cima, cima-baixo-cima" em colcheias (0–7). */
-const STRUM_PATTERN: Record<number, 'down' | 'up'> = {
-  0: 'down',
-  2: 'down',
-  3: 'up',
-  5: 'up',
-  6: 'down',
-  7: 'up',
-};
+export interface JamConfig extends JamSong {
+  bpm: number;
+  /** Chamado no tempo exato de cada tempo, sincronizado com o áudio. */
+  onPosition: (pos: JamPosition) => void;
+  /** Chamado quando um acorde começa a soar. */
+  onChord: (chord: string) => void;
+}
+
+interface Prepared {
+  timeline: Segment[];
+  meter: Meter;
+  groove: Groove;
+  voicings: number[][];
+}
+
+function prepare(song: JamSong): Prepared {
+  const timeline = buildTimeline(song.bars, song.meter);
+  const groove =
+    song.groove && song.groove.meter === song.meter ? song.groove : DEFAULT_GROOVES[song.meter];
+  return {
+    timeline,
+    meter: song.meter,
+    groove,
+    voicings: timeline.map((s) => voicingFor(s.chord, song.tuning, song.capo ?? 0).midis),
+  };
+}
 
 /**
- * Motor da base: um loop de colcheias no Transport do Tone.js.
- * Independente do React e do store; quem usa passa os acordes e recebe as posições.
+ * Motor da base: um loop de semicolcheias no Transport do Tone.js. O que toca em cada
+ * semicolcheia vem de `stepEvents` (puro, testado); aqui só vira som e chamadas de volta.
  */
 export class JamEngine {
   private loop: ToneNS.Loop | null = null;
   private inst: Instruments | null = null;
   private config: JamConfig | null = null;
-  private voicings: number[][] = [];
+  private song: Prepared | null = null;
+  /** Mudança pendente, aplicada no próximo começo de compasso. */
+  private pending: Prepared | null = null;
   private step = 0;
+  private bpm = 90;
 
   get running(): boolean {
     return this.loop !== null;
@@ -44,16 +75,18 @@ export class JamEngine {
     const inst = await ensureAudio();
     this.inst = inst;
     this.config = config;
-    this.voicings = this.buildVoicings(config.chords, config.tuning, config.capo ?? 0);
+    this.song = prepare(config);
+    this.pending = null;
     this.step = 0;
+    this.bpm = config.bpm;
 
     const { Tone } = inst;
     const transport = Tone.getTransport();
     transport.cancel();
-    transport.bpm.value = config.bpm;
+    transport.bpm.value = config.bpm * METERS[config.meter].bpmFactor;
     transport.position = 0;
 
-    this.loop = new Tone.Loop((time) => this.tick(time), '8n').start(0);
+    this.loop = new Tone.Loop((time) => this.tick(time), '16n').start(0);
     transport.start('+0.05');
   }
 
@@ -67,59 +100,81 @@ export class JamEngine {
   }
 
   setBpm(bpm: number): void {
-    this.inst?.Tone.getTransport().bpm.rampTo(bpm, 0.2);
+    this.bpm = bpm;
+    const meter = this.song?.meter ?? '4/4';
+    this.inst?.Tone.getTransport().bpm.rampTo(bpm * METERS[meter].bpmFactor, 0.2);
   }
 
-  /** Troca a progressão sem parar (vale a partir do próximo compasso). */
-  updateChords(chords: readonly string[], tuning: TuningName, capo = 0): void {
+  /** Troca a progressão sem parar; vale a partir do próximo compasso. */
+  update(song: JamSong): void {
     if (!this.config) return;
-    this.config = { ...this.config, chords, tuning, capo };
-    this.voicings = this.buildVoicings(chords, tuning, capo);
-  }
-
-  private buildVoicings(chords: readonly string[], tuning: TuningName, capo: number): number[][] {
-    return chords.map((c) => voicingFor(c, tuning, capo).midis);
+    this.config = { ...this.config, ...song };
+    this.pending = prepare(song);
   }
 
   private tick(time: number): void {
     const inst = this.inst;
     const cfg = this.config;
-    if (!inst || !cfg || cfg.chords.length === 0) return;
-    const eighth = this.step % 8;
-    const barAbs = Math.floor(this.step / 8);
-    this.step += 1;
-    const onBeat = eighth % 2 === 0;
-    const beat = eighth / 2;
+    let song = this.song;
+    if (!inst || !cfg || !song || song.timeline.length === 0) return;
 
-    if (barAbs === 0) {
-      // Contagem de 1 compasso.
-      if (onBeat) {
-        inst.click.triggerAttackRelease(beat === 0 ? 'C6' : 'G5', '32n', time, 0.6);
-        inst.Tone.getDraw().schedule(() => cfg.onPosition(-1, beat), time);
+    const perBar = METERS[song.meter].beats * METERS[song.meter].stepsPerBeat;
+    if (this.pending && this.step % perBar === 0) {
+      const next = this.pending;
+      if (next.meter !== song.meter) {
+        // Fórmula nova: mantém o número do compasso e reposiciona a grade.
+        const nextPerBar = METERS[next.meter].beats * METERS[next.meter].stepsPerBeat;
+        this.step = (this.step / perBar) * nextPerBar;
+        inst.Tone.getTransport().bpm.value = this.bpm * METERS[next.meter].bpmFactor;
       }
-      return;
+      song = this.song = next;
+      this.pending = null;
     }
 
-    const bar = barAbs - 1;
-    const idx = bar % cfg.chords.length;
-    const voicing = this.voicings[idx]!;
-    const direction = STRUM_PATTERN[eighth];
-    if (direction) strum(inst, voicing, time, direction, direction === 'down' ? 0.65 : 0.45);
+    const ev = stepEvents(this.step, song.timeline, song.meter, song.groove);
+    this.step += 1;
+    const sixteenth = inst.Tone.Time('16n').toSeconds();
+    const t = time + ev.delay * sixteenth;
 
-    if (eighth === 0 || eighth === 4) {
-      const root = chordInfo(cfg.chords[idx]!).root;
-      inst.bass.triggerAttackRelease(
-        inst.Tone.Frequency(36 + root, 'midi').toFrequency(),
-        '4n',
-        time,
-        0.8,
-      );
-      inst.kick.triggerAttackRelease('C1', '8n', time, 0.8);
+    if (ev.click)
+      inst.click.triggerAttackRelease(ev.click === 'accent' ? 'C6' : 'G5', '32n', t, 0.6);
+
+    if (ev.segmentIndex >= 0) {
+      if (ev.strum)
+        strum(
+          inst,
+          song.voicings[ev.segmentIndex]!,
+          t,
+          ev.strum.dir,
+          ev.strum.vel,
+          song.groove.muted,
+        );
+      if (ev.bass)
+        inst.bass.triggerAttackRelease(
+          inst.Tone.Frequency(ev.bass.midi, 'midi').toFrequency(),
+          '8n',
+          t,
+          ev.bass.vel,
+        );
+      if (ev.kick) inst.kick.triggerAttackRelease('C1', '8n', t, 0.8);
+      if (ev.snare)
+        inst.snare.triggerAttackRelease(
+          song.groove.rim ? '64n' : '16n',
+          t,
+          song.groove.rim ? 0.25 : 0.4,
+        );
+      if (ev.hat !== undefined) inst.hat.triggerAttackRelease('C6', '32n', t, ev.hat);
     }
-    if (eighth === 2 || eighth === 6) inst.snare.triggerAttackRelease('16n', time, 0.4);
-    inst.hat.triggerAttackRelease('C6', '32n', time, onBeat ? 0.5 : 0.3);
 
-    if (onBeat) inst.Tone.getDraw().schedule(() => cfg.onPosition(bar, beat), time);
+    const draw = inst.Tone.getDraw();
+    if (ev.chordStart) {
+      const chord = song.timeline[ev.segmentIndex]!.chord;
+      draw.schedule(() => cfg.onChord(chord), t);
+    }
+    if (ev.beat !== null) {
+      const pos = { bar: ev.bar, beat: ev.beat, segment: ev.segment };
+      draw.schedule(() => cfg.onPosition(pos), t);
+    }
   }
 }
 

@@ -48,8 +48,10 @@ export interface JamState {
   progressionId: string;
   /** Compasso atual (-1 durante a contagem). */
   bar: number;
-  /** Tempo dentro do compasso, 0–3. */
+  /** Tempo dentro do compasso (0 até o nº de tempos − 1). */
   beat: number;
+  /** Índice absoluto do acorde da base desde o play (−1 na contagem). */
+  segment: number;
   layers: Record<Layer, number>;
 }
 
@@ -95,7 +97,7 @@ export interface MusicState {
   removeCustomProgression: (id: string) => void;
   setBpm: (bpm: number) => void;
   setJamPlaying: (playing: boolean) => void;
-  setJamPosition: (bar: number, beat: number) => void;
+  setJamPosition: (pos: { bar: number; beat: number; segment: number }) => void;
   setLayerVolume: (layer: Layer, value: number) => void;
 
   setMic: (patch: Partial<MicState>) => void;
@@ -121,7 +123,7 @@ function evaluateExercise(s: MusicState, ex: ExerciseState, midi: number): Exerc
     name: chromaName(chroma, prefersFlats(s.key)),
     cls: classifyNote(chroma, ctx),
     chord: s.currentChord,
-    bar: s.jam.playing ? s.jam.bar : null,
+    bar: s.jam.playing ? s.jam.segment : null,
   });
 }
 
@@ -155,6 +157,7 @@ export const useMusicStore = create<MusicState>()(
         progressionId: PROGRESSIONS[0]!.id,
         bar: 0,
         beat: 0,
+        segment: 0,
         layers: { chords: 0.8, bass: 0.7, drums: 0.5 },
       },
       mic: { status: 'off', error: null, note: null, chord: null, level: 0, followChords: true },
@@ -235,7 +238,7 @@ export const useMusicStore = create<MusicState>()(
               ? 'major'
               : 'minor';
         if (nextScale !== key.scale) get().setScale(nextScale);
-        set((s) => ({ jam: { ...s.jam, progressionId: id, bar: 0, beat: 0 } }));
+        set((s) => ({ jam: { ...s.jam, progressionId: id, bar: 0, beat: 0, segment: 0 } }));
       },
       addCustomProgression: (p) =>
         set((s) => ({
@@ -253,8 +256,8 @@ export const useMusicStore = create<MusicState>()(
           jam: { ...s.jam, bpm: clamp(Math.round(bpm), BPM_RANGE.min, BPM_RANGE.max) },
         })),
       setJamPlaying: (playing) =>
-        set((s) => ({ jam: { ...s.jam, playing, bar: playing ? -1 : 0, beat: 0 } })),
-      setJamPosition: (bar, beat) => set((s) => ({ jam: { ...s.jam, bar, beat } })),
+        set((s) => ({ jam: { ...s.jam, playing, bar: playing ? -1 : 0, beat: 0, segment: -1 } })),
+      setJamPosition: (pos) => set((s) => ({ jam: { ...s.jam, ...pos } })),
       setLayerVolume: (layer, value) =>
         set((s) => ({
           jam: { ...s.jam, layers: { ...s.jam.layers, [layer]: clamp(value, 0, 1) } },
@@ -302,7 +305,7 @@ export const useMusicStore = create<MusicState>()(
           ...current,
           ...p,
           settings: { ...current.settings, ...p.settings },
-          jam: { ...current.jam, ...p.jam, playing: false, bar: 0, beat: 0 },
+          jam: { ...current.jam, ...p.jam, playing: false, bar: 0, beat: 0, segment: 0 },
           mic: {
             ...current.mic,
             ...p.mic,

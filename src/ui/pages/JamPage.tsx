@@ -1,4 +1,3 @@
-import { useActiveProgression } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 import { Panel } from '../components/controls';
 import { JamTransport } from '../components/jam/JamTransport';
@@ -12,25 +11,24 @@ import { useJamPreview } from '../hooks/useJamPreview';
 import { PresetBar } from '../components/PresetBar';
 import { ExerciseBar } from '../components/ExerciseBar';
 
-/** Módulo 4: base em loop; o braço acompanha o acorde e avisa o próximo no 4º tempo. */
+/** Módulo 4: base em loop; o braço acompanha o acorde e avisa o próximo antes de cada troca. */
 export function JamPage() {
-  const { chords } = useActiveProgression();
   const registerNote = useMusicStore((s) => s.registerNote);
-  const { preview } = useJamPreview();
+  const { previewChord } = useJamPreview();
 
   return (
     <div className="page page-jam">
       <PresetBar />
-      <JamTransport chords={chords} />
-      <LiveFretboard previewChord={preview} />
+      <JamTransport />
+      <LiveFretboard previewChord={previewChord} />
       <ExerciseBar />
       <p className="hint small muted">
-        No 4º tempo, as notas do próximo acorde ganham contorno; contorno duplo marca as notas que
-        servem nos dois.
+        No último tempo antes de cada troca, as notas do próximo acorde ganham contorno; contorno
+        duplo marca as notas que servem nos dois.
       </p>
       <div className="columns">
         <Panel title="Progressão">
-          <ProgressionPicker chords={chords} />
+          <ProgressionPicker />
         </Panel>
         <NoteSuggestions
           onPlayMidi={(m) => {

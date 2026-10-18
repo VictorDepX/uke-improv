@@ -39,9 +39,9 @@ export const EXERCISES: readonly ExerciseDef[] = [
   {
     id: 'alvo',
     title: 'Alvo na troca',
-    goal: 'Com a base tocando, comece cada compasso com uma nota do acorde novo.',
+    goal: 'Com a base tocando, a cada troca de acorde, comece com uma nota do acorde novo.',
     target: 4,
-    unit: 'compassos',
+    unit: 'trocas',
     needsJam: true,
   },
 ];
@@ -58,7 +58,7 @@ export interface ExerciseNote {
   cls: NoteClass;
   /** Acorde que soava quando a nota foi tocada. */
   chord: string;
-  /** Compasso da base (−1 na contagem) ou null com a base parada. */
+  /** Índice do acorde da base desde o play (−1 na contagem) ou null com a base parada. */
   bar: number | null;
 }
 
@@ -77,7 +77,7 @@ export interface ExerciseState {
   prev: ExerciseNote | null;
   /** Última nota foi uma tensão esperando resolução. */
   pending: boolean;
-  /** Último compasso avaliado (alvo na troca). */
+  /** Último acorde da base avaliado (alvo na troca). */
   lastBar: number | null;
   feedback: Feedback | null;
 }
@@ -202,7 +202,7 @@ function evaluate(s: ExerciseState, n: ExerciseNote): ExerciseState {
     case 'alvo': {
       if (n.bar === null) return { ...s, feedback: info('Ligue a base para este exercício.') };
       if (n.bar < 0) return { ...s, feedback: info('Espere a contagem terminar.') };
-      // Só a primeira nota de cada compasso conta; o resto do compasso é livre.
+      // Só a primeira nota de cada acorde conta; o resto, até a próxima troca, é livre.
       if (n.bar === s.lastBar) return s;
       return n.cls === 'repouso'
         ? {
