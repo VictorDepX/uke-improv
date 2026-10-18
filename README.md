@@ -29,12 +29,23 @@ Assistente de improviso e harmonia para ukulele. Dado o tom e o acorde atual, mo
 - **Capotraste:** casas 1–7; braço, janela, diagramas ("forma de C"), base e microfone contam a partir do capo.
 - **Exercícios guiados:** só repouso, resolva a tensão, passo a passo e alvo na troca; avaliam cada nota da tela ou do microfone (`src/core/exercises.ts`).
 
+## Onda 3: tocar músicas reais e abrir para outras pessoas
+
+- **Compassos 3/4 e 6/8 e acordes de 2 tempos:** a base toca uma grade de semicolcheias calculada por funções puras (`src/core/rhythm.ts`, `sequencer.ts`); "ii V7" num compasso divide os tempos.
+- **Estilos de base:** pop, reggae, bossa nova, swing (com baixo caminhante e tercina) e valsa (`src/core/grooves.ts`).
+- **Analisador de cifra:** cola uma cifra com letra, acha o tom, sugere a escala, explica cada acorde e leva para o jam (`src/core/chart.ts`).
+- **Treino de ouvido:** intervalos, maior × menor e função harmônica, na aba Ouvido (`src/core/ear.ts`).
+- **Calibração do microfone:** mede ruído e toque e ajusta ganho e limiar (`src/audio/analysis/calibrate.ts`).
+- **Gravar e reouvir:** grava o microfone e as notas detectadas; na reprodução, o braço marca cada nota (`src/core/take.ts`).
+- **Looper:** até 4 camadas no compasso, com captura por AudioWorklet e compensação de latência (`src/audio/looper/`).
+- **Contas e sincronização:** e-mail e senha pelo Neon Auth; ajustes, progressões e progresso sincronizados pelo Data API com RLS (`src/sync/`). As chamadas passam por `/api` no domínio do app (rewrites em `vercel.json`, proxy no `vite.config.ts`).
+
 ## Comandos
 
 ```bash
 npm install
 npm run dev            # servidor local (o microfone funciona em localhost)
-npm test               # 100 testes (núcleo, áudio sintetizado, store, interface)
+npm test               # 227 testes (núcleo, áudio sintetizado, motor da base, sincronização, interface)
 npm run lint
 npm run typecheck
 npm run build          # build normal em dist/
