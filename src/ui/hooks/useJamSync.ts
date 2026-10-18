@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { jamEngine } from '@/audio/engine/jam';
+import { looper } from '@/audio/looper/looper';
 import { resolveGroove } from '@/core/grooves';
 import { ensureAudio, setLayerVolume } from '@/audio/engine/sound';
 import { useActiveProgression } from '@/store/selectors';
@@ -86,6 +87,8 @@ export function useToggleJam(): () => void {
   const setJamPlaying = useMusicStore((s) => s.setJamPlaying);
   return useCallback(() => {
     const { playing } = useMusicStore.getState().jam;
+    // Base e looper dividem o relógio (Transport): ligar a base encerra o looper.
+    if (!playing && looper.active) looper.clear();
     if (!playing) void ensureAudio().catch(() => undefined);
     setJamPlaying(!playing);
   }, [setJamPlaying]);

@@ -6,6 +6,7 @@ import { ProgressionEditor } from '../components/jam/ProgressionEditor';
 import { ProgressionPicker } from '../components/jam/ProgressionPicker';
 import { StylePicker } from '../components/jam/StylePicker';
 import { ChartAnalyzer } from '../components/jam/ChartAnalyzer';
+import { LooperPanel } from '../components/jam/LooperPanel';
 import { LiveFretboard } from '../components/LiveFretboard';
 import { NoteSuggestions } from '../components/NoteSuggestions';
 import { playNote } from '@/audio/engine/sound';
@@ -49,6 +50,9 @@ export function JamPage() {
         </Panel>
       </div>
       <div className="columns">
+        <Panel title="Looper">
+          <LooperPanel />
+        </Panel>
         <Panel title="Mixer">
           <LayerMixer />
         </Panel>
