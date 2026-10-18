@@ -89,3 +89,17 @@ describe('numerais', () => {
     expect(sameChord('C', 'Cm')).toBe(false);
   });
 });
+
+describe('numeral explícito', () => {
+  const C = { tonic: 'C', scale: 'major' } as const;
+  it('qualidades fora da grafia romana voltam iguais', () => {
+    for (const s of ['Bm7b5', 'Gsus4', 'F6', 'Am6', 'G7sus4', 'Caug', 'Ebmaj7', 'Dm7', 'Bdim7']) {
+      const n = toAbsoluteNumeral(s, C);
+      expect(sameChord(numeralToChord(n, C), s)).toBe(true);
+    }
+    expect(toAbsoluteNumeral('Bm7b5', C)).toBe('VII:m7b5');
+    expect(toAbsoluteNumeral('Dm7', C)).toBe('ii7');
+    // Transpõe junto com o tom.
+    expect(numeralToChord('VII:m7b5', { tonic: 'F', scale: 'major' })).toBe('Em7b5');
+  });
+});

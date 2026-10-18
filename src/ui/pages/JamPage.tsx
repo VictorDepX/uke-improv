@@ -5,6 +5,7 @@ import { LayerMixer } from '../components/jam/LayerMixer';
 import { ProgressionEditor } from '../components/jam/ProgressionEditor';
 import { ProgressionPicker } from '../components/jam/ProgressionPicker';
 import { StylePicker } from '../components/jam/StylePicker';
+import { ChartAnalyzer } from '../components/jam/ChartAnalyzer';
 import { LiveFretboard } from '../components/LiveFretboard';
 import { NoteSuggestions } from '../components/NoteSuggestions';
 import { playNote } from '@/audio/engine/sound';
@@ -43,6 +44,11 @@ export function JamPage() {
         <Panel title="Montar progressão">
           <ProgressionEditor />
         </Panel>
+        <Panel title="Analisar cifra">
+          <ChartAnalyzer />
+        </Panel>
+      </div>
+      <div className="columns">
         <Panel title="Mixer">
           <LayerMixer />
         </Panel>

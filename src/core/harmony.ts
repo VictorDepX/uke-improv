@@ -107,7 +107,16 @@ export interface ParsedNumeral {
   quality: string;
 }
 
+/** Forma explícita "VII:m7b5": grau + qualidade escrita como no acorde. */
+const EXPLICIT_RE = /^(b|#)?(VII|VI|V|IV|III|II|I):([^\s:]*)$/;
+
 export function parseNumeral(numeral: string): ParsedNumeral {
+  const x = EXPLICIT_RE.exec(numeral.trim());
+  if (x) {
+    const [, acc, roman = 'I', quality = ''] = x;
+    const semis = mod12((ROMAN_SEMIS[roman] ?? 0) + (acc === 'b' ? -1 : acc === '#' ? 1 : 0));
+    return { semis, quality };
+  }
   const m = NUMERAL_RE.exec(numeral.trim());
   if (!m) throw new Error(`Numeral inválido: ${numeral}`);
   const [, acc, roman = 'I', dim, ext] = m;
@@ -160,7 +169,9 @@ export function toAbsoluteNumeral(symbol: string, key: KeyContext): string {
       : quality.endsWith('7')
         ? '7'
         : '';
-  return base + suffix;
+  const plain = base + suffix;
+  // Qualidades que a grafia romana não cobre (m7b5, sus4, 6…) vão na forma explícita.
+  return sameChord(numeralToChord(plain, key), symbol) ? plain : `${roman}:${quality}`;
 }
 
 /** Numeral para exibição: o diatônico quando possível, senão relativo à escala maior. */

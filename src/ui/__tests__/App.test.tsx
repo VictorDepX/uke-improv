@@ -147,6 +147,34 @@ describe('App', () => {
     expect(screen.queryByRole('radio', { name: 'Swing' })).not.toBeInTheDocument();
   });
 
+  it('analisa uma cifra colada e a transforma em progressão do jam', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('link', { name: 'Jam' }));
+    const panel = screen.getByRole('region', { name: 'Analisar cifra' });
+    await user.click(within(panel).getByLabelText('Cifra'));
+    await user.paste('| Am | Dm | E7 | Am |\n| F | Dm | E7 | Am |');
+    await user.click(within(panel).getByRole('button', { name: 'Analisar' }));
+    const result = within(panel).getByRole('region', { name: 'Análise da cifra' });
+    expect(result).toHaveTextContent('A menor natural');
+    const e7 = within(result).getByText('E7').closest('li')!;
+    expect(e7).toHaveTextContent('V7');
+    expect(e7).toHaveTextContent('×2');
+    await user.click(within(panel).getByRole('button', { name: 'Usar no jam' }));
+    const st = useMusicStore.getState();
+    expect(st.key).toEqual({ tonic: 'A', scale: 'minor' });
+    const prog = st.customProgressions.at(-1)!;
+    expect(st.jam.progressionId).toBe(prog.id);
+    expect(prog.numerals).toEqual(['i', 'iv', 'V7', 'i', 'bVI', 'iv', 'V7', 'i']);
+    const bars = screen.getByRole('list', { name: 'Compassos da progressão' });
+    expect(
+      within(bars)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent?.replace(/^\d+/, '')),
+    ).toEqual(['Am', 'Dm', 'E7', 'Am', 'F', 'Dm', 'E7', 'Am']);
+    expect(within(panel).getByRole('status')).toHaveTextContent('8 compassos em A menor natural');
+  });
+
   it('o botão de tom resume o tom atual e abre o seletor recolhido', async () => {
     const user = userEvent.setup();
     render(<App />);

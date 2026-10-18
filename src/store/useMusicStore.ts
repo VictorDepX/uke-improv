@@ -8,10 +8,10 @@ import {
   type ExerciseState,
 } from '@/core/exercises';
 import { clampWindowStart, followWindow, nearestPosition } from '@/core/fretboard';
-import { diatonicChords } from '@/core/harmony';
+import { diatonicChords, toAbsoluteNumeral } from '@/core/harmony';
 import { chromaName, mod12, modeOf, prefersFlats } from '@/core/music';
 import type { Preset } from '@/core/presets';
-import { PROGRESSIONS, progressionChords } from '@/core/progressions';
+import { PROGRESSIONS, makeCustomProgression, progressionChords } from '@/core/progressions';
 import { DEFAULT_WEIGHTS } from '@/core/suggestNotes';
 import type {
   ChordExtras,
@@ -104,6 +104,12 @@ export interface MusicState {
   setLayerVolume: (layer: Layer, value: number) => void;
 
   setMic: (patch: Partial<MicState>) => void;
+  /** Cifra analisada: muda o tom e vira uma progressão própria, já selecionada. */
+  loadChart: (chart: {
+    key: KeyContext;
+    bars: readonly (readonly string[])[];
+    name: string;
+  }) => void;
   /** Começa (ou recomeça) um exercício; null encerra. */
   startExercise: (id: ExerciseId | null) => void;
   /** Tom, escala, progressão e andamento de uma vez. */
@@ -269,6 +275,18 @@ export const useMusicStore = create<MusicState>()(
         })),
 
       startExercise: (id) => set({ exercise: id ? freshExercise(id) : null }),
+      loadChart: ({ key, bars, name }) => {
+        const numerals = bars.map((bar) => bar.map((c) => toAbsoluteNumeral(c, key)));
+        const progression = { ...makeCustomProgression(numerals, modeOf(key.scale)), name };
+        set((s) => ({
+          key,
+          currentChord: bars[0]?.[0] ?? tonicChord(key),
+          chordHistory: [],
+          lastNotes: [],
+          customProgressions: [...s.customProgressions, progression],
+          jam: { ...s.jam, progressionId: progression.id, bar: 0, beat: 0, segment: 0 },
+        }));
+      },
       setMic: (patch) => set((s) => ({ mic: { ...s.mic, ...patch } })),
 
       applyPreset: (preset) => {

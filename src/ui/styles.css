@@ -2158,6 +2158,110 @@ input[type='range'] {
   letter-spacing: -0.15em;
 }
 
+/* ---------- Analisador de cifra ---------- */
+.chart-analyzer {
+  display: grid;
+  gap: 12px;
+}
+
+.chart-input {
+  width: 100%;
+  min-height: 140px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 13px;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.chart-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.chart-result {
+  display: grid;
+  gap: 12px;
+}
+
+.chart-key {
+  display: grid;
+  gap: 2px;
+}
+
+.chart-key-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+}
+
+.chart-chords {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chart-chord {
+  display: grid;
+  grid-template-columns: minmax(56px, auto) minmax(56px, auto) auto 1fr auto;
+  grid-template-areas: 'sym num role note count';
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-left: 3px solid var(--c-rest);
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+.chart-chord[data-role='secondary'] {
+  border-left-color: var(--c-tens);
+}
+
+.chart-chord[data-role='borrowed'] {
+  border-left-color: var(--accent);
+}
+
+.chart-chord[data-role='chromatic'] {
+  border-left-color: var(--c-out);
+}
+
+.chart-loaded {
+  color: var(--c-rest);
+  font-weight: 600;
+}
+
+.chart-sym {
+  grid-area: sym;
+}
+.chart-num {
+  grid-area: num;
+}
+.chart-role {
+  grid-area: role;
+  justify-self: start;
+}
+.chart-note {
+  grid-area: note;
+}
+.chart-count {
+  grid-area: count;
+  justify-self: end;
+}
+
+@media (max-width: 640px) {
+  .chart-chord {
+    grid-template-columns: auto auto auto 1fr;
+    grid-template-areas:
+      'sym num role count'
+      'note note note note';
+    row-gap: 2px;
+  }
+}
+
 /* ---------- Exercícios guiados ---------- */
 .exercise-bar {
   display: flex;
