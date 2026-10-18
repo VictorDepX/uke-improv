@@ -72,9 +72,12 @@ function TakePlayer({ take, onRemove }: { take: Take; onRemove: () => void }) {
           onEnded={() => setPlaying(false)}
           onSeeked={(e) => setTime(e.currentTarget.currentTime)}
         />
-        <button type="button" className="link-button" onClick={download}>
-          Baixar
-        </button>
+        {__PWA__ ? (
+          // A página avulsa (artifact) não pode oferecer download de arquivo.
+          <button type="button" className="link-button" onClick={download}>
+            Baixar
+          </button>
+        ) : null}
         <button type="button" className="link-button" onClick={onRemove}>
           Apagar
         </button>
