@@ -3,7 +3,6 @@ import { playSequence } from '@/audio/engine/sound';
 import {
   EMPTY_SCORE,
   makeQuestion,
-  scoreAnswer,
   type Direction,
   type EarMode,
   type EarQuestion,
@@ -37,7 +36,8 @@ export function EarPage() {
   const [qualityLevel, setQualityLevel] = useState<QualityLevel>('basic');
   const [question, setQuestion] = useState<EarQuestion | null>(null);
   const [picked, setPicked] = useState<string | null>(null);
-  const [score, setScore] = useState(EMPTY_SCORE);
+  const score = useMusicStore((s) => s.progress.ear[mode] ?? EMPTY_SCORE);
+  const recordEarAnswer = useMusicStore((s) => s.recordEarAnswer);
 
   const settings = useMemo(
     () => ({ intervalLevel, direction, qualityLevel, voicing: (s: string) => voicing(s).midis }),
@@ -60,7 +60,7 @@ export function EarPage() {
   const answer = (id: string) => {
     if (!question || picked) return;
     setPicked(id);
-    setScore((s) => scoreAnswer(s, id === question.answer));
+    recordEarAnswer(mode, id === question.answer);
   };
 
   const right = picked !== null && question !== null && picked === question.answer;

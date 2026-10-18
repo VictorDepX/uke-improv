@@ -2,6 +2,7 @@ import { MAX_CAPO, TUNINGS, WINDOW_SIZE, maxWindowStart } from '@/core/fretboard
 import { DEFAULT_WEIGHTS } from '@/core/suggestNotes';
 import type { LabelMode, ScoreWeights, TuningName } from '@/core/types';
 import { useMusicStore } from '@/store/useMusicStore';
+import { AccountPanel } from '../components/AccountPanel';
 import { Panel, Segmented, Select, Slider, Toggle } from '../components/controls';
 
 const LABEL_OPTIONS: { value: LabelMode; label: string }[] = [
@@ -47,6 +48,7 @@ export function SettingsPage() {
 
   return (
     <div className="page page-settings">
+      {__ACCOUNTS__ ? <AccountPanel /> : null}
       <div className="columns">
         <Panel title="Braço">
           <div className="stack">

@@ -2,12 +2,14 @@ import type { MicCalibration } from '@/audio/analysis/calibrate';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { buildNoteContext, classifyNote } from '@/core/classify';
+import { EMPTY_SCORE, scoreAnswer, type EarMode, type EarScore } from '@/core/ear';
 import {
   startExercise as freshExercise,
   stepExercise,
   type ExerciseId,
   type ExerciseState,
 } from '@/core/exercises';
+import type { SectionId } from '@/core/sync';
 import { clampWindowStart, followWindow, nearestPosition } from '@/core/fretboard';
 import { diatonicChords, toAbsoluteNumeral } from '@/core/harmony';
 import { chromaName, mod12, modeOf, prefersFlats } from '@/core/music';
@@ -26,6 +28,25 @@ import type {
 import { safeStorage } from './safeStorage';
 
 export type Layer = 'chords' | 'bass' | 'drums';
+
+export interface ExerciseRecord {
+  completed: number;
+  /** Menor número de erros numa conclusão. */
+  bestMisses: number;
+}
+
+export interface Progress {
+  ear: Partial<Record<EarMode, EarScore>>;
+  exercises: Partial<Record<ExerciseId, ExerciseRecord>>;
+}
+
+export interface AccountState {
+  status: 'unknown' | 'signedOut' | 'signedIn';
+  user: { id: string; name: string; email: string } | null;
+  sync: 'idle' | 'syncing' | 'ok' | 'error';
+  lastSync: number | null;
+  error: string | null;
+}
 export type MicStatus = 'off' | 'starting' | 'on' | 'denied' | 'error';
 
 export interface Settings {
@@ -84,6 +105,12 @@ export interface MusicState {
   mic: MicState;
   /** Exercício guiado em andamento (não é salvo). */
   exercise: ExerciseState | null;
+  /** Placar do treino de ouvido e exercícios concluídos (salvo e sincronizado). */
+  progress: Progress;
+  /** Instante da última mudança de cada bloco sincronizado (ms). */
+  syncMeta: Partial<Record<SectionId, number>>;
+  /** Conta e estado da sincronização (não é salvo: a sessão fica no cookie). */
+  account: AccountState;
 
   setTonic: (tonic: string) => void;
   setScale: (scale: ScaleName) => void;
@@ -113,6 +140,11 @@ export interface MusicState {
     bars: readonly (readonly string[])[];
     name: string;
   }) => void;
+  recordEarAnswer: (mode: EarMode, right: boolean) => void;
+  resetEarScore: (mode: EarMode) => void;
+  setAccount: (patch: Partial<AccountState>) => void;
+  /** Aplica blocos vindos do servidor, com o instante deles (não conta como mudança local). */
+  applyRemote: (pull: Partial<Record<SectionId, { value: unknown; at: number }>>) => void;
   /** Começa (ou recomeça) um exercício; null encerra. */
   startExercise: (id: ExerciseId | null) => void;
   /** Tom, escala, progressão e andamento de uma vez. */
@@ -124,6 +156,20 @@ const MAX_HISTORY = 4;
 export const BPM_RANGE = { min: 60, max: 160 } as const;
 
 const tonicChord = (key: KeyContext): string => diatonicChords(key)[0]!.symbol;
+
+function recordCompletion(progress: Progress, ex: ExerciseState): Progress {
+  const prev = progress.exercises[ex.id];
+  return {
+    ...progress,
+    exercises: {
+      ...progress.exercises,
+      [ex.id]: {
+        completed: (prev?.completed ?? 0) + 1,
+        bestMisses: Math.min(prev?.bestMisses ?? Infinity, ex.misses),
+      },
+    },
+  };
+}
 
 /** A nota tocada, classificada como o braço mostra agora, vai para o exercício. */
 function evaluateExercise(s: MusicState, ex: ExerciseState, midi: number): ExerciseState {
@@ -176,6 +222,9 @@ export const useMusicStore = create<MusicState>()(
       },
       mic: { status: 'off', error: null, note: null, chord: null, level: 0, followChords: true },
       exercise: null,
+      progress: { ear: {}, exercises: {} },
+      syncMeta: {},
+      account: { status: 'unknown', user: null, sync: 'idle', lastSync: null, error: null },
 
       setTonic: (tonic) => {
         const key = { ...get().key, tonic };
@@ -199,13 +248,18 @@ export const useMusicStore = create<MusicState>()(
         set((s) => {
           const lastNotes = [...s.lastNotes, midi].slice(-MAX_NOTES);
           const exercise = s.exercise && evaluateExercise(s, s.exercise, midi);
+          const progress =
+            exercise?.done && !s.exercise?.done
+              ? recordCompletion(s.progress, exercise)
+              : s.progress;
           const ref = s.lastFret ?? s.autoWindowStart + 2;
           const { tuning, capo } = s.settings;
           const at = fret ?? nearestPosition(midi, tuning, ref, capo)?.fret;
-          if (at === undefined) return { lastNotes, exercise };
+          if (at === undefined) return { lastNotes, exercise, progress };
           return {
             lastNotes,
             exercise,
+            progress,
             lastFret: at,
             autoWindowStart: followWindow(s.autoWindowStart, at, capo),
           };
@@ -279,6 +333,39 @@ export const useMusicStore = create<MusicState>()(
         })),
 
       startExercise: (id) => set({ exercise: id ? freshExercise(id) : null }),
+      recordEarAnswer: (mode, right) =>
+        set((s) => ({
+          progress: {
+            ...s.progress,
+            ear: {
+              ...s.progress.ear,
+              [mode]: scoreAnswer(s.progress.ear[mode] ?? EMPTY_SCORE, right),
+            },
+          },
+        })),
+      resetEarScore: (mode) =>
+        set((s) => ({
+          progress: { ...s.progress, ear: { ...s.progress.ear, [mode]: EMPTY_SCORE } },
+        })),
+      setAccount: (patch) => set((s) => ({ account: { ...s.account, ...patch } })),
+      applyRemote: (pull) =>
+        set((s) => {
+          const next: Partial<MusicState> = { syncMeta: { ...s.syncMeta } };
+          if (pull.settings) {
+            next.settings = { ...s.settings, ...(pull.settings.value as Partial<Settings>) };
+            next.syncMeta!.settings = pull.settings.at;
+          }
+          if (pull.progressions) {
+            next.customProgressions = pull.progressions.value as Progression[];
+            next.syncMeta!.progressions = pull.progressions.at;
+          }
+          if (pull.progress) {
+            const p = pull.progress.value as Partial<Progress>;
+            next.progress = { ear: p.ear ?? {}, exercises: p.exercises ?? {} };
+            next.syncMeta!.progress = pull.progress.at;
+          }
+          return next;
+        }),
       loadChart: ({ key, bars, name }) => {
         const numerals = bars.map((bar) => bar.map((c) => toAbsoluteNumeral(c, key)));
         const progression = { ...makeCustomProgression(numerals, modeOf(key.scale)), name };
@@ -331,6 +418,8 @@ export const useMusicStore = create<MusicState>()(
           grooveId: s.jam.grooveId,
         },
         mic: { followChords: s.mic.followChords },
+        progress: s.progress,
+        syncMeta: s.syncMeta,
       }),
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<MusicState>;
@@ -338,6 +427,9 @@ export const useMusicStore = create<MusicState>()(
           ...current,
           ...p,
           settings: { ...current.settings, ...p.settings },
+          progress: { ear: {}, exercises: {}, ...p.progress },
+          syncMeta: { ...p.syncMeta },
+          account: current.account,
           jam: { ...current.jam, ...p.jam, playing: false, bar: 0, beat: 0, segment: 0 },
           mic: {
             ...current.mic,

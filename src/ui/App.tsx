@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { preloadAudio } from '@/audio/engine/sound';
+import { startSync } from '@/sync/sync';
 import { SCALES } from '@/core/music';
 import { useMusicStore } from '@/store/useMusicStore';
 import { KeyPicker } from './components/KeyPicker';
@@ -38,6 +39,7 @@ export function App() {
 
   useEffect(() => {
     preloadAudio();
+    if (__ACCOUNTS__) void startSync();
   }, []);
 
   return (

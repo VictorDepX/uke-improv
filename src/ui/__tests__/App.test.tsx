@@ -14,6 +14,11 @@ vi.mock('@/audio/engine/sound', () => ({
   playSequence: vi.fn(() => Promise.resolve()),
 }));
 
+vi.mock('@/sync/api', () => ({
+  ApiError: class extends Error {},
+  getSessionUser: vi.fn(() => Promise.resolve(null)),
+}));
+
 const initial = useMusicStore.getState();
 
 describe('App', () => {
