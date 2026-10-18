@@ -69,6 +69,11 @@ export class PitchTracker {
     this.opts = { ...DEFAULT_PITCH_OPTIONS, ...options };
   }
 
+  /** Ajusta opções sem perder o estado (ex.: limiar novo da calibração). */
+  setOptions(options: Partial<PitchTrackerOptions>): void {
+    Object.assign(this.opts, options);
+  }
+
   get currentMidi(): number | null {
     return this.current;
   }

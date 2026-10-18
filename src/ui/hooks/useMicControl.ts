@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react';
+import { DEFAULT_CALIBRATION } from '@/audio/analysis/calibrate';
 import { MicError, micInput } from '@/audio/engine/mic';
 import { diatonicChords } from '@/core/harmony';
 import { useMusicStore } from '@/store/useMusicStore';
@@ -7,6 +8,9 @@ import { useMusicStore } from '@/store/useMusicStore';
 export function useMicControl() {
   const status = useMusicStore((s) => s.mic.status);
   const setMic = useMusicStore((s) => s.setMic);
+
+  const calibration = useMusicStore((s) => s.settings.micCalibration);
+  useEffect(() => micInput.setCalibration(calibration ?? DEFAULT_CALIBRATION), [calibration]);
 
   const stop = useCallback(() => {
     micInput.stop();

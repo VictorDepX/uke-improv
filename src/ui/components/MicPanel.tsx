@@ -5,6 +5,7 @@ import { midiName, prefersFlats } from '@/core/music';
 import { CLASS_SHORT } from '../format';
 import { useMicControl } from '../hooks/useMicControl';
 import { Panel, Toggle } from './controls';
+import { MicCalibrator } from './MicCalibrator';
 import { RecordingAnalyzer } from './RecordingAnalyzer';
 
 /** Módulo 2: escuta em tempo real, com afinador e indicador da classe da nota tocada. */
@@ -78,6 +79,7 @@ export function MicPanel() {
               <span>+50 cents</span>
             </span>
           </div>
+          <MicCalibrator />
           <Toggle
             id="mic-follow"
             label="Acorde detectado vira o acorde atual"

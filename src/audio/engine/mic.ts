@@ -5,6 +5,7 @@ import {
   matchChord,
   type ChordMatch,
 } from '../analysis/chroma';
+import { DEFAULT_CALIBRATION, type MicCalibration } from '../analysis/calibrate';
 import { PitchTracker, freqToNote } from '../analysis/pitch';
 
 export interface MicCallbacks {
@@ -40,13 +41,43 @@ export class MicInput {
   private raf = 0;
   private readonly pitch = new PitchTracker();
   private readonly chords = new ChordTracker();
+  private gainNode: GainNode | null = null;
+  private calibration: MicCalibration = DEFAULT_CALIBRATION;
+  /** Coletores de RMS (sem ganho) ativos, para a calibração. */
+  private readonly samplers = new Set<(rms: number) => void>();
 
   get active(): boolean {
     return this.ctx !== null;
   }
 
-  async start(getCandidates: () => readonly string[], cb: MicCallbacks): Promise<void> {
+  /** Aplica ganho e limiar (vale na hora, com o microfone ligado ou não). */
+  setCalibration(c: MicCalibration): void {
+    this.calibration = c;
+    this.pitch.setOptions({ minRms: c.minRms });
+    if (this.gainNode) this.gainNode.gain.value = c.gain;
+  }
+
+  /** RMS sem ganho de cada quadro durante `ms` milissegundos (microfone ligado). */
+  sampleLevels(ms: number): Promise<number[]> {
+    if (!this.ctx) return Promise.reject(new MicError('Microfone desligado.', 'other'));
+    return new Promise((resolve) => {
+      const values: number[] = [];
+      const collect = (rms: number) => values.push(rms);
+      this.samplers.add(collect);
+      window.setTimeout(() => {
+        this.samplers.delete(collect);
+        resolve(values);
+      }, ms);
+    });
+  }
+
+  async start(
+    getCandidates: () => readonly string[],
+    cb: MicCallbacks,
+    calibration: MicCalibration = this.calibration,
+  ): Promise<void> {
     if (this.ctx) return;
+    this.setCalibration(calibration);
     if (!navigator.mediaDevices?.getUserMedia) {
       throw new MicError('Este navegador não dá acesso ao microfone.', 'unsupported');
     }
@@ -71,10 +102,13 @@ export class MicInput {
     this.ctx = ctx;
     await ctx.resume();
     const source = ctx.createMediaStreamSource(this.stream);
+    const gain = ctx.createGain();
+    gain.gain.value = this.calibration.gain;
+    this.gainNode = gain;
     const analyser = ctx.createAnalyser();
     analyser.fftSize = FFT_SIZE;
     analyser.smoothingTimeConstant = 0.2;
-    source.connect(analyser);
+    source.connect(gain).connect(analyser);
 
     const time = new Float32Array(FFT_SIZE);
     const freq = new Float32Array(FFT_SIZE / 2);
@@ -88,6 +122,10 @@ export class MicInput {
       analyser.getFloatTimeDomainData(time);
       const window = time.subarray(FFT_SIZE - PITCH_WINDOW);
       const { reading, events } = this.pitch.process(window, ctx.sampleRate);
+      if (this.samplers.size) {
+        const raw = reading.rms / this.calibration.gain;
+        this.samplers.forEach((f) => f(raw));
+      }
       for (const e of events) {
         if (e.type === 'noteOn') cb.onNote(e.midi, e.cents);
         else cb.onNoteOff();
@@ -96,7 +134,7 @@ export class MicInput {
         const tuned = reading.clarity >= 0.9 && reading.freq > 0 ? freqToNote(reading.freq) : null;
         cb.onLevel(reading.rms, tuned);
       }
-      if (frame % CHROMA_EVERY === 0 && reading.rms > 0.01) {
+      if (frame % CHROMA_EVERY === 0 && reading.rms > this.calibration.minRms) {
         analyser.getFloatFrequencyData(freq);
         const chroma = computeChroma(dbToLinear(freq), ctx.sampleRate);
         const hit = this.chords.process(matchChord(chroma, getCandidates())[0]);
@@ -112,6 +150,8 @@ export class MicInput {
     this.stream = null;
     void this.ctx?.close();
     this.ctx = null;
+    this.gainNode = null;
+    this.samplers.clear();
   }
 }
 

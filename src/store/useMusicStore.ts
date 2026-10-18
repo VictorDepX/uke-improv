@@ -1,3 +1,4 @@
+import type { MicCalibration } from '@/audio/analysis/calibrate';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { buildNoteContext, classifyNote } from '@/core/classify';
@@ -40,6 +41,8 @@ export interface Settings {
   fretWindow: number | null | 'auto';
   /** Casa do capotraste (0 = sem). Casas de janela e de nota contam a partir dele. */
   capo: number;
+  /** Ganho e limiar do microfone medidos no ambiente; null = padrão. */
+  micCalibration: MicCalibration | null;
 }
 
 export interface JamState {
@@ -158,6 +161,7 @@ export const useMusicStore = create<MusicState>()(
         shapes: true,
         arpeggio: false,
         capo: 0,
+        micCalibration: null,
       },
       customProgressions: [],
       jam: {

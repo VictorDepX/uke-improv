@@ -2280,6 +2280,33 @@ input[type='range'] {
   }
 }
 
+/* ---------- Calibração do microfone ---------- */
+.mic-calibration {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.mic-calibration-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+
+.mic-calibration-step {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+}
+
+.mic-calibration-step[data-step='play'] {
+  background: color-mix(in srgb, var(--c-rest) 18%, transparent);
+}
+
 /* ---------- Treino de ouvido ---------- */
 .page-ear .panel {
   max-width: 760px;
