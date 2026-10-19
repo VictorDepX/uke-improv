@@ -21,7 +21,7 @@ export function LiveFretboard({
   const key = useMusicStore((s) => s.key);
   const settings = useMusicStore((s) => s.settings);
   const autoWindowStart = useMusicStore((s) => s.autoWindowStart);
-  const lastMidi = useMusicStore((s) => s.lastNotes.at(-1) ?? null);
+  const last = useMusicStore((s) => s.lastPos);
   const registerNote = useMusicStore((s) => s.registerNote);
   const shiftWindow = useMusicStore((s) => s.shiftWindow);
   const currentChord = useMusicStore((s) => s.currentChord);
@@ -34,7 +34,7 @@ export function LiveFretboard({
 
   const onPlay = useCallback(
     (pos: FretPosition) => {
-      registerNote(pos.midi, pos.fret);
+      registerNote(pos.midi, { string: pos.string, fret: pos.fret });
       void playNote(pos.midi);
     },
     [registerNote],
@@ -82,7 +82,7 @@ export function LiveFretboard({
         labels={settings.labels}
         fretWindow={windowStart}
         suggestions={suggestions}
-        lastMidi={lastMidi}
+        last={last}
         previewChord={previewChord}
         onPlay={onPlay}
         onInspect={setInspected}

@@ -10,7 +10,13 @@ import {
   type ExerciseState,
 } from '@/core/exercises';
 import type { SectionId } from '@/core/sync';
-import { clampWindowStart, followWindow, nearestPosition } from '@/core/fretboard';
+import {
+  WINDOW_SIZE,
+  clampWindowStart,
+  followWindow,
+  resolvePosition,
+  type HandPosition,
+} from '@/core/fretboard';
 import { diatonicChords, toAbsoluteNumeral } from '@/core/harmony';
 import { chromaName, mod12, modeOf, prefersFlats } from '@/core/music';
 import type { Preset } from '@/core/presets';
@@ -96,6 +102,11 @@ export interface MusicState {
   lastNotes: number[];
   /** Casa da última nota tocada (para a janela automática). */
   lastFret: number | null;
+  /**
+   * Onde a última nota foi tocada. `heard`: veio só a altura (microfone, sugestão) e a
+   * posição foi deduzida; a mesma nota pode estar em outros lugares do braço.
+   */
+  lastPos: (HandPosition & { midi: number; heard: boolean }) | null;
   /** Casa inicial da janela automática. */
   autoWindowStart: number;
   chordHistory: string[];
@@ -116,7 +127,7 @@ export interface MusicState {
   setScale: (scale: ScaleName) => void;
   setChord: (symbol: string) => void;
   /** Registra uma nota. Sem `fret` (microfone), usa a posição mais próxima da mão. */
-  registerNote: (midi: number, fret?: number) => void;
+  registerNote: (midi: number, pos?: HandPosition) => void;
   /** Desloca a janela de casas (fixa ou automática). */
   shiftWindow: (delta: number) => void;
   clearNotes: () => void;
@@ -196,6 +207,7 @@ export const useMusicStore = create<MusicState>()(
       currentChord: tonicChord(INITIAL_KEY),
       lastNotes: [],
       lastFret: null,
+      lastPos: null,
       autoWindowStart: 1,
       chordHistory: [],
       settings: {
@@ -244,7 +256,7 @@ export const useMusicStore = create<MusicState>()(
           chordHistory: [...chordHistory, currentChord].slice(-MAX_HISTORY),
         });
       },
-      registerNote: (midi, fret) =>
+      registerNote: (midi, played) =>
         set((s) => {
           const lastNotes = [...s.lastNotes, midi].slice(-MAX_NOTES);
           const exercise = s.exercise && evaluateExercise(s, s.exercise, midi);
@@ -252,16 +264,29 @@ export const useMusicStore = create<MusicState>()(
             exercise?.done && !s.exercise?.done
               ? recordCompletion(s.progress, exercise)
               : s.progress;
-          const ref = s.lastFret ?? s.autoWindowStart + 2;
-          const { tuning, capo } = s.settings;
-          const at = fret ?? nearestPosition(midi, tuning, ref, capo)?.fret;
-          if (at === undefined) return { lastNotes, exercise, progress };
+          const { tuning, capo, fretWindow } = s.settings;
+          const start =
+            fretWindow === 'auto'
+              ? s.autoWindowStart
+              : typeof fretWindow === 'number'
+                ? fretWindow
+                : null;
+          const window =
+            start === null
+              ? null
+              : ([
+                  clampWindowStart(start, capo),
+                  clampWindowStart(start, capo) + WINDOW_SIZE - 1,
+                ] as const);
+          const pos = played ?? resolvePosition(midi, tuning, { last: s.lastPos, window, capo });
+          if (!pos) return { lastNotes, exercise, progress, lastPos: null };
           return {
             lastNotes,
             exercise,
             progress,
-            lastFret: at,
-            autoWindowStart: followWindow(s.autoWindowStart, at, capo),
+            lastFret: pos.fret,
+            lastPos: { string: pos.string, fret: pos.fret, midi, heard: !played },
+            autoWindowStart: followWindow(s.autoWindowStart, pos.fret, capo),
           };
         }),
       shiftWindow: (delta) =>
@@ -273,7 +298,7 @@ export const useMusicStore = create<MusicState>()(
             return { settings: { ...s.settings, fretWindow: clampWindowStart(w + delta, capo) } };
           return {};
         }),
-      clearNotes: () => set({ lastNotes: [] }),
+      clearNotes: () => set({ lastNotes: [], lastPos: null }),
       updateSettings: (patch) =>
         set((s) => {
           const settings = { ...s.settings, ...patch };
@@ -288,6 +313,7 @@ export const useMusicStore = create<MusicState>()(
             },
             autoWindowStart: clampWindowStart(s.autoWindowStart + shift, settings.capo),
             lastFret: null,
+            lastPos: null,
           };
         }),
       setWeights: (patch) =>

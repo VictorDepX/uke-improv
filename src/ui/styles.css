@@ -1001,6 +1001,17 @@ input[type='range'] {
     0 0 0 4px var(--ring);
 }
 
+/* Mesma nota em outro lugar: o microfone não sabe a corda, então pode ter sido aqui. */
+.fb-dot[data-alt]::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border: 2px dotted var(--ring);
+  border-radius: 50%;
+  opacity: 0.75;
+  pointer-events: none;
+}
+
 .fb-dot[data-preview='next'] {
   outline: 2px dashed var(--preview);
   outline-offset: 3px;

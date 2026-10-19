@@ -69,7 +69,9 @@ export function useTakes() {
       if (s.lastNotes === prev.lastNotes || s.lastNotes.length === 0) return;
       const midi = s.lastNotes.at(-1)!;
       const t = (performance.now() - startedAt.current) / 1000;
-      notes.current.push(takeNote(t, midi, s.key, s.currentChord, s.settings.arpeggio));
+      const pos =
+        s.lastPos?.midi === midi ? { string: s.lastPos.string, fret: s.lastPos.fret } : undefined;
+      notes.current.push(takeNote(t, midi, s.key, s.currentChord, s.settings.arpeggio, pos));
     });
     limit.current = window.setTimeout(() => void stop(), MAX_TAKE_SECONDS * 1000);
   }, [stop]);

@@ -126,7 +126,16 @@ function TakePlayer({ take, onRemove }: { take: Take; onRemove: () => void }) {
             capo={settings.capo}
             labels={settings.labels}
             fretWindow={null}
-            lastMidi={note?.midi ?? null}
+            last={
+              note
+                ? {
+                    string: note.pos?.string ?? -1,
+                    fret: note.pos?.fret ?? -1,
+                    midi: note.midi,
+                    heard: true,
+                  }
+                : null
+            }
           />
         </div>
       ) : null}

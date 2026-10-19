@@ -9,7 +9,7 @@ describe('useMusicStore', () => {
 
   it('guarda só as 4 últimas notas', () => {
     const { registerNote } = useMusicStore.getState();
-    [60, 62, 64, 65, 67].forEach(registerNote);
+    [60, 62, 64, 65, 67].forEach((m) => registerNote(m));
     expect(useMusicStore.getState().lastNotes).toEqual([62, 64, 65, 67]);
   });
 
@@ -57,16 +57,21 @@ describe('janela automática', () => {
   it('segue a casa tocada na tela', () => {
     const s = useMusicStore.getState();
     s.updateSettings({ fretWindow: 'auto' });
-    s.registerNote(74, 7); // D5 na corda G, casa 7
+    s.registerNote(74, { string: 0, fret: 7 }); // D5 na corda G, casa 7
     expect(useMusicStore.getState().autoWindowStart).toBe(5);
     expect(useMusicStore.getState().lastFret).toBe(7);
   });
 
   it('nota do microfone usa a posição mais próxima da mão', () => {
     const s = useMusicStore.getState();
-    s.registerNote(72, 12); // C5 na casa 12 (corda C)
+    s.registerNote(72, { string: 1, fret: 12 }); // C5 na casa 12 (corda C)
     s.registerNote(76); // E5: a casa mais próxima de 12 é a 12 da corda E
-    expect(useMusicStore.getState().lastFret).toBe(12);
+    expect(useMusicStore.getState().lastPos).toEqual({
+      string: 2,
+      fret: 12,
+      midi: 76,
+      heard: true,
+    });
   });
 
   it('as setas deslocam a janela fixa e a automática', () => {

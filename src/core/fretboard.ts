@@ -79,3 +79,49 @@ export function followWindow(start: number, fret: number, capo = 0): number {
   if (fret >= start && fret < start + WINDOW_SIZE) return start;
   return clampWindowStart(fret - Math.floor(WINDOW_SIZE / 2), capo);
 }
+
+/** Onde a mão está: corda e casa (contando a partir do capo). */
+export interface HandPosition {
+  string: number;
+  fret: number;
+}
+
+export interface ResolveContext {
+  /** Última posição tocada. */
+  last?: HandPosition | null;
+  /** Janela de casas visível [primeira, última]; corda solta conta como dentro. */
+  window?: readonly [number, number] | null;
+  capo?: number;
+}
+
+/** Fora da janela visível: só se não houver outra opção. */
+const OUTSIDE_WINDOW = 100;
+/** Peso de mudar de corda, em casas. */
+const STRING_COST = 0.5;
+
+/**
+ * Onde uma nota ouvida (só a altura) provavelmente foi tocada. O microfone não sabe a corda:
+ * no GCEA, 19 das 25 alturas existem em mais de um lugar. Prefere a janela visível e o menor
+ * deslocamento da mão (casa e corda); corda solta está ao alcance com a mão nas primeiras casas.
+ */
+export function resolvePosition(
+  midi: number,
+  tuning: TuningName,
+  { last = null, window = null, capo = 0 }: ResolveContext = {},
+): FretPosition | undefined {
+  const options = fretPositions(tuning, capo).filter((p) => p.midi === midi);
+  if (options.length <= 1) return options[0];
+  const hand = last ? last.fret : window ? window[0] + 2 : 0;
+  const cost = (p: FretPosition) => {
+    const outside = window && p.fret > 0 && (p.fret < window[0] || p.fret > window[1]);
+    const fretCost = p.fret === 0 ? (hand <= 4 ? 1 : 3) : Math.abs(p.fret - hand);
+    const stringCost = last ? STRING_COST * Math.abs(p.string - last.string) : 0;
+    return (outside ? OUTSIDE_WINDOW : 0) + fretCost + stringCost;
+  };
+  return options.reduce((best, p) => {
+    const d = cost(p) - cost(best);
+    if (d < 0) return p;
+    if (d > 0) return best;
+    return p.fret < best.fret || (p.fret === best.fret && p.string < best.string) ? p : best;
+  });
+}

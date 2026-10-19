@@ -22,6 +22,13 @@ import { useMediaQuery } from '../hooks/useMediaQuery';
 
 const LONG_PRESS_MS = 450;
 
+export interface LastNote {
+  string: number;
+  fret: number;
+  midi: number;
+  heard: boolean;
+}
+
 export interface FretboardProps {
   ctx: NoteContext;
   keyContext: KeyContext;
@@ -31,7 +38,11 @@ export interface FretboardProps {
   labels: LabelMode;
   fretWindow: number | null;
   suggestions?: readonly NoteSuggestion[];
-  lastMidi?: number | null;
+  /**
+   * Última nota: a posição tocada. Com `heard` (só a altura veio, ex.: microfone), as outras
+   * casas com a mesma nota ganham um contorno pontilhado, porque podem ter sido elas.
+   */
+  last?: LastNote | null;
   /** Acorde seguinte (modo jam): suas notas aparecem contornadas. */
   previewChord?: string | null;
   onPlay?: (pos: FretPosition) => void;
@@ -51,7 +62,7 @@ export const Fretboard = memo(function Fretboard({
   labels,
   fretWindow,
   suggestions = [],
-  lastMidi = null,
+  last = null,
   previewChord = null,
   onPlay,
   onInspect,
@@ -93,7 +104,8 @@ export const Fretboard = memo(function Fretboard({
   const cell = (pos: FretPosition) => {
     const cls: NoteClass = classifyNote(pos.chroma, ctx);
     const r = rank.get(pos.midi);
-    const isLast = pos.midi === lastMidi;
+    const isLast = last !== null && pos.string === last.string && pos.fret === last.fret;
+    const isAlt = !isLast && last !== null && last.heard && pos.midi === last.midi;
     const inPreview = preview?.has(pos.chroma) ?? false;
     const common = inPreview && ctx.chord.stable.includes(pos.chroma);
     const label = noteLabel(pos.chroma, labels, keyContext, ctx.chord);
@@ -146,9 +158,10 @@ export const Fretboard = memo(function Fretboard({
           className="fb-dot"
           data-cls={cls}
           data-last={isLast || undefined}
+          data-alt={isAlt || undefined}
           data-preview={inPreview ? (common ? 'common' : 'next') : undefined}
         >
-          {cls !== 'fora' || isLast || r ? label : ''}
+          {cls !== 'fora' || isLast || isAlt || r ? label : ''}
         </span>
         {r ? <span className="fb-rank">{r}</span> : null}
       </button>

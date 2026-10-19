@@ -10,6 +10,8 @@ export interface TakeNote {
   /** Acorde que soava quando a nota entrou. */
   chord: string;
   cls: NoteClass;
+  /** Posição deduzida no braço (corda e casa a partir do capo), quando houver. */
+  pos?: { string: number; fret: number };
 }
 
 /** Classifica a nota como o braço mostrava naquele momento. */
@@ -19,12 +21,14 @@ export function takeNote(
   key: KeyContext,
   chord: string,
   arpeggio = false,
+  pos?: { string: number; fret: number },
 ): TakeNote {
   return {
     t,
     midi,
     chord,
     cls: classifyNote(mod12(midi), buildNoteContext(key, chord, arpeggio)),
+    ...(pos ? { pos } : {}),
   };
 }
 

@@ -210,6 +210,26 @@ describe('App', () => {
     expect(vi.mocked(playSequence)).toHaveBeenCalledTimes(2);
   });
 
+  it('tocar uma casa marca só aquela casa, não as outras com a mesma nota', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+    await user.click(screen.getByRole('button', { name: /^A4, corda A, casa 0/ }));
+    const marked = container.querySelectorAll('.fb-dot[data-last]');
+    expect(marked).toHaveLength(1);
+    expect(marked[0]!.closest('button')).toHaveAccessibleName(/^A4, corda A, casa 0/);
+  });
+
+  it('nota do microfone vai para a janela fixa e as outras posições ficam só sugeridas', () => {
+    useMusicStore.getState().updateSettings({ fretWindow: 5 });
+    const { container } = render(<App />);
+    act(() => useMusicStore.getState().registerNote(69)); // A4 sem casa: veio do microfone
+    const marked = container.querySelectorAll('.fb-dot[data-last]');
+    expect(marked).toHaveLength(1);
+    expect(marked[0]!.closest('button')).toHaveAccessibleName(/^A4, corda E, casa 5/);
+    // A corda A solta (casa 0 aparece mesmo com a janela) é outra posição possível.
+    expect(container.querySelectorAll('.fb-dot[data-alt]').length).toBeGreaterThan(0);
+  });
+
   it('o botão de tom resume o tom atual e abre o seletor recolhido', async () => {
     const user = userEvent.setup();
     render(<App />);
