@@ -5,6 +5,10 @@ Assistente de improviso e harmonia para ukulele. Escolha o tom e o acorde atual,
 **App:** [uke-improv.vercel.app](https://uke-improv.vercel.app): instalável como PWA e funciona offline.
 
 <p align="center">
+  <img src="docs/jam.gif" alt="Modo jam: a base toca C, G, Am e F e o braço recolore a cada troca de acorde" width="100%">
+</p>
+
+<p align="center">
   <img src="docs/explorar.png" alt="Braço colorido por função, diagramas de acorde e exercícios" width="68%">
   &nbsp;
   <img src="docs/jam-celular.png" alt="Modo jam no celular" width="24%">
@@ -127,3 +131,7 @@ A parte de contas é opcional: sem ela, o app funciona por completo e guarda tud
 - **Posição pelo microfone:** o microfone não sabe qual corda foi tocada, então a posição é uma estimativa. Fixe uma janela de casas em Ajustes para restringi-la.
 - **Página avulsa sem microfone:** em páginas embutidas sem permissão de microfone (como a versão de página única), use "Analisar gravação", que roda os mesmos detectores.
 - **Afinação:** só GCEA (padrão e com Sol grave). Outros instrumentos estão em estudo.
+
+## Licença
+
+[MIT](LICENSE) © 2026 Victor Daniel
