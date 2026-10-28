@@ -44,6 +44,11 @@ export default defineConfig({
       ? [viteSingleFile()]
       : [serviceWorker(publicDirOf(fileURLToPath(new URL('.', import.meta.url))))]),
   ],
+  build: {
+    // Source maps públicos: o código já é aberto (MIT) e o Sentry os usa para mostrar o
+    // erro na linha original. A página única não precisa deles.
+    sourcemap: !singleFile,
+  },
   define: {
     // Página avulsa (artifact) não pode registrar service worker nem tem o proxy de /api.
     __PWA__: JSON.stringify(!singleFile),

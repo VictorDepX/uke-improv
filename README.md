@@ -129,7 +129,7 @@ A parte de contas é opcional: sem ela, o app funciona por completo e guarda tud
 ## Analytics e monitoramento
 
 - **Visitas:** Vercel Web Analytics (sem cookies), ligado no painel do projeto. Fora da Vercel, não carrega nada.
-- **Erros:** Sentry, opcional. Defina `VITE_SENTRY_DSN` nas variáveis de ambiente da Vercel e acrescente o host de ingestão do Sentry ao `connect-src` da CSP em `vercel.json`. Sem o DSN, o código do Sentry nem entra no build.
+- **Erros e desempenho:** Sentry (projeto `uke-improv`), com 20% das visitas amostradas para desempenho e source maps públicos para stack traces legíveis. Num fork, troque o DSN por `VITE_SENTRY_DSN` (vazio desliga) e o host de ingestão no `connect-src` da CSP em `vercel.json`.
 
 ## Limitações conhecidas
 
