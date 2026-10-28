@@ -3,6 +3,7 @@ import {
   MAX_CHART_BARS,
   analyzeChart,
   parseChart,
+  MAX_CHART_TEXT,
   type ChordRole,
   type ParsedChart,
 } from '@/core/chart';
@@ -67,6 +68,7 @@ export function ChartAnalyzer() {
           className="chart-input mono"
           rows={7}
           value={text}
+          maxLength={MAX_CHART_TEXT}
           placeholder={PLACEHOLDER}
           onChange={(e) => setText(e.target.value)}
           spellCheck={false}

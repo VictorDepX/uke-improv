@@ -129,6 +129,17 @@ describe('sincronização com a conta', () => {
     expect(useMusicStore.getState().account.error).toBe('Já existe uma conta com esse e-mail.');
   });
 
+  it('dados de conta inválidos nem saem do aparelho', async () => {
+    await sync.startSync();
+    calls.length = 0;
+    expect(await sync.signUp('X', 'sem-arroba', 'qualquer-123')).toBe(false);
+    expect(useMusicStore.getState().account.error).toBe('E-mail inválido.');
+    expect(await sync.signUp('X', 'a@b.c', 'curta')).toBe(false);
+    expect(await sync.signUp('x'.repeat(61), 'a@b.c', 'qualquer-123')).toBe(false);
+    expect(await sync.signIn('a@b.c', 'x'.repeat(129))).toBe(false);
+    expect(calls).toEqual([]);
+  });
+
   it('sair encerra a sessão; mudanças depois disso não sobem', async () => {
     vi.useFakeTimers();
     sessionUser = { id: 'u1', name: 'Vi', email: 'a@b.c' };

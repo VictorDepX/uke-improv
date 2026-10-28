@@ -16,6 +16,24 @@ const pick: Record<SectionId, (s: MusicState) => unknown> = {
   progress: (s) => s.progress,
 };
 
+/** Limites dos campos de conta. O servidor também valida; isto evita enviar lixo. */
+export const ACCOUNT_LIMITS = { name: 60, email: 254, passwordMin: 8, passwordMax: 128 } as const;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Mensagem de erro para dados de conta inválidos; null se estiverem bons. */
+export function credentialsError(email: string, password: string, name?: string): string | null {
+  const creating = name !== undefined;
+  if (email.length > ACCOUNT_LIMITS.email || !EMAIL_RE.test(email)) return 'E-mail inválido.';
+  if (password.length > ACCOUNT_LIMITS.passwordMax)
+    return 'A senha pode ter no máximo 128 caracteres.';
+  // No login, senha curta só pode estar errada: o servidor responde como qualquer senha errada.
+  if (creating && password.length < ACCOUNT_LIMITS.passwordMin)
+    return 'A senha precisa de pelo menos 8 caracteres.';
+  if (creating && (name.length === 0 || name.length > ACCOUNT_LIMITS.name))
+    return 'O nome precisa ter de 1 a 60 caracteres.';
+  return null;
+}
+
 const PUSH_DELAY = 1500;
 const FOCUS_THROTTLE = 30_000;
 
@@ -136,7 +154,9 @@ export async function startSync(): Promise<void> {
 }
 
 export async function signUp(name: string, email: string, password: string): Promise<boolean> {
-  setAccount({ error: null });
+  const invalid = credentialsError(email, password, name);
+  setAccount({ error: invalid });
+  if (invalid) return false;
   try {
     const user = await api.signUp(name, email, password);
     setAccount({ status: 'signedIn', user });
@@ -149,7 +169,9 @@ export async function signUp(name: string, email: string, password: string): Pro
 }
 
 export async function signIn(email: string, password: string): Promise<boolean> {
-  setAccount({ error: null });
+  const invalid = credentialsError(email, password);
+  setAccount({ error: invalid });
+  if (invalid) return false;
   try {
     const user = await api.signIn(email, password);
     setAccount({ status: 'signedIn', user });

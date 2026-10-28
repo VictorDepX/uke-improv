@@ -31,6 +31,14 @@ import type {
   ScoreWeights,
   TuningName,
 } from '@/core/types';
+import {
+  sanitizeChord,
+  sanitizeKey,
+  sanitizeProgress,
+  sanitizeProgressions,
+  sanitizeSettings,
+  sanitizeSyncMeta,
+} from '@/core/validate';
 import { safeStorage } from './safeStorage';
 
 export type Layer = 'chords' | 'bass' | 'drums';
@@ -378,16 +386,15 @@ export const useMusicStore = create<MusicState>()(
         set((s) => {
           const next: Partial<MusicState> = { syncMeta: { ...s.syncMeta } };
           if (pull.settings) {
-            next.settings = { ...s.settings, ...(pull.settings.value as Partial<Settings>) };
+            next.settings = { ...s.settings, ...sanitizeSettings(pull.settings.value) };
             next.syncMeta!.settings = pull.settings.at;
           }
           if (pull.progressions) {
-            next.customProgressions = pull.progressions.value as Progression[];
+            next.customProgressions = sanitizeProgressions(pull.progressions.value);
             next.syncMeta!.progressions = pull.progressions.at;
           }
           if (pull.progress) {
-            const p = pull.progress.value as Partial<Progress>;
-            next.progress = { ear: p.ear ?? {}, exercises: p.exercises ?? {} };
+            next.progress = sanitizeProgress(pull.progress.value);
             next.syncMeta!.progress = pull.progress.at;
           }
           return next;
@@ -448,18 +455,55 @@ export const useMusicStore = create<MusicState>()(
         syncMeta: s.syncMeta,
       }),
       merge: (persisted, current) => {
-        const p = (persisted ?? {}) as Partial<MusicState>;
+        // O localStorage é editável no navegador: nada dele entra sem validação.
+        const p = (persisted ?? {}) as Record<string, unknown>;
+        const pj = (typeof p.jam === 'object' && p.jam !== null ? p.jam : {}) as Record<
+          string,
+          unknown
+        >;
+        const pm = (typeof p.mic === 'object' && p.mic !== null ? p.mic : {}) as Record<
+          string,
+          unknown
+        >;
+        const layers = pj.layers as Record<string, unknown> | undefined;
         return {
           ...current,
-          ...p,
-          settings: { ...current.settings, ...p.settings },
-          progress: { ear: {}, exercises: {}, ...p.progress },
-          syncMeta: { ...p.syncMeta },
+          key: sanitizeKey(p.key) ?? current.key,
+          currentChord: sanitizeChord(p.currentChord) ?? current.currentChord,
+          settings: { ...current.settings, ...sanitizeSettings(p.settings) },
+          customProgressions: sanitizeProgressions(p.customProgressions),
+          progress: sanitizeProgress(p.progress),
+          syncMeta: sanitizeSyncMeta(p.syncMeta),
           account: current.account,
-          jam: { ...current.jam, ...p.jam, playing: false, bar: 0, beat: 0, segment: 0 },
+          jam: {
+            ...current.jam,
+            bpm:
+              typeof pj.bpm === 'number' && Number.isFinite(pj.bpm)
+                ? clamp(pj.bpm, BPM_RANGE.min, BPM_RANGE.max)
+                : current.jam.bpm,
+            progressionId:
+              typeof pj.progressionId === 'string' && pj.progressionId.length <= 64
+                ? pj.progressionId
+                : current.jam.progressionId,
+            grooveId:
+              pj.grooveId === null || (typeof pj.grooveId === 'string' && pj.grooveId.length <= 64)
+                ? (pj.grooveId as string | null)
+                : current.jam.grooveId,
+            layers: Object.fromEntries(
+              Object.entries(current.jam.layers).map(([k, def]) => {
+                const v = layers?.[k];
+                return [k, typeof v === 'number' && v >= 0 && v <= 1 ? v : def];
+              }),
+            ) as JamState['layers'],
+            playing: false,
+            bar: 0,
+            beat: 0,
+            segment: 0,
+          },
           mic: {
             ...current.mic,
-            ...p.mic,
+            followChords:
+              typeof pm.followChords === 'boolean' ? pm.followChords : current.mic.followChords,
             status: 'off',
             note: null,
             chord: null,

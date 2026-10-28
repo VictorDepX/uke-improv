@@ -113,7 +113,11 @@ export interface ParsedChart {
   barred: boolean;
 }
 
-export function parseChart(text: string): ParsedChart {
+/** Tamanho máximo de cifra colada; o resto é ignorado (uma música inteira cabe com folga). */
+export const MAX_CHART_TEXT = 20_000;
+
+export function parseChart(input: string): ParsedChart {
+  const text = input.slice(0, MAX_CHART_TEXT);
   const chords: ParsedChord[] = [];
   const bars: string[][] = [];
   let barred = false;

@@ -1,6 +1,6 @@
 import { useId, useState, type FormEvent } from 'react';
 import { useMusicStore } from '@/store/useMusicStore';
-import { signIn, signOut, signUp, syncNow } from '@/sync/sync';
+import { ACCOUNT_LIMITS, signIn, signOut, signUp, syncNow } from '@/sync/sync';
 import { Panel, Segmented } from './controls';
 
 const time = (ms: number) =>
@@ -21,7 +21,11 @@ export function AccountPanel() {
     setBusy(true);
     const ok =
       mode === 'up'
-        ? await signUp(name.trim() || email.split('@')[0]!, email.trim(), password)
+        ? await signUp(
+            (name.trim() || email.split('@')[0]!).slice(0, ACCOUNT_LIMITS.name),
+            email.trim(),
+            password,
+          )
         : await signIn(email.trim(), password);
     setBusy(false);
     if (ok) setPassword('');
@@ -87,6 +91,7 @@ export function AccountPanel() {
               id={ids.name}
               className="input"
               autoComplete="name"
+              maxLength={ACCOUNT_LIMITS.name}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -100,6 +105,7 @@ export function AccountPanel() {
             type="email"
             required
             autoComplete="email"
+            maxLength={ACCOUNT_LIMITS.email}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -111,7 +117,8 @@ export function AccountPanel() {
             className="input"
             type="password"
             required
-            minLength={8}
+            minLength={ACCOUNT_LIMITS.passwordMin}
+            maxLength={ACCOUNT_LIMITS.passwordMax}
             autoComplete={mode === 'up' ? 'new-password' : 'current-password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}

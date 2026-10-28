@@ -1,5 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import { incomingHeaders, outgoingHeaders, proxyAuth, targetUrl } from '../proxy';
+import {
+  firstPartyCookie,
+  incomingHeaders,
+  outgoingHeaders,
+  proxyAuth,
+  routeOf,
+  targetUrl,
+} from '../proxy';
 
 const BASE = 'https://neon.example/neondb/auth';
 
@@ -35,7 +42,10 @@ describe('proxy do Neon Auth', () => {
     up.append('set-cookie', 'b=2; Path=/');
     const h = incomingHeaders(up);
     expect(h.get('content-encoding')).toBeNull();
-    expect(h.getSetCookie()).toEqual(['a=1; Path=/; HttpOnly', 'b=2; Path=/']);
+    expect(h.getSetCookie()).toEqual([
+      'a=1; Path=/; HttpOnly; SameSite=Lax',
+      'b=2; Path=/; SameSite=Lax',
+    ]);
     expect(h.get('cache-control')).toBe('no-store');
   });
 
@@ -60,5 +70,50 @@ describe('proxy do Neon Auth', () => {
     );
     expect(res.status).toBe(401);
     expect(await res.text()).toBe('{"message":"x"}');
+  });
+
+  const ok = vi.fn(async () => new Response('{}', { status: 200 })) as unknown as typeof fetch;
+  const call = (url: string, init: RequestInit = {}) => proxyAuth(new Request(url, init), ok, BASE);
+
+  it('recusa chamadas de outro site (sessão e JWT não vazam)', async () => {
+    const evil = { headers: { origin: 'https://evil.example', 'sec-fetch-site': 'cross-site' } };
+    expect((await call('https://app.dev/api/auth/get-session', evil)).status).toBe(403);
+    expect((await call('https://app.dev/api/auth/token', evil)).status).toBe(403);
+    const onlyFetchSite = { headers: { 'sec-fetch-site': 'cross-site' } };
+    expect((await call('https://app.dev/api/auth/token', onlyFetchSite)).status).toBe(403);
+    const same = { headers: { 'sec-fetch-site': 'same-origin' } };
+    expect((await call('https://app.dev/api/auth/get-session', same)).status).toBe(200);
+  });
+
+  it('só repassa as rotas e métodos que o app usa', async () => {
+    expect((await call('https://app.dev/api/auth/admin/list-users')).status).toBe(404);
+    expect((await call('https://app.dev/api/auth/delete-user', { method: 'POST' })).status).toBe(
+      404,
+    );
+    expect((await call('https://app.dev/api/neon-auth?path=../../neondb/rest/v1')).status).toBe(
+      404,
+    );
+    expect((await call('https://app.dev/api/auth/sign-in/email')).status).toBe(405);
+    expect(routeOf('https://app.dev/api/neon-auth?path=sign-in%2F..%2F..')).toBeNull();
+  });
+
+  it('recusa corpo grande demais', async () => {
+    const big = { method: 'POST', body: 'x'.repeat(9000) };
+    expect((await call('https://app.dev/api/auth/sign-in/email', big)).status).toBe(413);
+  });
+
+  it('não devolve CORS e grava o cookie como SameSite=Lax', () => {
+    const up = new Headers({
+      'access-control-allow-origin': 'https://evil.example',
+      'access-control-allow-credentials': 'true',
+    });
+    up.append('set-cookie', '__Secure-neonauth.session_token=t; Path=/; Secure; SameSite=None');
+    const h = incomingHeaders(up);
+    expect(h.get('access-control-allow-origin')).toBeNull();
+    expect(h.get('access-control-allow-credentials')).toBeNull();
+    expect(h.getSetCookie()).toEqual([
+      '__Secure-neonauth.session_token=t; Path=/; Secure; SameSite=Lax',
+    ]);
+    expect(firstPartyCookie('a=1; samesite=strict; Path=/')).toBe('a=1; SameSite=Lax; Path=/');
   });
 });

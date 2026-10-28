@@ -4,6 +4,9 @@ import { diatonicChords } from '@/core/harmony';
 import { midiName, prefersFlats } from '@/core/music';
 import { useMusicStore } from '@/store/useMusicStore';
 
+/** Só o primeiro minuto é analisado; arquivos maiores só gastariam memória ao decodificar. */
+const MAX_RECORDING_BYTES = 50 * 1024 * 1024;
+
 type State =
   | { phase: 'idle' }
   | { phase: 'working'; name: string }
@@ -20,6 +23,13 @@ export function RecordingAnalyzer() {
   const flats = prefersFlats(key);
 
   async function analyze(file: File) {
+    if (file.size > MAX_RECORDING_BYTES) {
+      setState({
+        phase: 'error',
+        message: 'Arquivo grande demais. Use uma gravação de até 50 MB (uns 5 minutos em .wav).',
+      });
+      return;
+    }
     setState({ phase: 'working', name: file.name });
     try {
       const ctx = new OfflineAudioContext(1, 1, 44100);

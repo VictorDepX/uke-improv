@@ -48,7 +48,7 @@ Abra o endereço que o Vite mostrar. O microfone funciona em `localhost` e em qu
 | Comando                  | O que faz                                                                                                        |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | `npm run dev`            | Servidor local com recarga, incluindo o proxy de `/api` para as contas                                           |
-| `npm test`               | Vitest: 238 testes (teoria, detectores com sinais sintetizados, motor da base, looper, sincronização, interface) |
+| `npm test`               | Vitest: 247 testes (teoria, detectores com sinais sintetizados, motor da base, looper, sincronização, interface) |
 | `npm run typecheck`      | TypeScript estrito, sem emitir                                                                                   |
 | `npm run lint`           | ESLint                                                                                                           |
 | `npm run format`         | Prettier                                                                                                         |
