@@ -3226,3 +3226,259 @@ input[type='range'] {
   max-width: 42ch;
   color: var(--fg-muted);
 }
+
+/* ---------- Rodapé do app ---------- */
+.app-footer {
+  border-top: 1px solid var(--line);
+  margin-top: 8px;
+  padding: 28px var(--gutter-r) calc(28px + env(safe-area-inset-bottom, 0px)) var(--gutter-l);
+  color: var(--fg-muted);
+  font-size: 0.875rem;
+}
+
+.app-footer-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px 32px;
+}
+
+.app-footer h2 {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--fg);
+}
+
+.app-footer p {
+  margin: 0;
+  max-width: 64ch;
+  line-height: 1.55;
+}
+
+.app-footer ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.app-footer a {
+  color: var(--accent);
+}
+
+.app-footer-meta {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 760px) {
+  .app-footer-inner {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* No modo prática (tela cheia) e com o celular deitado, o rodapé não aparece. */
+@media (max-height: 540px) {
+  .app-footer {
+    display: none;
+  }
+}
+
+/* ---------- Guias ---------- */
+.guide {
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+}
+
+.guide-top {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 16px var(--gutter-r) 8px var(--gutter-l);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.guide-top .brand {
+  text-decoration: none;
+  color: inherit;
+}
+
+.guide-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.guide-nav > a:not(.button) {
+  color: var(--accent);
+}
+
+.guide-nav .button,
+.guide-cta .button {
+  text-decoration: none;
+}
+
+.guide-main {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 8px var(--gutter-r) 48px var(--gutter-l);
+  display: grid;
+  gap: 32px;
+}
+
+.guide-article {
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+
+.guide-article h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 2.75rem);
+  line-height: 1.1;
+  margin: 16px 0 6px;
+}
+
+.guide-article h2 {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  margin: 36px 0 8px;
+}
+
+.guide-article p,
+.guide-article li {
+  max-width: 68ch;
+}
+
+.guide-article a {
+  color: var(--accent);
+}
+
+.guide-meta {
+  color: var(--fg-muted);
+  font-size: 0.9375rem;
+  margin: 0 0 24px;
+}
+
+.guide-lead {
+  font-size: 1.1875rem;
+  color: var(--fg);
+}
+
+.guide-article table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 12px 0 20px;
+  font-size: 0.9375rem;
+}
+
+.guide-article th,
+.guide-article td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.guide-article th {
+  color: var(--fg-muted);
+  font-weight: 600;
+}
+
+.guide-article td:first-child {
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.guide-board {
+  margin: 20px 0 24px;
+}
+
+.guide-board-frame {
+  overflow-x: auto;
+  border-radius: var(--radius);
+}
+
+.guide-board figcaption {
+  margin-top: 8px;
+  color: var(--fg-muted);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.guide-cta {
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.guide-cta h2 {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+
+.guide-cta p {
+  margin: 0 0 14px;
+  color: var(--fg-muted);
+  line-height: 1.55;
+}
+
+.guide-related h2 {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  margin: 0 0 8px;
+}
+
+.guide-related ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.guide-related li {
+  display: grid;
+  gap: 2px;
+}
+
+.guide-related a {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.guide-related span {
+  color: var(--fg-muted);
+  font-size: 0.9375rem;
+}
+
+.guide-footer {
+  border-top: 1px solid var(--line);
+  padding: 20px var(--gutter-r) 32px var(--gutter-l);
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: 0.875rem;
+}
+
+.guide-footer a {
+  color: var(--accent);
+}
+
+/* O braço é mais largo que o celular: rola de lado dentro da figura, sem alargar a página. */
+.guide-main > *,
+.guide-article > * {
+  min-width: 0;
+}
+
+.guide-board,
+.guide-board-frame {
+  max-width: 100%;
+}

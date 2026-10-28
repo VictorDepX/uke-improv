@@ -25,8 +25,8 @@ export class ApiError extends Error {
   }
 }
 
-/** URL relativa à página (o app usa base './'). */
-const url = (path: string) => new URL(path, document.baseURI).toString();
+/** Sempre a partir da raiz do domínio: a página pode estar em /jam, /ouvido etc. */
+const url = (path: string) => new URL(`/${path}`, window.location.origin).toString();
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(url(path), {

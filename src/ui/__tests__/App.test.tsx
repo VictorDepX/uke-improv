@@ -31,7 +31,7 @@ async function openTab(user: ReturnType<typeof userEvent.setup>, name: string) {
 describe('App', () => {
   beforeEach(() => {
     useMusicStore.setState(initial, true);
-    window.location.hash = '';
+    window.history.replaceState(null, '', '/');
   });
 
   it('abre na aba Explorar com o braço e o campo harmônico de C maior', () => {
@@ -400,9 +400,28 @@ describe('App', () => {
     const user = userEvent.setup();
     render(<App />);
     await openTab(user, 'Jam');
-    expect(window.location.hash).toBe('#jam');
+    expect(window.location.pathname).toBe('/jam');
     expect(document.title).toMatch(/^Jam/);
     await user.click(screen.getByRole('link', { name: 'Explorar' }));
+    expect(window.location.pathname).toBe('/');
+  });
+
+  it('abre direto na aba do endereço, aceita o # antigo e volta com o histórico', async () => {
+    window.history.replaceState(null, '', '/ouvido');
+    const { unmount } = render(<App />);
+    expect(await screen.findByRole('button', { name: 'Ouvir' })).toBeInTheDocument();
+    unmount();
+    window.history.replaceState(null, '', '/#jam');
+    render(<App />);
+    expect(await screen.findByLabelText('Tocar a base')).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/jam');
     expect(window.location.hash).toBe('');
+    await openTab(userEvent.setup(), 'Ajustes');
+    expect(window.location.pathname).toBe('/ajustes');
+    act(() => {
+      window.history.back();
+    });
+    await waitFor(() => expect(window.location.pathname).toBe('/jam'));
+    expect(await screen.findByLabelText('Tocar a base')).toBeInTheDocument();
   });
 });

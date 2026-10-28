@@ -2,6 +2,6 @@
 export function registerServiceWorker(): void {
   if (!__PWA__ || !import.meta.env.PROD || !('serviceWorker' in navigator)) return;
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => undefined);
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => undefined);
   });
 }

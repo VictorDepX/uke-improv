@@ -65,11 +65,14 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(req)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put('./', copy));
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(url.pathname, copy));
+          }
           return res;
         })
-        .catch(() => caches.match('./')),
+        // Offline: a própria página, se já foi aberta; senão, o app pela raiz (ele lê o endereço).
+        .catch(() => caches.match(url.pathname).then((hit) => hit || caches.match('./'))),
     );
     return;
   }

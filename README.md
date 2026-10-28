@@ -48,7 +48,7 @@ Abra o endereço que o Vite mostrar. O microfone funciona em `localhost` e em qu
 | Comando                  | O que faz                                                                                                        |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | `npm run dev`            | Servidor local com recarga, incluindo o proxy de `/api` para as contas                                           |
-| `npm test`               | Vitest: 250 testes (teoria, detectores com sinais sintetizados, motor da base, looper, sincronização, interface) |
+| `npm test`               | Vitest: 253 testes (teoria, detectores com sinais sintetizados, motor da base, looper, sincronização, interface) |
 | `npm run typecheck`      | TypeScript estrito, sem emitir                                                                                   |
 | `npm run lint`           | ESLint                                                                                                           |
 | `npm run format`         | Prettier                                                                                                         |
@@ -81,6 +81,13 @@ Algumas decisões:
 - **Sugestões são derivadas, não armazenadas.** O store guarda só tom, acorde, ajustes e progresso. Os componentes calculam o resto por seletores, e os módulos só conversam pelo store.
 - **A base é uma grade de semicolcheias.** `sequencer.ts` transforma (passo, progressão, compasso, estilo) em eventos por uma função pura, e `jam.ts` só agenda esses eventos no Tone.js. Mudanças entram no próximo compasso.
 - **A posição no braço é escolhida, não adivinhada às cegas.** No GCEA, 19 das 25 notas existem em mais de um lugar. Uma nota ouvida vai para a casa dentro da janela visível com o menor deslocamento da mão (`resolvePosition` em `core/fretboard.ts`). As outras posições da mesma nota aparecem pontilhadas.
+
+## Páginas e busca
+
+- **Endereços:** cada aba tem caminho próprio (`/`, `/jam`, `/ouvido`, `/ajustes`); links antigos com `#jam` continuam funcionando. Na página única, as abas seguem no `#`.
+- **Pré-render:** no build, `src/entry-server.tsx` renderiza cada página em Node e `scripts/prerender.mjs` escreve um HTML por endereço, com título, descrição, canônico e idioma próprios. Buscadores leem o conteúdo sem executar JavaScript; no navegador, o app monta por cima.
+- **Guias:** páginas estáticas em português (`/guias/…`) e inglês (`/en/guides/…`), ligadas por `hreflang`, em `src/guides/`. Usam o mesmo componente de braço do app.
+- **Sitemap:** gerado no build a partir das páginas indexáveis (Ajustes fica de fora, com `noindex`).
 
 ## Contas e sincronização
 

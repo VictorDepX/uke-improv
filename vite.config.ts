@@ -35,16 +35,20 @@ const apiProxy = {
   },
 };
 
-export default defineConfig({
-  // Caminhos relativos: o build funciona na raiz de um domínio ou numa subpasta (GitHub Pages).
-  base: './',
+export default defineConfig(({ isSsrBuild }) => ({
+  // Raiz do domínio: as abas têm caminho próprio (/jam). A página única usa caminhos relativos.
+  base: singleFile ? './' : '/',
   plugins: [
     react(),
-    ...(singleFile
-      ? [viteSingleFile()]
-      : [serviceWorker(publicDirOf(fileURLToPath(new URL('.', import.meta.url))))]),
+    // O build de servidor (pré-render) só gera o HTML: sem service worker nem página única.
+    ...(isSsrBuild
+      ? []
+      : singleFile
+        ? [viteSingleFile()]
+        : [serviceWorker(publicDirOf(fileURLToPath(new URL('.', import.meta.url))))]),
   ],
   build: {
+    copyPublicDir: !isSsrBuild,
     // Source maps públicos: o código já é aberto (MIT) e o Sentry os usa para mostrar o
     // erro na linha original. A página única não precisa deles.
     sourcemap: !singleFile,
@@ -67,4 +71,4 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     css: false,
   },
-});
+}));

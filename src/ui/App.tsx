@@ -7,7 +7,9 @@ import { KeyPicker } from './components/KeyPicker';
 import { useJamSync } from './hooks/useJamSync';
 import { useWakeLock } from './hooks/useWakeLock';
 import { ExplorePage } from './pages/ExplorePage';
+import { AppFooter } from './components/AppFooter';
 import { Toaster } from './components/Toaster';
+import { TABS, TAB_PATHS, USE_PATHS, hrefFor, tabFromLocation, type TabId } from './routes';
 import { useAccountToasts } from './hooks/useAccountToasts';
 
 // Abas fora da inicial e o modo prática vêm em pacotes separados, baixados ao abrir.
@@ -33,43 +35,14 @@ function PageSkeleton() {
   );
 }
 
-const TABS = [
-  {
-    id: 'explorar',
-    label: 'Explorar',
-    title: 'Uke Improv — improvise no ukulele sabendo a próxima nota',
-    description:
-      'Escolha o tom e o acorde: o braço do ukulele mostra quais notas soam bem a seguir e quais acordes combinam. Grátis, funciona offline.',
-  },
-  {
-    id: 'jam',
-    label: 'Jam',
-    title: 'Jam — base em loop para improvisar · Uke Improv',
-    description:
-      'Base de acordes, baixo e bateria em 4/4, 3/4 e 6/8, em pop, reggae, bossa nova, swing e valsa, com looper e analisador de cifra.',
-  },
-  {
-    id: 'ouvido',
-    label: 'Ouvido',
-    title: 'Treino de ouvido · Uke Improv',
-    description: 'Treine intervalos, maior × menor e função harmônica tocando no ukulele.',
-  },
-  {
-    id: 'ajustes',
-    label: 'Ajustes',
-    title: 'Ajustes · Uke Improv',
-    description: 'Afinação, capotraste, calibração do microfone e conta para sincronizar.',
-  },
-] as const;
-type TabId = (typeof TABS)[number]['id'];
-
-function initialTab(): TabId {
-  const hash = window.location.hash.slice(1);
-  return TABS.some((t) => t.id === hash) ? (hash as TabId) : 'explorar';
-}
-
-export function App() {
-  const [tab, setTab] = useState<TabId>(initialTab);
+export function App({ initialTab }: { initialTab?: TabId } = {}) {
+  const [tab, setTab] = useState<TabId>(
+    () =>
+      initialTab ??
+      (typeof window === 'undefined'
+        ? 'explorar'
+        : tabFromLocation(window.location.pathname, window.location.hash)),
+  );
   const [keyOpen, setKeyOpen] = useState(false);
   const [practiceOpen, setPracticeOpen] = useState(false);
   const closePractice = useCallback(() => setPracticeOpen(false), []);
@@ -81,16 +54,33 @@ export function App() {
   // Tocando, a tela não pode apagar: celular na estante, mãos no uke.
   useWakeLock(practiceOpen || jamPlaying);
 
-  // Título e descrição por aba (o app é uma página só, com as abas no #).
+  // Título e descrição por aba; o endereço acompanha (link antigo com # vira o caminho novo).
   useEffect(() => {
     const t = TABS.find((x) => x.id === tab)!;
     document.title = t.title;
     document.querySelector('meta[name="description"]')?.setAttribute('content', t.description);
-    // A aba fica no endereço: dá para compartilhar ou favoritar direto o Jam, por exemplo.
-    const hash = tab === 'explorar' ? '' : `#${tab}`;
-    if (window.location.hash !== hash)
-      history.replaceState(null, '', `${window.location.pathname}${window.location.search}${hash}`);
+    const { pathname, search, hash } = window.location;
+    if (USE_PATHS) {
+      if (pathname !== TAB_PATHS[tab] || hash)
+        history.replaceState(null, '', `${TAB_PATHS[tab]}${search}`);
+    } else {
+      const want = tab === 'explorar' ? '' : `#${tab}`;
+      if (hash !== want) history.replaceState(null, '', `${pathname}${search}${want}`);
+    }
   }, [tab]);
+
+  // Voltar e avançar do navegador trocam de aba.
+  useEffect(() => {
+    const onPop = () => setTab(tabFromLocation(window.location.pathname, window.location.hash));
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
+  const openTab = (id: TabId) => {
+    if (id === tab) return;
+    if (USE_PATHS) history.pushState(null, '', `${TAB_PATHS[id]}${window.location.search}`);
+    setTab(id);
+  };
 
   useEffect(() => {
     const cancel = preloadAudioWhenIdle();
@@ -139,12 +129,12 @@ export function App() {
             {TABS.map((t) => (
               <a
                 key={t.id}
-                href={`#${t.id}`}
+                href={hrefFor(t.id)}
                 className="tab"
                 aria-current={tab === t.id ? 'page' : undefined}
                 onClick={(e) => {
                   e.preventDefault();
-                  setTab(t.id);
+                  openTab(t.id);
                 }}
               >
                 {t.label}
@@ -166,6 +156,7 @@ export function App() {
           )}
         </Suspense>
       </main>
+      <AppFooter />
       {practiceOpen ? (
         <Suspense fallback={null}>
           <PracticeMode onClose={closePractice} />
