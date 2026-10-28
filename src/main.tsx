@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, startTransition } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './ui/App';
 import { preloadTab } from './ui/pageLoaders';
@@ -23,15 +23,20 @@ if (!root) throw new Error('Elemento #root não encontrado');
 const firstTab = tabFromLocation(window.location.pathname, window.location.hash);
 void preloadTab(firstTab)
   .catch(() => undefined)
-  .then(() =>
-    createRoot(root).render(
-      <StrictMode>
-        <ErrorBoundary>
-          <App />
-        </ErrorBoundary>
-      </StrictMode>,
-    ),
-  );
+  .then(() => {
+    // Em transição, o React divide a primeira renderização em fatias curtas em vez de uma
+    // tarefa longa, e o navegador segue respondendo enquanto o app monta.
+    const app = createRoot(root);
+    startTransition(() =>
+      app.render(
+        <StrictMode>
+          <ErrorBoundary>
+            <App />
+          </ErrorBoundary>
+        </StrictMode>,
+      ),
+    );
+  });
 
 registerServiceWorker();
 startMonitoring();
