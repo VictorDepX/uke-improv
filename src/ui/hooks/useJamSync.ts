@@ -1,3 +1,4 @@
+import { toast } from '../toast';
 import { useCallback, useEffect } from 'react';
 import { jamEngine } from '@/audio/engine/jam';
 import { looper } from '@/audio/looper/looper';
@@ -56,6 +57,9 @@ export function useJamSync(): void {
         });
       } catch {
         setJamPlaying(false);
+        toast.error(
+          'Não consegui ligar o som. Toque no play de novo; se continuar, recarregue a página.',
+        );
       }
     })();
     return () => {

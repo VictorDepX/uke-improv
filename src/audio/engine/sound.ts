@@ -28,6 +28,32 @@ export function preloadAudio(): void {
 }
 
 /**
+ * Baixa o Tone.js sem atrasar a abertura: quando o navegador fica ocioso depois de carregar
+ * a página, ou no primeiro toque/tecla, o que vier antes. Assim o play ainda liga o áudio
+ * dentro do gesto (iOS exige) e a primeira tela não espera 330 KB de áudio.
+ */
+export function preloadAudioWhenIdle(): () => void {
+  let done = false;
+  const run = () => {
+    if (done) return;
+    done = true;
+    cleanup();
+    preloadAudio();
+  };
+  const idle = window.requestIdleCallback
+    ? window.requestIdleCallback(run, { timeout: 4000 })
+    : window.setTimeout(run, 2000);
+  const events = ['pointerdown', 'keydown'] as const;
+  events.forEach((e) => window.addEventListener(e, run, { once: true, passive: true }));
+  function cleanup() {
+    if (window.cancelIdleCallback) window.cancelIdleCallback(idle);
+    else window.clearTimeout(idle);
+    events.forEach((e) => window.removeEventListener(e, run));
+  }
+  return cleanup;
+}
+
+/**
  * Liga o áudio e cria os instrumentos (uma vez). Precisa ser chamado dentro de um gesto
  * do usuário: com o Tone.js pré-carregado, `Tone.start()` roda de forma síncrona no toque,
  * como exigem iOS e Chrome.

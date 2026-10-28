@@ -1,6 +1,8 @@
+import type { Progression } from '@/core/types';
 import { PROGRESSIONS, barLabel, meterOf } from '@/core/progressions';
 import { useActiveProgression } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
+import { toast } from '../../toast';
 
 export function ProgressionPicker() {
   const { bars } = useActiveProgression();
@@ -9,6 +11,19 @@ export function ProgressionPicker() {
   const { playing, bar } = useMusicStore((s) => s.jam);
   const select = useMusicStore((s) => s.selectProgression);
   const remove = useMusicStore((s) => s.removeCustomProgression);
+  const restore = useMusicStore((s) => s.addCustomProgression);
+
+  const removeWithUndo = (p: Progression) => {
+    const wasSelected = p.id === selected;
+    remove(p.id);
+    toast.info(`“${p.name}” apagada.`, {
+      label: 'Desfazer',
+      run: () => {
+        restore(p);
+        if (!wasSelected) select(selected);
+      },
+    });
+  };
   const active = playing && bar >= 0 ? bar % bars.length : -1;
 
   return (
@@ -48,7 +63,7 @@ export function ProgressionPicker() {
                 type="button"
                 className="icon-button"
                 aria-label={`Apagar ${p.name}`}
-                onClick={() => remove(p.id)}
+                onClick={() => removeWithUndo(p)}
               >
                 ×
               </button>

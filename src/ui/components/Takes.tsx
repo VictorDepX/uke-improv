@@ -1,3 +1,4 @@
+import { toast } from '../toast';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { buildNoteContext } from '@/core/classify';
 import { midiName, prefersFlats } from '@/core/music';
@@ -196,7 +197,14 @@ export function TakesPanel() {
         </span>
       </div>
       {takes.map((t) => (
-        <TakePlayer key={t.id} take={t} onRemove={() => remove(t.id)} />
+        <TakePlayer
+          key={t.id}
+          take={t}
+          onRemove={() => {
+            remove(t.id);
+            toast.info('Gravação apagada.');
+          }}
+        />
       ))}
     </div>
   );

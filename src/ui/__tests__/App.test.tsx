@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useMusicStore } from '@/store/useMusicStore';
@@ -6,6 +6,7 @@ import { App } from '../App';
 
 vi.mock('@/audio/engine/sound', () => ({
   preloadAudio: vi.fn(),
+  preloadAudioWhenIdle: vi.fn(() => () => undefined),
   ensureAudio: vi.fn(() => new Promise(() => undefined)),
   playNote: vi.fn(() => Promise.resolve()),
   playChord: vi.fn(() => Promise.resolve()),
@@ -20,6 +21,12 @@ vi.mock('@/sync/api', () => ({
 }));
 
 const initial = useMusicStore.getState();
+
+/** Abre uma aba e espera o pacote dela carregar (as abas fora da inicial são lazy). */
+async function openTab(user: ReturnType<typeof userEvent.setup>, name: string) {
+  await user.click(screen.getByRole('link', { name }));
+  await waitFor(() => expect(screen.queryByLabelText('Carregando')).toBeNull());
+}
 
 describe('App', () => {
   beforeEach(() => {
@@ -73,7 +80,7 @@ describe('App', () => {
   it('a aba Jam mostra a progressão pop transposta para o tom', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole('link', { name: 'Jam' }));
+    await openTab(user, 'Jam');
     const bars = screen.getByRole('list', { name: 'Compassos da progressão' });
     expect(
       within(bars)
@@ -91,7 +98,7 @@ describe('App', () => {
   it('monta e salva uma progressão própria', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole('link', { name: 'Jam' }));
+    await openTab(user, 'Jam');
     const editor = screen.getByRole('region', { name: 'Montar progressão' });
     await user.click(within(editor).getByRole('button', { name: 'Am' }));
     // Depois de Am, F aparece também entre os sugeridos; qualquer um serve.
@@ -105,7 +112,7 @@ describe('App', () => {
   it('monta uma progressão em 3/4 com dois acordes no mesmo compasso', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole('link', { name: 'Jam' }));
+    await openTab(user, 'Jam');
     const editor = screen.getByRole('region', { name: 'Montar progressão' });
     await user.click(within(editor).getByRole('radio', { name: '3/4' }));
     const field = within(editor).getAllByRole('button', { name: 'Dm' });
@@ -133,7 +140,7 @@ describe('App', () => {
   it('o estilo da base muda com o preset e pode ser escolhido na aba Jam', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole('link', { name: 'Jam' }));
+    await openTab(user, 'Jam');
     await user.click(screen.getByRole('radio', { name: /Bossa em C/ }));
     expect(useMusicStore.getState().jam.grooveId).toBe('bossa');
     expect(screen.getByRole('radio', { name: 'Bossa nova' })).toHaveAttribute(
@@ -156,7 +163,7 @@ describe('App', () => {
   it('analisa uma cifra colada e a transforma em progressão do jam', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole('link', { name: 'Jam' }));
+    await openTab(user, 'Jam');
     const panel = screen.getByRole('region', { name: 'Analisar cifra' });
     await user.click(within(panel).getByLabelText('Cifra'));
     await user.paste('| Am | Dm | E7 | Am |\n| F | Dm | E7 | Am |');
@@ -185,7 +192,7 @@ describe('App', () => {
     const user = userEvent.setup();
     const { playSequence } = await import('@/audio/engine/sound');
     render(<App />);
-    await user.click(screen.getByRole('link', { name: 'Ouvido' }));
+    await openTab(user, 'Ouvido');
     await user.click(screen.getByRole('button', { name: 'Ouvir' }));
     const events = vi.mocked(playSequence).mock.lastCall![0];
     const semis = events[1]!.midis[0]! - events[0]!.midis[0]!;
@@ -246,7 +253,7 @@ describe('App', () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(screen.getByRole('button', { name: 'Abrir modo prática' }));
-    const dialog = screen.getByRole('dialog', { name: 'Modo prática' });
+    const dialog = await screen.findByRole('dialog', { name: 'Modo prática' });
     expect(within(dialog).getByRole('group', { name: 'Braço do ukulele' })).toBeInTheDocument();
     expect(within(dialog).getByText('Toque uma casa')).toBeInTheDocument();
 
@@ -273,7 +280,7 @@ describe('App', () => {
   it('um preset ajusta tom, progressão e andamento com um toque', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole('link', { name: 'Jam' }));
+    await openTab(user, 'Jam');
     await user.click(screen.getByRole('radio', { name: /Blues em A/ }));
     expect(screen.getByRole('radio', { name: /Blues em A/ })).toHaveAttribute(
       'aria-checked',
@@ -290,7 +297,7 @@ describe('App', () => {
     const user = userEvent.setup();
     const { container } = render(<App />);
     expect(container.querySelector('.app')).toHaveAttribute('data-shapes', 'true');
-    await user.click(screen.getByRole('link', { name: 'Ajustes' }));
+    await openTab(user, 'Ajustes');
     await user.click(screen.getByRole('switch', { name: /Formas além da cor/ }));
     expect(container.querySelector('.app')).not.toHaveAttribute('data-shapes');
   });
@@ -314,7 +321,7 @@ describe('App', () => {
     let t = 1000;
     const now = vi.spyOn(performance, 'now').mockImplementation(() => t);
     render(<App />);
-    await user.click(screen.getByRole('link', { name: 'Jam' }));
+    await openTab(user, 'Jam');
     const tap = screen.getByRole('button', { name: /Tap tempo/ });
     for (let i = 0; i < 4; i++) {
       await user.click(tap);
@@ -327,7 +334,7 @@ describe('App', () => {
   it('com capo na casa 2, o braço começa no capo e D usa a forma de C', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole('link', { name: 'Ajustes' }));
+    await openTab(user, 'Ajustes');
     await user.selectOptions(screen.getByLabelText('Capotraste'), '2');
     await user.click(screen.getByRole('link', { name: 'Explorar' }));
     expect(screen.getAllByText('Capo 2').length).toBeGreaterThan(0);
@@ -364,8 +371,38 @@ describe('App', () => {
   it('em Ajustes, trocar rótulos para grau muda o texto das casas', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole('link', { name: 'Ajustes' }));
+    await openTab(user, 'Ajustes');
     await user.click(screen.getByRole('radio', { name: 'Grau' }));
     expect(useMusicStore.getState().settings.labels).toBe('degree');
+  });
+
+  it('apagar uma progressão própria avisa e permite desfazer', async () => {
+    const user = userEvent.setup();
+    useMusicStore.setState((st) => ({
+      customProgressions: [
+        { id: 'custom-t1', name: 'Minha base', mode: 'major', numerals: ['I', 'V'], custom: true },
+      ],
+      jam: { ...st.jam, progressionId: 'custom-t1' },
+    }));
+    render(<App />);
+    await openTab(user, 'Jam');
+    await user.click(screen.getByRole('button', { name: 'Apagar Minha base' }));
+    expect(screen.queryByRole('radio', { name: /Minha base/ })).toBeNull();
+    const notice = screen.getByText('“Minha base” apagada.').closest('.toast') as HTMLElement;
+    await user.click(within(notice).getByRole('button', { name: 'Desfazer' }));
+    expect(screen.getByRole('radio', { name: /Minha base/ })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+  });
+
+  it('o endereço acompanha a aba e o título muda', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openTab(user, 'Jam');
+    expect(window.location.hash).toBe('#jam');
+    expect(document.title).toMatch(/^Jam/);
+    await user.click(screen.getByRole('link', { name: 'Explorar' }));
+    expect(window.location.hash).toBe('');
   });
 });

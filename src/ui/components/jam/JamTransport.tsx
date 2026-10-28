@@ -6,7 +6,8 @@ import { useToggleJam } from '../../hooks/useJamSync';
 import { TapTempo } from './TapTempo';
 
 export function JamTransport() {
-  const { playing, bpm, bar, beat } = useMusicStore((s) => s.jam);
+  const { playing, ready, bpm, bar, beat } = useMusicStore((s) => s.jam);
+  const preparing = playing && !ready;
   const setBpm = useMusicStore((s) => s.setBpm);
   const toggle = useToggleJam();
   const { timeline, meter } = useActiveProgression();
@@ -22,6 +23,8 @@ export function JamTransport() {
         type="button"
         className="play-button"
         aria-pressed={playing}
+        aria-busy={preparing || undefined}
+        data-loading={preparing || undefined}
         aria-label={playing ? 'Parar a base' : 'Tocar a base'}
         onClick={toggle}
       >
@@ -30,9 +33,17 @@ export function JamTransport() {
 
       <div className="transport-now" aria-live="polite">
         <span className="eyebrow">
-          {counting ? 'Contagem' : playing ? `Compasso ${bar + 1}` : 'Parado'}
+          {preparing
+            ? 'Preparando o som…'
+            : counting
+              ? 'Contagem'
+              : playing
+                ? `Compasso ${bar + 1}`
+                : 'Parado'}
         </span>
-        <span className="transport-chord">{counting ? info.beats - beat : current}</span>
+        <span className="transport-chord">
+          {counting && !preparing ? info.beats - beat : current}
+        </span>
         <span className="transport-next">
           a seguir <strong>{next}</strong>
         </span>

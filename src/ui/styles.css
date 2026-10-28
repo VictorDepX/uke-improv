@@ -29,6 +29,11 @@
   --c-rest-fg: #ffffff;
   --c-pass-fg: #241c06;
   --c-tens-fg: #ffffff;
+  --c-out-fg: #ffffff;
+  /* Texto sobre a madeira do braço e do transporte. */
+  --on-wood: #ffffff;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.12);
+  --shadow-lg: 0 10px 30px rgb(0 0 0 / 0.25);
   --preview: #f6f1e4;
   --ring: #ffffff;
   --danger: #c43c2b;
@@ -319,7 +324,7 @@ button:disabled {
 .tab[aria-current='page'] {
   background: var(--surface);
   color: var(--fg);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
+  box-shadow: var(--shadow-sm);
 }
 
 .key-picker-slot {
@@ -588,7 +593,7 @@ button:disabled {
 .segmented-option[aria-checked='true'] {
   background: var(--surface);
   color: var(--fg);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
+  box-shadow: var(--shadow-sm);
 }
 
 .toggle {
@@ -992,7 +997,7 @@ input[type='range'] {
 .fb-dot[data-cls='fora'][data-preview] {
   width: 26px;
   height: 26px;
-  color: #fff;
+  color: var(--c-out-fg);
 }
 
 .fb-dot[data-last] {
@@ -1182,7 +1187,7 @@ input[type='range'] {
 }
 .suggestion-note[data-cls='fora'] {
   background: var(--c-out);
-  color: #fff;
+  color: var(--c-out-fg);
 }
 
 .suggestion-body {
@@ -1573,7 +1578,7 @@ input[type='range'] {
   font-weight: 800;
   font-size: 44px;
   line-height: 1;
-  color: #fff;
+  color: var(--on-wood);
 }
 
 .transport-next {
@@ -1635,7 +1640,7 @@ input[type='range'] {
 
 .bpm-value .mono {
   font-size: 22px;
-  color: #fff;
+  color: var(--on-wood);
 }
 
 .bpm-value small {
@@ -1905,7 +1910,7 @@ input[type='range'] {
 }
 .practice-note[data-cls='fora'] {
   background: var(--c-out);
-  color: #fff;
+  color: var(--c-out-fg);
 }
 
 .practice-note-rank {
@@ -2955,7 +2960,7 @@ input[type='range'] {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+  box-shadow: var(--shadow-lg);
 }
 
 .note-info-head {
@@ -3030,4 +3035,194 @@ input[type='range'] {
   border-color: var(--line);
   background: var(--surface);
   color: var(--fg);
+}
+
+/* ---------- Avisos (toasts) ---------- */
+.toaster {
+  position: fixed;
+  z-index: 40;
+  right: var(--gutter-r);
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  gap: 8px;
+  width: min(380px, calc(100vw - var(--gutter-l) - var(--gutter-r)));
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--toast-color, var(--accent));
+  background: var(--surface);
+  color: var(--fg);
+  box-shadow: var(--shadow-lg);
+  font-size: 14px;
+  animation: toast-in 180ms ease-out;
+}
+
+.toast[data-kind='success'] {
+  --toast-color: var(--c-rest);
+}
+.toast[data-kind='error'] {
+  --toast-color: var(--danger);
+}
+.toast[data-kind='info'] {
+  --toast-color: var(--accent);
+}
+
+.toast-icon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--toast-color, var(--accent));
+}
+
+.toast-action {
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.toast-close {
+  border: 0;
+  background: none;
+  color: var(--fg-muted);
+  font-size: 18px;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.toast-action:hover,
+.toast-close:hover {
+  background: var(--surface-2);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* No celular, o aviso ocupa a largura e fica acima da barra do modo prática. */
+@media (max-width: 480px) {
+  .toaster {
+    left: var(--gutter-l);
+    right: var(--gutter-r);
+    width: auto;
+  }
+}
+
+/* Play enquanto o som liga: anel girando no lugar do ícone. */
+.play-button[data-loading] .play-icon {
+  width: 26px;
+  height: 26px;
+  margin: 0;
+  clip-path: none;
+  border-radius: 50%;
+  background: none;
+  border: 3px solid var(--c-pass-fg);
+  border-right-color: transparent;
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+  .play-button[data-loading] .play-icon {
+    animation-duration: 2.4s;
+  }
+}
+
+/* ---------- Esqueleto de carregamento (abas em pacote separado) ---------- */
+.page-skeleton {
+  display: grid;
+  gap: 16px;
+}
+
+.skeleton {
+  border-radius: var(--radius);
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 0%,
+    var(--surface) 50%,
+    var(--surface-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton 1.2s ease-in-out infinite;
+}
+
+.skeleton-bar {
+  height: 56px;
+}
+
+.skeleton-board {
+  height: 220px;
+}
+
+.skeleton-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.skeleton-card {
+  height: 140px;
+}
+
+@keyframes skeleton {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+/* ---------- Tela de erro ---------- */
+.crash {
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 16px;
+  padding: 24px var(--gutter-r) 24px var(--gutter-l);
+  text-align: center;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.crash h1 {
+  margin: 0;
+  font-family: var(--font-display);
+}
+
+.crash p {
+  margin: 0;
+  max-width: 42ch;
+  color: var(--fg-muted);
 }

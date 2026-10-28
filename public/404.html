@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Página não encontrada · Uke Improv</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        --bg: #eef1ed;
+        --surface: #fbfcfa;
+        --fg: #18201c;
+        --fg-muted: #57635c;
+        --line: #cfd7cf;
+        --accent: #2446b5;
+        --accent-fg: #ffffff;
+        --wood: #3a281e;
+        --fret: #c3c8cc;
+        --c-rest: #23935a;
+        --c-pass: #e1ae2f;
+        --c-tens: #dc5f33;
+        --c-out: #8a948e;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #111513;
+          --surface: #191e1b;
+          --fg: #e5ebe7;
+          --fg-muted: #98a59e;
+          --line: #2d3631;
+          --accent: #8aa4ff;
+          --accent-fg: #0d1430;
+          --wood: #2c1e16;
+          --c-pass: #eebf45;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 24px 16px;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      }
+      main {
+        width: min(460px, 100%);
+        text-align: center;
+        display: grid;
+        gap: 20px;
+        justify-items: center;
+      }
+      /* Uma corda solta, com a nota "fora" no lugar errado. */
+      .neck {
+        width: 100%;
+        height: 96px;
+        border-radius: 14px;
+        background: var(--wood);
+        position: relative;
+        overflow: hidden;
+      }
+      .neck i {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--fret);
+        opacity: 0.8;
+      }
+      .neck i:nth-child(1) {
+        top: 18px;
+      }
+      .neck i:nth-child(2) {
+        top: 38px;
+      }
+      .neck i:nth-child(3) {
+        top: 58px;
+      }
+      .neck i:nth-child(4) {
+        top: 78px;
+      }
+      .neck b {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font: 600 13px ui-monospace, Menlo, monospace;
+        color: #fff;
+      }
+      .neck b:nth-of-type(1) {
+        left: 18%;
+        top: 3px;
+        background: var(--c-rest);
+      }
+      .neck b:nth-of-type(2) {
+        left: 46%;
+        top: 23px;
+        background: var(--c-out);
+      }
+      .neck b:nth-of-type(3) {
+        left: 74%;
+        top: 46px;
+        width: 24px;
+        height: 24px;
+        background: var(--c-tens);
+        border-radius: 4px;
+        transform: rotate(45deg);
+      }
+      .neck b:nth-of-type(3) span {
+        transform: rotate(-45deg);
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(28px, 6vw, 36px);
+        line-height: 1.1;
+      }
+      p {
+        margin: 0;
+        color: var(--fg-muted);
+        line-height: 1.5;
+      }
+      a.button {
+        display: inline-block;
+        padding: 12px 20px;
+        border-radius: 999px;
+        background: var(--accent);
+        color: var(--accent-fg);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      a.button:focus-visible {
+        outline: 3px solid var(--c-pass);
+        outline-offset: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="neck" aria-hidden="true">
+        <i></i><i></i><i></i><i></i>
+        <b>4</b><b>0</b><b><span>4</span></b>
+      </div>
+      <h1>Essa nota não está no braço</h1>
+      <p>A página que você procurou não existe ou mudou de lugar. O app continua no início.</p>
+      <a class="button" href="/">Voltar ao Uke Improv</a>
+    </main>
+  </body>
+</html>

@@ -48,6 +48,8 @@ export default defineConfig({
     // Página avulsa (artifact) não pode registrar service worker nem tem o proxy de /api.
     __PWA__: JSON.stringify(!singleFile),
     __ACCOUNTS__: JSON.stringify(!singleFile),
+    // Versão publicada (commit), para agrupar erros por deploy no Sentry.
+    __RELEASE__: JSON.stringify(process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? 'local'),
   },
   server: { proxy: apiProxy },
   preview: { proxy: apiProxy },

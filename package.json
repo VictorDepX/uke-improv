@@ -18,6 +18,8 @@
     "@fontsource/bricolage-grotesque": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/instrument-sans": "^5.3.0",
+    "@sentry/browser": "11.7.0",
+    "@vercel/analytics": "2.0.1",
     "pitchy": "^4.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

@@ -1,22 +1,65 @@
-import { useCallback, useEffect, useState } from 'react';
-import { preloadAudio } from '@/audio/engine/sound';
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import { preloadAudioWhenIdle } from '@/audio/engine/sound';
 import { startSync } from '@/sync/sync';
 import { SCALES } from '@/core/music';
 import { useMusicStore } from '@/store/useMusicStore';
 import { KeyPicker } from './components/KeyPicker';
-import { PracticeMode } from './components/practice/PracticeMode';
 import { useJamSync } from './hooks/useJamSync';
 import { useWakeLock } from './hooks/useWakeLock';
 import { ExplorePage } from './pages/ExplorePage';
-import { EarPage } from './pages/EarPage';
-import { JamPage } from './pages/JamPage';
-import { SettingsPage } from './pages/SettingsPage';
+import { Toaster } from './components/Toaster';
+import { useAccountToasts } from './hooks/useAccountToasts';
+
+// Abas fora da inicial e o modo prática vêm em pacotes separados, baixados ao abrir.
+const JamPage = lazy(() => import('./pages/JamPage').then((m) => ({ default: m.JamPage })));
+const EarPage = lazy(() => import('./pages/EarPage').then((m) => ({ default: m.EarPage })));
+const SettingsPage = lazy(() =>
+  import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })),
+);
+const PracticeMode = lazy(() =>
+  import('./components/practice/PracticeMode').then((m) => ({ default: m.PracticeMode })),
+);
+
+function PageSkeleton() {
+  return (
+    <div className="page-skeleton" role="status" aria-label="Carregando">
+      <div className="skeleton skeleton-bar" />
+      <div className="skeleton skeleton-board" />
+      <div className="skeleton-row">
+        <div className="skeleton skeleton-card" />
+        <div className="skeleton skeleton-card" />
+      </div>
+    </div>
+  );
+}
 
 const TABS = [
-  { id: 'explorar', label: 'Explorar' },
-  { id: 'jam', label: 'Jam' },
-  { id: 'ouvido', label: 'Ouvido' },
-  { id: 'ajustes', label: 'Ajustes' },
+  {
+    id: 'explorar',
+    label: 'Explorar',
+    title: 'Uke Improv — improvise no ukulele sabendo a próxima nota',
+    description:
+      'Escolha o tom e o acorde: o braço do ukulele mostra quais notas soam bem a seguir e quais acordes combinam. Grátis, funciona offline.',
+  },
+  {
+    id: 'jam',
+    label: 'Jam',
+    title: 'Jam — base em loop para improvisar · Uke Improv',
+    description:
+      'Base de acordes, baixo e bateria em 4/4, 3/4 e 6/8, em pop, reggae, bossa nova, swing e valsa, com looper e analisador de cifra.',
+  },
+  {
+    id: 'ouvido',
+    label: 'Ouvido',
+    title: 'Treino de ouvido · Uke Improv',
+    description: 'Treine intervalos, maior × menor e função harmônica tocando no ukulele.',
+  },
+  {
+    id: 'ajustes',
+    label: 'Ajustes',
+    title: 'Ajustes · Uke Improv',
+    description: 'Afinação, capotraste, calibração do microfone e conta para sincronizar.',
+  },
 ] as const;
 type TabId = (typeof TABS)[number]['id'];
 
@@ -34,12 +77,25 @@ export function App() {
   const jamPlaying = useMusicStore((s) => s.jam.playing);
   const shapes = useMusicStore((s) => s.settings.shapes);
   useJamSync();
+  useAccountToasts();
   // Tocando, a tela não pode apagar: celular na estante, mãos no uke.
   useWakeLock(practiceOpen || jamPlaying);
 
+  // Título e descrição por aba (o app é uma página só, com as abas no #).
   useEffect(() => {
-    preloadAudio();
+    const t = TABS.find((x) => x.id === tab)!;
+    document.title = t.title;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', t.description);
+    // A aba fica no endereço: dá para compartilhar ou favoritar direto o Jam, por exemplo.
+    const hash = tab === 'explorar' ? '' : `#${tab}`;
+    if (window.location.hash !== hash)
+      history.replaceState(null, '', `${window.location.pathname}${window.location.search}${hash}`);
+  }, [tab]);
+
+  useEffect(() => {
+    const cancel = preloadAudioWhenIdle();
     if (__ACCOUNTS__) void startSync();
+    return cancel;
   }, []);
 
   return (
@@ -98,17 +154,24 @@ export function App() {
         </div>
       </header>
       <main className="main">
-        {tab === 'explorar' ? (
-          <ExplorePage />
-        ) : tab === 'jam' ? (
-          <JamPage />
-        ) : tab === 'ouvido' ? (
-          <EarPage />
-        ) : (
-          <SettingsPage />
-        )}
+        <Suspense fallback={<PageSkeleton />}>
+          {tab === 'explorar' ? (
+            <ExplorePage />
+          ) : tab === 'jam' ? (
+            <JamPage />
+          ) : tab === 'ouvido' ? (
+            <EarPage />
+          ) : (
+            <SettingsPage />
+          )}
+        </Suspense>
       </main>
-      {practiceOpen ? <PracticeMode onClose={closePractice} /> : null}
+      {practiceOpen ? (
+        <Suspense fallback={null}>
+          <PracticeMode onClose={closePractice} />
+        </Suspense>
+      ) : null}
+      <Toaster />
     </div>
   );
 }

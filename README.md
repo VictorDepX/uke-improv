@@ -5,13 +5,13 @@ Assistente de improviso e harmonia para ukulele. Escolha o tom e o acorde atual,
 **App:** [uke-improv.vercel.app](https://uke-improv.vercel.app): instalável como PWA e funciona offline.
 
 <p align="center">
-  <img src="docs/jam.gif" alt="Modo jam: a base toca C, G, Am e F e o braço recolore a cada troca de acorde" width="100%">
+  <img src="docs/jam.webp" alt="Modo jam: a base toca C, G, Am e F e o braço recolore a cada troca de acorde" width="100%">
 </p>
 
 <p align="center">
-  <img src="docs/explorar.png" alt="Braço colorido por função, diagramas de acorde e exercícios" width="68%">
+  <img src="docs/explorar.webp" alt="Braço colorido por função, diagramas de acorde e exercícios" width="68%">
   &nbsp;
-  <img src="docs/jam-celular.png" alt="Modo jam no celular" width="24%">
+  <img src="docs/jam-celular.webp" alt="Modo jam no celular" width="24%">
 </p>
 
 ## O que faz
@@ -48,7 +48,7 @@ Abra o endereço que o Vite mostrar. O microfone funciona em `localhost` e em qu
 | Comando                  | O que faz                                                                                                        |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | `npm run dev`            | Servidor local com recarga, incluindo o proxy de `/api` para as contas                                           |
-| `npm test`               | Vitest: 247 testes (teoria, detectores com sinais sintetizados, motor da base, looper, sincronização, interface) |
+| `npm test`               | Vitest: 250 testes (teoria, detectores com sinais sintetizados, motor da base, looper, sincronização, interface) |
 | `npm run typecheck`      | TypeScript estrito, sem emitir                                                                                   |
 | `npm run lint`           | ESLint                                                                                                           |
 | `npm run format`         | Prettier                                                                                                         |
@@ -125,6 +125,11 @@ A parte de contas é opcional: sem ela, o app funciona por completo e guarda tud
    - `vite.config.ts`: `NEON_AUTH` e `NEON_DATA`.
    - `vercel.json`: destino do rewrite `/api/data`.
 5. Importe o repositório na Vercel. O framework (Vite), o build e a saída já estão em `vercel.json`, e cada push na `main` gera um deploy.
+
+## Analytics e monitoramento
+
+- **Visitas:** Vercel Web Analytics (sem cookies), ligado no painel do projeto. Fora da Vercel, não carrega nada.
+- **Erros:** Sentry, opcional. Defina `VITE_SENTRY_DSN` nas variáveis de ambiente da Vercel e acrescente o host de ingestão do Sentry ao `connect-src` da CSP em `vercel.json`. Sem o DSN, o código do Sentry nem entra no build.
 
 ## Limitações conhecidas
 

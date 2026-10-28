@@ -82,6 +82,8 @@ export interface Settings {
 
 export interface JamState {
   playing: boolean;
+  /** O motor de áudio já respondeu desde o play (antes disso, a tela mostra "Preparando"). */
+  ready: boolean;
   bpm: number;
   progressionId: string;
   /** Compasso atual (-1 durante a contagem). */
@@ -232,6 +234,7 @@ export const useMusicStore = create<MusicState>()(
       customProgressions: [],
       jam: {
         playing: false,
+        ready: false,
         bpm: 90,
         progressionId: PROGRESSIONS[0]!.id,
         bar: 0,
@@ -358,8 +361,10 @@ export const useMusicStore = create<MusicState>()(
           jam: { ...s.jam, bpm: clamp(Math.round(bpm), BPM_RANGE.min, BPM_RANGE.max) },
         })),
       setJamPlaying: (playing) =>
-        set((s) => ({ jam: { ...s.jam, playing, bar: playing ? -1 : 0, beat: 0, segment: -1 } })),
-      setJamPosition: (pos) => set((s) => ({ jam: { ...s.jam, ...pos } })),
+        set((s) => ({
+          jam: { ...s.jam, playing, ready: false, bar: playing ? -1 : 0, beat: 0, segment: -1 },
+        })),
+      setJamPosition: (pos) => set((s) => ({ jam: { ...s.jam, ...pos, ready: true } })),
       setGroove: (grooveId) => set((s) => ({ jam: { ...s.jam, grooveId } })),
       setLayerVolume: (layer, value) =>
         set((s) => ({
@@ -496,6 +501,7 @@ export const useMusicStore = create<MusicState>()(
               }),
             ) as JamState['layers'],
             playing: false,
+            ready: false,
             bar: 0,
             beat: 0,
             segment: 0,

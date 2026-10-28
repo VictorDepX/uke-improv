@@ -1,3 +1,4 @@
+import { toast } from '../../toast';
 import { useState } from 'react';
 import { toAbsoluteNumeral } from '@/core/harmony';
 import { modeOf } from '@/core/music';
@@ -58,6 +59,7 @@ export function ProgressionEditor() {
     );
     setDraft([]);
     setSplit(false);
+    toast.success('Progressão salva e escolhida na base.');
   };
 
   return (

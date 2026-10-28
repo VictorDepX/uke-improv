@@ -16,3 +16,12 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
     }),
   });
 }
+
+// Avisos (toasts) são globais: um teste não pode herdar os do anterior.
+if (typeof window !== 'undefined') {
+  const { afterEach } = await import('vitest');
+  const { useToasts } = await import('@/ui/toast');
+  afterEach(() => {
+    for (const t of useToasts.getState().toasts) useToasts.getState().dismiss(t.id);
+  });
+}
