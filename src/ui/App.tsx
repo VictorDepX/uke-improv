@@ -8,16 +8,12 @@ import { useJamSync } from './hooks/useJamSync';
 import { useWakeLock } from './hooks/useWakeLock';
 import { ExplorePage } from './pages/ExplorePage';
 import { AppFooter } from './components/AppFooter';
+import { EarPage, JamPage, SettingsPage } from './pageLoaders';
 import { Toaster } from './components/Toaster';
 import { TABS, TAB_PATHS, USE_PATHS, hrefFor, tabFromLocation, type TabId } from './routes';
 import { useAccountToasts } from './hooks/useAccountToasts';
 
 // Abas fora da inicial e o modo prática vêm em pacotes separados, baixados ao abrir.
-const JamPage = lazy(() => import('./pages/JamPage').then((m) => ({ default: m.JamPage })));
-const EarPage = lazy(() => import('./pages/EarPage').then((m) => ({ default: m.EarPage })));
-const SettingsPage = lazy(() =>
-  import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })),
-);
 const PracticeMode = lazy(() =>
   import('./components/practice/PracticeMode').then((m) => ({ default: m.PracticeMode })),
 );

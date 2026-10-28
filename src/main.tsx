@@ -1,6 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './ui/App';
+import { preloadTab } from './ui/pageLoaders';
+import { tabFromLocation } from './ui/routes';
 import { ErrorBoundary } from './ui/components/ErrorBoundary';
 import { startMonitoring } from './monitoring';
 import '@fontsource/bricolage-grotesque/latin-600.css';
@@ -16,13 +18,20 @@ import { registerServiceWorker } from './registerSW';
 const root = document.getElementById('root');
 if (!root) throw new Error('Elemento #root não encontrado');
 
-createRoot(root).render(
-  <StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
-  </StrictMode>,
-);
+// O HTML já chega pré-renderizado; o app só monta por cima depois que o pacote da aba aberta
+// chegou, para a troca não piscar.
+const firstTab = tabFromLocation(window.location.pathname, window.location.hash);
+void preloadTab(firstTab)
+  .catch(() => undefined)
+  .then(() =>
+    createRoot(root).render(
+      <StrictMode>
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
+      </StrictMode>,
+    ),
+  );
 
 registerServiceWorker();
 startMonitoring();

@@ -52,7 +52,7 @@ Abra o endereço que o Vite mostrar. O microfone funciona em `localhost` e em qu
 | `npm run typecheck`      | TypeScript estrito, sem emitir                                                                                   |
 | `npm run lint`           | ESLint                                                                                                           |
 | `npm run format`         | Prettier                                                                                                         |
-| `npm run build`          | Build de produção em `dist/`, com service worker gerado                                                          |
+| `npm run build`          | Build de produção em `dist/`: service worker, HTML pré-renderizado por página e `sitemap.xml`                    |
 | `npm run preview`        | Serve o `dist/` localmente                                                                                       |
 | `npm run build:artifact` | Página HTML única, sem PWA e sem contas (para hospedar como arquivo avulso)                                      |
 
