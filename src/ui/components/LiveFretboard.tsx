@@ -7,6 +7,7 @@ import { useMusicStore } from '@/store/useMusicStore';
 import { Fretboard } from './Fretboard';
 import { Legend } from './Legend';
 import { NoteInfo } from './NoteInfo';
+import { nm, tx, useT } from '@/i18n';
 
 /** Braço ligado ao store: tocar uma casa soa a nota e alimenta as sugestões. */
 export function LiveFretboard({
@@ -16,6 +17,7 @@ export function LiveFretboard({
   previewChord?: string | null;
   legend?: boolean;
 }) {
+  const t = useT();
   const ctx = useNoteContext();
   const suggestions = useNoteSuggestions();
   const key = useMusicStore((s) => s.key);
@@ -52,21 +54,21 @@ export function LiveFretboard({
           <button
             type="button"
             className="icon-button"
-            aria-label="Casas mais graves"
+            aria-label={t('Casas mais graves', 'Lower frets')}
             disabled={windowStart <= 1}
             onClick={() => shiftWindow(-1)}
           >
             ‹
           </button>
           <span className="fb-window-label" aria-live="polite">
-            Casas {windowStart + capo}–{windowStart + capo + WINDOW_SIZE - 1}
-            {auto ? <span className="tag">segue a mão</span> : null}
+            {t('Casas', 'Frets')} {windowStart + capo}–{windowStart + capo + WINDOW_SIZE - 1}
+            {auto ? <span className="tag">{t('segue a mão', 'follows your hand')}</span> : null}
             {capo ? <span className="capo-badge">Capo {capo}</span> : null}
           </span>
           <button
             type="button"
             className="icon-button"
-            aria-label="Casas mais agudas"
+            aria-label={t('Casas mais agudas', 'Higher frets')}
             disabled={windowStart >= maxWindowStart(capo)}
             onClick={() => shiftWindow(1)}
           >
@@ -94,7 +96,11 @@ export function LiveFretboard({
           ctx={ctx}
           keyContext={key}
           chordSymbol={currentChord}
-          scaleLabel={settings.arpeggio ? `arpejo de ${currentChord}` : undefined}
+          scaleLabel={
+            settings.arpeggio
+              ? tx(`arpejo de ${nm(currentChord)}`, `${nm(currentChord)} arpeggio`)
+              : undefined
+          }
           capo={capo}
           onPlay={() => onPlay(inspected)}
           onClose={closeInfo}

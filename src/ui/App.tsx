@@ -10,7 +10,7 @@ import { ExplorePage } from './pages/ExplorePage';
 import { AppFooter } from './components/AppFooter';
 import { EarPage, JamPage, SettingsPage } from './pageLoaders';
 import { Toaster } from './components/Toaster';
-import { HTML_LANG, LangProvider, makeT, setCurrentLang, useT, type Lang } from '@/i18n';
+import { HTML_LANG, LangProvider, makeT, noteNamer, setCurrentLang, useT, type Lang } from '@/i18n';
 import { LangHint } from './components/LangHint';
 import {
   TABS,
@@ -54,7 +54,9 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
   const chosenLang = useMusicStore((s) => s.settings.lang);
   const tab = route.tab;
   const lang = chosenLang ?? route.lang;
-  const t = useMemo(() => makeT(lang), [lang]);
+  const noteNames = useMusicStore((s) => s.settings.noteNames);
+  const names = useMemo(() => noteNamer(noteNames, lang), [noteNames, lang]);
+  const t = useMemo(() => makeT(lang, names), [lang, names]);
   const [keyOpen, setKeyOpen] = useState(false);
   const [practiceOpen, setPracticeOpen] = useState(false);
   const closePractice = useCallback(() => setPracticeOpen(false), []);
@@ -70,7 +72,7 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
   // Título, descrição e idioma da página; o endereço acompanha (link antigo com # vira o
   // caminho novo, e trocar de idioma troca o caminho).
   useEffect(() => {
-    setCurrentLang(lang);
+    setCurrentLang(lang, names);
     const def = TABS.find((x) => x.id === tab)!;
     document.documentElement.lang = HTML_LANG[lang];
     document.title = def.title[lang];
@@ -85,7 +87,7 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
       const want = tab === 'explorar' ? '' : `#${tab}`;
       if (hash !== want) history.replaceState(null, '', `${pathname}${search}${want}`);
     }
-  }, [tab, lang]);
+  }, [tab, lang, names]);
 
   // Voltar e avançar do navegador trocam de aba (e de idioma, se o endereço mudar).
   useEffect(() => {
@@ -136,7 +138,7 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
               aria-controls="key-picker"
               onClick={() => setKeyOpen((o) => !o)}
             >
-              <span className="key-toggle-tonic">{key.tonic}</span>
+              <span className="key-toggle-tonic">{names(key.tonic)}</span>
               <span className="key-toggle-scale">{t(SCALES[key.scale].label)}</span>
               <span className="key-toggle-caret" aria-hidden="true" />
             </button>

@@ -9,9 +9,12 @@ import { canRecord } from '@/audio/engine/recorder';
 import { MicCalibrator } from './MicCalibrator';
 import { TakesPanel } from './Takes';
 import { RecordingAnalyzer } from './RecordingAnalyzer';
+import { useNames, useT } from '@/i18n';
 
 /** Módulo 2: escuta em tempo real, com afinador e indicador da classe da nota tocada. */
 export function MicPanel() {
+  const t = useT();
+  const n = useNames();
   const { status, start, stop } = useMicControl();
   const mic = useMusicStore((s) => s.mic);
   const key = useMusicStore((s) => s.key);
@@ -24,7 +27,7 @@ export function MicPanel() {
 
   return (
     <Panel
-      title="Escuta"
+      title={t('Escuta', 'Listening')}
       className="mic-panel"
       aside={
         <button
@@ -36,7 +39,11 @@ export function MicPanel() {
           onClick={() => (on ? stop() : void start())}
         >
           <span className="mic-button-dot" aria-hidden="true" />
-          {on ? 'Desligar microfone' : status === 'starting' ? 'Abrindo…' : 'Ligar microfone'}
+          {on
+            ? t('Desligar microfone', 'Turn microphone off')
+            : status === 'starting'
+              ? t('Abrindo…', 'Opening…')
+              : t('Ligar microfone', 'Turn microphone on')}
         </button>
       }
     >
@@ -47,15 +54,15 @@ export function MicPanel() {
           </div>
           <div className="mic-readout">
             <div>
-              <span className="eyebrow">Nota</span>
+              <span className="eyebrow">{t('Nota', 'Note')}</span>
               <span className="mic-note" data-cls={cls ?? undefined}>
-                {mic.note ? midiName(mic.note.midi, flats) : '—'}
+                {mic.note ? n(midiName(mic.note.midi, flats)) : '—'}
               </span>
-              {cls ? <span className="mono muted">{CLASS_SHORT[cls]}</span> : null}
+              {cls ? <span className="mono muted">{t(CLASS_SHORT[cls])}</span> : null}
             </div>
             <div>
-              <span className="eyebrow">Acorde</span>
-              <span className="mic-note">{mic.chord?.symbol ?? '—'}</span>
+              <span className="eyebrow">{t('Acorde', 'Chord')}</span>
+              <span className="mic-note">{mic.chord ? n(mic.chord.symbol) : '—'}</span>
               {mic.chord ? (
                 <span className="mono muted">{Math.round(mic.chord.score * 100)}%</span>
               ) : null}
@@ -64,7 +71,7 @@ export function MicPanel() {
           <div
             className="tuner"
             role="meter"
-            aria-label="Afinação"
+            aria-label={t('Afinação', 'Tuning')}
             aria-valuemin={-50}
             aria-valuemax={50}
             aria-valuenow={cents}
@@ -85,7 +92,10 @@ export function MicPanel() {
           {canRecord() ? <TakesPanel /> : null}
           <Toggle
             id="mic-follow"
-            label="Acorde detectado vira o acorde atual"
+            label={t(
+              'Acorde detectado vira o acorde atual',
+              'Detected chord becomes the current chord',
+            )}
             checked={mic.followChords}
             onChange={(v) => setMic({ followChords: v })}
           />
@@ -94,13 +104,18 @@ export function MicPanel() {
         <div className="mic-off">
           {status === 'denied' || status === 'error' ? (
             <p className="notice" role="status">
-              {mic.error} Verifique a permissão do microfone no navegador. Enquanto isso, analise
-              uma gravação:
+              {mic.error}{' '}
+              {t(
+                'Verifique a permissão do microfone no navegador. Enquanto isso, analise uma gravação:',
+                'Check the microphone permission in your browser. Meanwhile, analyze a recording:',
+              )}
             </p>
           ) : (
             <p className="empty">
-              Toque no uke perto do celular: a nota vira entrada para as sugestões e o acorde
-              detectado pode virar o acorde atual.
+              {t(
+                'Toque no uke perto do celular: a nota vira entrada para as sugestões e o acorde detectado pode virar o acorde atual.',
+                'Play your uke near the phone: the note feeds the suggestions and the detected chord can become the current chord.',
+              )}
             </p>
           )}
           <RecordingAnalyzer />

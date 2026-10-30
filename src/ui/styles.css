@@ -1320,8 +1320,9 @@ input[type='range'] {
   color: var(--fg-muted);
 }
 
-.alt-shapes::before {
-  content: 'outras:';
+/* Rótulo vem do texto (idioma da tela), não do CSS. */
+.alt-shapes-label {
+  margin-right: -2px;
 }
 
 .chord-suggestions {

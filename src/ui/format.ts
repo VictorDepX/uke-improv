@@ -7,6 +7,7 @@ import {
   chromaOf,
 } from '@/core/music';
 import type { ChordInfo, Chroma, KeyContext, LabelMode, NoteClass } from '@/core/types';
+import { nm, tx, type Txt } from '@/i18n/lang';
 
 export function noteLabel(
   chroma: Chroma,
@@ -19,14 +20,24 @@ export function noteLabel(
   return chromaName(chroma, prefersFlats(key));
 }
 
-export const CLASS_SHORT: Record<NoteClass, string> = {
-  repouso: 'repouso',
-  passagem: 'passagem',
-  tensao: 'tensão',
-  fora: 'fora',
+export const CLASS_SHORT: Record<NoteClass, Txt> = {
+  repouso: tx('repouso', 'rest'),
+  passagem: tx('passagem', 'passing'),
+  tensao: tx('tensão', 'tension'),
+  fora: tx('fora', 'outside'),
 };
 
-export const FUNC_LABEL = { T: 'Tônica', S: 'Subdominante', D: 'Dominante' } as const;
+export const FUNC_LABEL: Record<'T' | 'S' | 'D', Txt> = {
+  T: tx('Tônica', 'Tonic'),
+  S: tx('Subdominante', 'Subdominant'),
+  D: tx('Dominante', 'Dominant'),
+};
 
-export const keyLabelOf = (key: KeyContext): string =>
-  `${key.tonic} ${SCALES[key.scale].label.toLowerCase()}`;
+/** Tom por extenso ("C maior" / "C major"), com a tônica marcada para o formato de nomes. */
+export const keyLabelOf = (key: KeyContext): Txt => {
+  const scale = SCALES[key.scale].label;
+  return tx(
+    `${nm(key.tonic)} ${scale.pt.toLowerCase()}`,
+    `${nm(key.tonic)} ${scale.en.toLowerCase()}`,
+  );
+};

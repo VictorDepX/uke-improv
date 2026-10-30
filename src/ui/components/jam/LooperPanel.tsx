@@ -5,11 +5,7 @@ import { useActiveProgression } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 import { useLooper } from '../../hooks/useLooper';
 import { Select, Slider, Toggle } from '../controls';
-
-const BAR_OPTIONS = [1, 2, 4, 8].map((n) => ({
-  value: String(n),
-  label: `${n} ${n === 1 ? 'compasso' : 'compassos'}`,
-}));
+import { useT } from '@/i18n';
 
 function Wave({ peaks }: { peaks: number[] }) {
   const w = peaks.length;
@@ -35,6 +31,11 @@ function Wave({ peaks }: { peaks: number[] }) {
 
 /** Looper: grave a própria base em camadas, no compasso, e solte o improviso por cima. */
 export function LooperPanel() {
+  const t = useT();
+  const barOptions = [1, 2, 4, 8].map((n) => ({
+    value: String(n),
+    label: t(`${n} ${n === 1 ? 'compasso' : 'compassos'}`, `${n} ${n === 1 ? 'bar' : 'bars'}`),
+  }));
   const view = useLooper();
   const bpm = useMusicStore((s) => s.jam.bpm);
   const jamPlaying = useMusicStore((s) => s.jam.playing);
@@ -60,42 +61,51 @@ export function LooperPanel() {
     try {
       await looper.record();
     } catch {
-      setError('Não consegui abrir o microfone para gravar. Verifique a permissão do navegador.');
+      setError(
+        t(
+          'Não consegui abrir o microfone para gravar. Verifique a permissão do navegador.',
+          "Couldn't open the microphone to record. Check the browser permission.",
+        ),
+      );
       looper.clear();
     }
   };
 
   const busy = view.status === 'count' || view.status === 'recording';
   const full = view.layers.length >= MAX_LAYERS;
+  const barOf = t(
+    `compasso ${Math.max(0, view.bar) + 1} de ${bars}`,
+    `bar ${Math.max(0, view.bar) + 1} of ${bars}`,
+  );
   const status =
     view.status === 'count'
-      ? `Contagem…${view.countLeft ? ` ${view.countLeft}` : ''}`
+      ? `${t('Contagem…', 'Count-in…')}${view.countLeft ? ` ${view.countLeft}` : ''}`
       : view.status === 'recording'
-        ? `${view.overdub ? 'Gravando camada' : 'Gravando'} · compasso ${Math.max(0, view.bar) + 1} de ${bars}`
+        ? `${view.overdub ? t('Gravando camada', 'Recording layer') : t('Gravando', 'Recording')} · ${barOf}`
         : view.status === 'playing'
           ? view.overdub
-            ? 'A camada começa no próximo ciclo…'
-            : `Tocando · compasso ${Math.max(0, view.bar) + 1} de ${bars}`
-          : 'Parado';
+            ? t('A camada começa no próximo ciclo…', 'The layer starts on the next cycle…')
+            : `${t('Tocando', 'Playing')} · ${barOf}`
+          : t('Parado', 'Stopped');
 
   return (
     <div className="looper">
       <div className="looper-config">
         <Select
           id="looper-bars"
-          label="Tamanho"
+          label={t('Tamanho', 'Length')}
           value={String(bars)}
-          options={BAR_OPTIONS}
+          options={barOptions}
           onChange={(v) => setBars(Number(v))}
         />
         <span className="small muted looper-tempo">
           {bpm} BPM · {METERS[meter].label}
-          {empty ? ' (os da base)' : ''}
+          {empty ? t(' (os da base)', ' (from the backing track)') : ''}
         </span>
         <Toggle
           id="looper-metronome"
-          label="Metrônomo"
-          hint="A contagem toca sempre."
+          label={t('Metrônomo', 'Metronome')}
+          hint={t('A contagem toca sempre.', 'The count-in always plays.')}
           checked={metronome}
           onChange={setMetronome}
         />
@@ -111,14 +121,17 @@ export function LooperPanel() {
         >
           <span className="take-rec-dot" aria-hidden="true" />
           {empty
-            ? 'Gravar loop'
+            ? t('Gravar loop', 'Record loop')
             : full
-              ? 'Camadas cheias'
-              : `Gravar camada ${view.layers.length + 1}`}
+              ? t('Camadas cheias', 'Layers full')
+              : t(
+                  `Gravar camada ${view.layers.length + 1}`,
+                  `Record layer ${view.layers.length + 1}`,
+                )}
         </button>
         {!empty ? (
           <button type="button" className="button" onClick={() => looper.clear()}>
-            Parar e apagar
+            {t('Parar e apagar', 'Stop and clear')}
           </button>
         ) : null}
         <span
@@ -149,7 +162,7 @@ export function LooperPanel() {
       ) : null}
 
       {view.layers.length ? (
-        <ul className="loop-layers" aria-label="Camadas do loop">
+        <ul className="loop-layers" aria-label={t('Camadas do loop', 'Loop layers')}>
           {view.layers.map((l, i) => (
             <li key={l.id} className="loop-layer" data-muted={l.muted || undefined}>
               <span className="mono small">{i + 1}</span>
@@ -169,12 +182,12 @@ export function LooperPanel() {
                 aria-pressed={l.muted}
                 onClick={() => looper.setLayer(l.id, { muted: !l.muted })}
               >
-                Silenciar
+                {t('Silenciar', 'Mute')}
               </button>
               <button
                 type="button"
                 className="icon-button"
-                aria-label={`Apagar camada ${i + 1}`}
+                aria-label={t(`Apagar camada ${i + 1}`, `Delete layer ${i + 1}`)}
                 onClick={() => looper.removeLayer(l.id)}
               >
                 ×
@@ -185,10 +198,12 @@ export function LooperPanel() {
       ) : null}
 
       <details className="looper-latency">
-        <summary className="small">Ajuste de atraso ({Math.round(view.latency * 1000)} ms)</summary>
+        <summary className="small">
+          {t('Ajuste de atraso', 'Latency adjustment')} ({Math.round(view.latency * 1000)} ms)
+        </summary>
         <Slider
           id="looper-latency"
-          label="Ajuste fino"
+          label={t('Ajuste fino', 'Fine tune')}
           min={-100}
           max={200}
           value={offsetMs}
@@ -196,11 +211,17 @@ export function LooperPanel() {
           onChange={setOffsetMs}
         />
         <p className="small muted">
-          Se a camada gravada soar atrasada em relação ao metrônomo, aumente; adiantada, diminua.
+          {t(
+            'Se a camada gravada soar atrasada em relação ao metrônomo, aumente; adiantada, diminua.',
+            'If the recorded layer sounds late against the metronome, increase it; if early, decrease it.',
+          )}
         </p>
       </details>
       <p className="small muted">
-        Use fones: sem eles, o loop que toca entra no microfone quando você grava a próxima camada.
+        {t(
+          'Use fones: sem eles, o loop que toca entra no microfone quando você grava a próxima camada.',
+          'Use headphones: without them, the playing loop gets into the microphone when you record the next layer.',
+        )}
       </p>
     </div>
   );

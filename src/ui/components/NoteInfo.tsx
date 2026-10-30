@@ -4,6 +4,7 @@ import { explainNote } from '@/core/explain';
 import { STRING_NAMES } from '@/core/fretboard';
 import { midiName, prefersFlats } from '@/core/music';
 import type { FretPosition, KeyContext } from '@/core/types';
+import { tx, useNames, useT, type Txt } from '@/i18n';
 import { CLASS_SHORT, keyLabelOf } from '../format';
 
 interface NoteInfoProps {
@@ -12,7 +13,7 @@ interface NoteInfoProps {
   keyContext: KeyContext;
   chordSymbol: string;
   /** Rótulo da escala usada; padrão: o tom atual. */
-  scaleLabel?: string;
+  scaleLabel?: Txt;
   /** Casa do capotraste, para mostrar a casa física. */
   capo?: number;
   onPlay: () => void;
@@ -30,6 +31,8 @@ export function NoteInfo({
   onPlay,
   onClose,
 }: NoteInfoProps) {
+  const t = useT();
+  const n = useNames();
   const closeRef = useRef<HTMLButtonElement>(null);
   const flats = prefersFlats(keyContext);
   const e = explainNote(pos.chroma, ctx, {
@@ -54,19 +57,26 @@ export function NoteInfo({
     <div
       className="note-info"
       role="dialog"
-      aria-label={`Por que ${e.name} é ${CLASS_SHORT[e.cls]}`}
+      aria-label={t(
+        `Por que ${n(e.name)} é ${t(CLASS_SHORT[e.cls])}`,
+        `Why ${n(e.name)} is ${t(CLASS_SHORT[e.cls])}`,
+      )}
     >
       <div className="note-info-head">
         <span className="note-info-badge fb-dot" data-cls={e.cls} aria-hidden="true">
-          {e.name}
+          {n(e.name)}
         </span>
         <div className="note-info-title">
           <strong>
-            {midiName(pos.midi, flats)} · {CLASS_SHORT[e.cls]}
+            {n(midiName(pos.midi, flats))} · {t(CLASS_SHORT[e.cls])}
           </strong>
           <span className="muted small">
-            corda {STRING_NAMES[pos.string]}, casa {pos.fret + capo} · {e.degree} em{' '}
-            {keyLabelOf(keyContext)} · {e.interval} de {chordSymbol}
+            {t(
+              tx(
+                `corda ${n(STRING_NAMES[pos.string]!)}, casa ${pos.fret + capo} · ${e.degree.pt} em ${keyLabelOf(keyContext).pt} · ${e.interval.pt} de ${n(chordSymbol)}`,
+                `${n(STRING_NAMES[pos.string]!)} string, fret ${pos.fret + capo} · ${e.degree.en} in ${keyLabelOf(keyContext).en} · ${e.interval.en} of ${n(chordSymbol)}`,
+              ),
+            )}
           </span>
         </div>
         <button
@@ -74,22 +84,22 @@ export function NoteInfo({
           type="button"
           className="practice-close note-info-close"
           onClick={onClose}
-          aria-label="Fechar explicação"
+          aria-label={t('Fechar explicação', 'Close explanation')}
         >
           <span aria-hidden="true" />
         </button>
       </div>
-      <p className="note-info-why">{e.why}</p>
+      <p className="note-info-why">{t(e.why)}</p>
       <div className="note-info-actions">
         {e.goesTo ? (
           <span className="small">
-            Tende a ir para <strong>{e.goesTo}</strong>
+            {t('Tende a ir para', 'Tends to go to')} <strong>{t(e.goesTo)}</strong>
           </span>
         ) : (
           <span />
         )}
         <button type="button" className="button" onClick={onPlay}>
-          Tocar {e.name}
+          {t('Tocar', 'Play')} {n(e.name)}
         </button>
       </div>
     </div>

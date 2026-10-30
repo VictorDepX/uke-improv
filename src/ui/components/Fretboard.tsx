@@ -17,6 +17,7 @@ import type {
   NoteSuggestion,
   TuningName,
 } from '@/core/types';
+import { useNames, useT } from '@/i18n';
 import { CLASS_SHORT, noteLabel } from '../format';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 
@@ -74,6 +75,8 @@ export const Fretboard = memo(function Fretboard({
   };
   const vertical = useMediaQuery('(max-width: 640px)');
   const flats = prefersFlats(keyContext);
+  const t = useT();
+  const n = useNames();
 
   const frets = useMemo(() => {
     const all = Array.from({ length: FRET_COUNT - capo + 1 }, (_, f) => f);
@@ -108,8 +111,10 @@ export const Fretboard = memo(function Fretboard({
     const isAlt = !isLast && last !== null && last.heard && pos.midi === last.midi;
     const inPreview = preview?.has(pos.chroma) ?? false;
     const common = inPreview && ctx.chord.stable.includes(pos.chroma);
-    const label = noteLabel(pos.chroma, labels, keyContext, ctx.chord);
-    const name = midiName(pos.midi, flats);
+    const raw = noteLabel(pos.chroma, labels, keyContext, ctx.chord);
+    const label = labels === 'note' ? n(raw) : raw;
+    const name = n(midiName(pos.midi, flats));
+    const stringName = n(STRING_NAMES[pos.string]!);
     const style = vertical
       ? ({ gridColumn: pos.string + 2, gridRow: frets.indexOf(pos.fret) + 2 } as CSSProperties)
       : ({
@@ -152,7 +157,10 @@ export const Fretboard = memo(function Fretboard({
           cancelPress();
           onInspect(pos);
         }}
-        aria-label={`${name}, corda ${STRING_NAMES[pos.string]}, ${pos.fret === 0 && capo ? `capo na casa ${capo}` : `casa ${pos.fret + capo}`}: ${CLASS_SHORT[cls]}${r ? `, sugestão ${r}` : ''}`}
+        aria-label={t(
+          `${name}, corda ${stringName}, ${pos.fret === 0 && capo ? `capo na casa ${capo}` : `casa ${pos.fret + capo}`}: ${t(CLASS_SHORT[cls])}${r ? `, sugestão ${r}` : ''}`,
+          `${name}, ${stringName} string, ${pos.fret === 0 && capo ? `capo at fret ${capo}` : `fret ${pos.fret + capo}`}: ${t(CLASS_SHORT[cls])}${r ? `, suggestion ${r}` : ''}`,
+        )}
       >
         <span
           className="fb-dot"
@@ -181,7 +189,7 @@ export const Fretboard = memo(function Fretboard({
             : { gridTemplateColumns: `auto repeat(${frets.length}, minmax(var(--fb-cell-h), 1fr))` }
         }
         role="group"
-        aria-label="Braço do ukulele"
+        aria-label={t('Braço do ukulele', 'Ukulele fretboard')}
       >
         <div
           className="fb-wood"
@@ -198,7 +206,7 @@ export const Fretboard = memo(function Fretboard({
             className="fb-string-name"
             style={vertical ? { gridColumn: s + 2, gridRow: 1 } : { gridRow: i + 2, gridColumn: 1 }}
           >
-            {STRING_NAMES[s]}
+            {n(STRING_NAMES[s]!)}
           </span>
         ))}
         {frets.map((f, i) => (

@@ -1,13 +1,16 @@
 import { useId, useState, type FormEvent } from 'react';
 import { useMusicStore } from '@/store/useMusicStore';
 import { ACCOUNT_LIMITS, signIn, signOut, signUp, syncNow } from '@/sync/sync';
+import { LOCALE, useLang, useT, type Lang } from '@/i18n';
 import { Panel, Segmented } from './controls';
 
-const time = (ms: number) =>
-  new Date(ms).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+const time = (ms: number, lang: Lang) =>
+  new Date(ms).toLocaleTimeString(LOCALE[lang], { hour: '2-digit', minute: '2-digit' });
 
 /** Conta (e-mail e senha) e sincronização de ajustes, progressões e progresso. */
 export function AccountPanel() {
+  const t = useT();
+  const lang = useLang();
   const account = useMusicStore((s) => s.account);
   const [mode, setMode] = useState<'in' | 'up'>('in');
   const [name, setName] = useState('');
@@ -33,8 +36,8 @@ export function AccountPanel() {
 
   if (account.status === 'unknown')
     return (
-      <Panel title="Conta">
-        <p className="small muted">Verificando a sessão…</p>
+      <Panel title={t('Conta', 'Account')}>
+        <p className="small muted">{t('Verificando a sessão…', 'Checking your session…')}</p>
       </Panel>
     );
 
@@ -48,23 +51,28 @@ export function AccountPanel() {
           </p>
           <p className="small account-sync" data-state={account.sync} role="status">
             {account.sync === 'syncing'
-              ? 'Sincronizando…'
+              ? t('Sincronizando…', 'Syncing…')
               : account.sync === 'error'
                 ? account.error
                 : account.lastSync
-                  ? `Sincronizado às ${time(account.lastSync)}.`
-                  : 'Pronto para sincronizar.'}
+                  ? t(
+                      `Sincronizado às ${time(account.lastSync, lang)}.`,
+                      `Synced at ${time(account.lastSync, lang)}.`,
+                    )
+                  : t('Pronto para sincronizar.', 'Ready to sync.')}
           </p>
           <p className="small muted">
-            Ajustes (com calibração), progressões próprias e cifras, e o placar do treino de ouvido
-            e dos exercícios vão para a nuvem e chegam aos seus outros aparelhos.
+            {t(
+              'Ajustes (com calibração), progressões próprias e cifras, e o placar do treino de ouvido e dos exercícios vão para a nuvem e chegam aos seus outros aparelhos.',
+              'Settings (including calibration), your own progressions and charts, and your ear training and exercise scores go to the cloud and reach your other devices.',
+            )}
           </p>
           <div className="editor-actions">
             <button type="button" className="button" onClick={() => void syncNow()}>
-              Sincronizar agora
+              {t('Sincronizar agora', 'Sync now')}
             </button>
             <button type="button" className="button" onClick={() => void signOut()}>
-              Sair
+              {t('Sair', 'Sign out')}
             </button>
           </div>
         </div>
@@ -72,21 +80,21 @@ export function AccountPanel() {
     );
 
   return (
-    <Panel title="Conta">
+    <Panel title={t('Conta', 'Account')}>
       <form className="stack account-form" onSubmit={(e) => void submit(e)}>
         <Segmented
-          label="Acesso"
+          label={t('Acesso', 'Access')}
           hideLabel
           value={mode}
           options={[
-            { value: 'in', label: 'Entrar' },
-            { value: 'up', label: 'Criar conta' },
+            { value: 'in', label: t('Entrar', 'Sign in') },
+            { value: 'up', label: t('Criar conta', 'Create account') },
           ]}
           onChange={setMode}
         />
         {mode === 'up' ? (
           <label className="field" htmlFor={ids.name}>
-            <span className="field-label">Nome</span>
+            <span className="field-label">{t('Nome', 'Name')}</span>
             <input
               id={ids.name}
               className="input"
@@ -98,7 +106,7 @@ export function AccountPanel() {
           </label>
         ) : null}
         <label className="field" htmlFor={ids.email}>
-          <span className="field-label">E-mail</span>
+          <span className="field-label">{t('E-mail', 'Email')}</span>
           <input
             id={ids.email}
             className="input"
@@ -111,7 +119,7 @@ export function AccountPanel() {
           />
         </label>
         <label className="field" htmlFor={ids.password}>
-          <span className="field-label">Senha</span>
+          <span className="field-label">{t('Senha', 'Password')}</span>
           <input
             id={ids.password}
             className="input"
@@ -131,12 +139,18 @@ export function AccountPanel() {
         ) : null}
         <div className="editor-actions">
           <button type="submit" className="button button-primary" disabled={busy}>
-            {busy ? 'Aguarde…' : mode === 'up' ? 'Criar conta' : 'Entrar'}
+            {busy
+              ? t('Aguarde…', 'Please wait…')
+              : mode === 'up'
+                ? t('Criar conta', 'Create account')
+                : t('Entrar', 'Sign in')}
           </button>
         </div>
         <p className="small muted">
-          Opcional. Com conta, seus ajustes, progressões e progresso ficam iguais em todos os
-          aparelhos. Sem conta, tudo continua salvo só neste aparelho.
+          {t(
+            'Opcional. Com conta, seus ajustes, progressões e progresso ficam iguais em todos os aparelhos. Sem conta, tudo continua salvo só neste aparelho.',
+            'Optional. With an account, your settings, progressions and progress are the same on all your devices. Without one, everything stays saved on this device only.',
+          )}
         </p>
       </form>
     </Panel>

@@ -8,6 +8,7 @@ import { suggestNextChords } from '@/core/suggestChords';
 import { useDiatonicChords } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 import { Segmented } from '../controls';
+import { useNames, useT } from '@/i18n';
 
 const MAX_BARS = 16;
 
@@ -15,6 +16,8 @@ const METER_OPTIONS = (Object.keys(METERS) as Meter[]).map((m) => ({ value: m, l
 
 /** Monta uma progressão própria; pode usar o sugeridor para escolher cada próximo acorde. */
 export function ProgressionEditor() {
+  const t = useT();
+  const n = useNames();
   /** Compassos; cada um com 1 ou 2 acordes. */
   const [draft, setDraft] = useState<string[][]>([]);
   const [meter, setMeter] = useState<Meter>('4/4');
@@ -59,15 +62,31 @@ export function ProgressionEditor() {
     );
     setDraft([]);
     setSplit(false);
-    toast.success('Progressão salva e escolhida na base.');
+    toast.success(
+      t(
+        'Progressão salva e escolhida na base.',
+        'Progression saved and selected for the backing track.',
+      ),
+    );
   };
 
   return (
     <div className="editor">
-      <Segmented label="Compasso" value={meter} options={METER_OPTIONS} onChange={setMeter} />
-      <div className="editor-draft" aria-live="polite" aria-label="Compassos montados">
+      <Segmented
+        label={t('Compasso', 'Time signature')}
+        value={meter}
+        options={METER_OPTIONS}
+        onChange={setMeter}
+      />
+      <div
+        className="editor-draft"
+        aria-live="polite"
+        aria-label={t('Compassos montados', 'Bars so far')}
+      >
         {draft.length === 0 ? (
-          <span className="muted">Escolha os acordes na ordem dos compassos.</span>
+          <span className="muted">
+            {t('Escolha os acordes na ordem dos compassos.', 'Pick the chords in bar order.')}
+          </span>
         ) : (
           draft.map((bar, i) => (
             <span
@@ -75,7 +94,7 @@ export function ProgressionEditor() {
               className="pill"
               data-split={bar.length > 1 || undefined}
             >
-              {barLabel(bar)}
+              {barLabel(bar.map(n))}
             </span>
           ))
         )}
@@ -83,7 +102,7 @@ export function ProgressionEditor() {
 
       {suggested.length > 0 ? (
         <div className="editor-row">
-          <span className="eyebrow">Sugeridos</span>
+          <span className="eyebrow">{t('Sugeridos', 'Suggested')}</span>
           {suggested.map((s) => (
             <button
               key={s.symbol}
@@ -91,24 +110,24 @@ export function ProgressionEditor() {
               className="pill pill-suggested"
               onClick={() => push(s.symbol)}
             >
-              {s.symbol}
+              {n(s.symbol)}
             </button>
           ))}
         </div>
       ) : null}
 
       <div className="editor-row">
-        <span className="eyebrow">Campo</span>
+        <span className="eyebrow">{t('Campo', 'In key')}</span>
         {diatonic.map((d) => (
           <button key={d.numeral} type="button" className="pill" onClick={() => push(d.symbol)}>
-            {d.symbol}
+            {n(d.symbol)}
           </button>
         ))}
       </div>
 
       <div className="editor-actions">
         <button type="button" className="button" onClick={undo} disabled={!draft.length}>
-          Desfazer
+          {t('Desfazer', 'Undo')}
         </button>
         <button
           type="button"
@@ -116,9 +135,12 @@ export function ProgressionEditor() {
           aria-pressed={split}
           onClick={() => setSplit((v) => !v)}
           disabled={!canSplit}
-          title="O próximo acorde divide o último compasso com o anterior"
+          title={t(
+            'O próximo acorde divide o último compasso com o anterior',
+            'The next chord shares the last bar with the previous one',
+          )}
         >
-          2 acordes neste compasso
+          {t('2 acordes neste compasso', '2 chords in this bar')}
         </button>
         <button
           type="button"
@@ -126,7 +148,7 @@ export function ProgressionEditor() {
           onClick={save}
           disabled={flat.length < 2}
         >
-          Salvar progressão
+          {t('Salvar progressão', 'Save progression')}
         </button>
       </div>
     </div>

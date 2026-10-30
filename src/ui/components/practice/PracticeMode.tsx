@@ -11,6 +11,7 @@ import { ExerciseBar, ExerciseSelect } from '../ExerciseBar';
 import { LiveFretboard } from '../LiveFretboard';
 import { PresetSelect } from '../PresetBar';
 import { TapTempo } from '../jam/TapTempo';
+import { useNames, useT } from '@/i18n';
 
 interface PracticeModeProps {
   onClose: () => void;
@@ -47,6 +48,8 @@ function exitImmersive(): void {
  * a sequência de acordes e o braço ocupando o resto da tela.
  */
 export function PracticeMode({ onClose }: PracticeModeProps) {
+  const t = useT();
+  const n = useNames();
   const closeRef = useRef<HTMLButtonElement>(null);
   const current = useMusicStore((s) => s.currentChord);
   const key = useMusicStore((s) => s.key);
@@ -82,30 +85,38 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
   }, [onClose]);
 
   return (
-    <div className="practice" role="dialog" aria-modal="true" aria-label="Modo prática">
+    <div
+      className="practice"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('Modo prática', 'Practice mode')}
+    >
       <div className="practice-head">
         <button
           ref={closeRef}
           type="button"
           className="practice-close"
           onClick={onClose}
-          aria-label="Sair do modo prática"
+          aria-label={t('Sair do modo prática', 'Exit practice mode')}
         >
           <span aria-hidden="true" />
         </button>
 
         <div className="practice-chord" aria-live="polite">
-          <span className="practice-chord-now">{current}</span>
+          <span className="practice-chord-now">{n(current)}</span>
           {next ? (
             <span className="practice-chord-next">
-              <span aria-hidden="true">→</span> {next}
+              <span aria-hidden="true">→</span> {n(next)}
             </span>
           ) : null}
         </div>
 
-        <ol className="practice-suggestions" aria-label="Próximas notas sugeridas">
+        <ol
+          className="practice-suggestions"
+          aria-label={t('Próximas notas sugeridas', 'Suggested next notes')}
+        >
           {suggestions.length === 0 ? (
-            <li className="practice-hint">Toque uma casa</li>
+            <li className="practice-hint">{t('Toque uma casa', 'Tap a fret')}</li>
           ) : (
             suggestions.map((s, i) => (
               <li key={s.midi}>
@@ -119,7 +130,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
                   }}
                 >
                   <span className="practice-note-rank">{i + 1}</span>
-                  {midiName(s.midi, flats)}
+                  {n(midiName(s.midi, flats))}
                 </button>
               </li>
             ))
@@ -131,7 +142,11 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
             type="button"
             className="practice-play"
             aria-pressed={jam.playing}
-            aria-label={jam.playing ? 'Parar a base' : 'Tocar a base'}
+            aria-label={
+              jam.playing
+                ? t('Parar a base', 'Stop the backing track')
+                : t('Tocar a base', 'Play the backing track')
+            }
             onClick={toggleJam}
           >
             <span
@@ -143,7 +158,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
           <button
             type="button"
             className="icon-button"
-            aria-label="Diminuir andamento"
+            aria-label={t('Diminuir andamento', 'Slower')}
             onClick={() => setBpm(jam.bpm - 5)}
           >
             −
@@ -154,7 +169,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
           <button
             type="button"
             className="icon-button"
-            aria-label="Aumentar andamento"
+            aria-label={t('Aumentar andamento', 'Faster')}
             onClick={() => setBpm(jam.bpm + 5)}
           >
             +
@@ -165,19 +180,26 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
 
       <div className="practice-row">
         {jam.playing ? (
-          <ol className="practice-strip" aria-label="Compassos da progressão">
+          <ol
+            className="practice-strip"
+            aria-label={t('Compassos da progressão', 'Bars of the progression')}
+          >
             {bars.map((b, i) => (
               <li
                 key={`${barLabel(b)}-${i}`}
                 className="practice-chip"
                 data-active={i === activeBar || undefined}
               >
-                {barLabel(b)}
+                {barLabel(b.map(n))}
               </li>
             ))}
           </ol>
         ) : (
-          <div className="practice-strip" role="radiogroup" aria-label="Acorde atual">
+          <div
+            className="practice-strip"
+            role="radiogroup"
+            aria-label={t('Acorde atual', 'Current chord')}
+          >
             {diatonic.map((d) => (
               <button
                 key={d.numeral}
@@ -188,7 +210,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
                 data-func={d.func}
                 onClick={() => setChord(d.symbol)}
               >
-                {d.symbol}
+                {n(d.symbol)}
               </button>
             ))}
           </div>
@@ -201,7 +223,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
           aria-pressed={arpeggio}
           onClick={() => updateSettings({ arpeggio: !arpeggio })}
         >
-          Só arpejo
+          {t('Só arpejo', 'Arpeggio only')}
         </button>
         <button
           type="button"
@@ -209,7 +231,9 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
           aria-pressed={followHand}
           onClick={() => updateSettings({ fretWindow: followHand ? null : 'auto' })}
         >
-          {followHand ? 'Braço inteiro' : 'Seguir a mão'}
+          {followHand
+            ? t('Braço inteiro', 'Whole fretboard')
+            : t('Seguir a mão', 'Follow your hand')}
         </button>
       </div>
 
@@ -218,7 +242,12 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
       <div className="practice-board">
         <LiveFretboard previewChord={previewChord} legend={false} />
       </div>
-      <p className="practice-rotate">Gire o celular para ver o braço inteiro.</p>
+      <p className="practice-rotate">
+        {t(
+          'Gire o celular para ver o braço inteiro.',
+          'Turn your phone sideways to see the whole fretboard.',
+        )}
+      </p>
     </div>
   );
 }

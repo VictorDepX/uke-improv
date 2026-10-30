@@ -1,3 +1,4 @@
+import { LangProvider } from '@/i18n';
 import { GUIDES, translationOf, type Guide } from './index';
 
 const TEXT = {
@@ -14,6 +15,7 @@ const TEXT = {
     more: 'Outros guias',
     footer: 'Uke Improv é gratuito e de código aberto.',
     code: 'Código no GitHub',
+    homePath: '/',
     appPath: '/jam',
   },
   en: {
@@ -24,12 +26,13 @@ const TEXT = {
     updated: 'Updated',
     ctaTitle: 'Practice with a backing track',
     ctaBody:
-      'Uke Improv shows on the fretboard which notes sound good over each chord, plays the backing track and listens to you through the microphone. It is free and works on your phone. The app is in Portuguese for now; English is on the way.',
+      'Uke Improv shows on the fretboard which notes sound good over each chord, plays the backing track and listens to you through the microphone. It is free and works on your phone.',
     ctaButton: 'Play along',
     more: 'More guides',
     footer: 'Uke Improv is free and open source.',
     code: 'Code on GitHub',
-    appPath: '/jam',
+    homePath: '/en',
+    appPath: '/en/jam',
   },
 } as const;
 
@@ -47,71 +50,73 @@ export function GuidePage({ guide }: { guide: Guide }) {
   const related = GUIDES.filter((g) => g.lang === guide.lang && g.id !== guide.id);
   const { Body } = guide;
   return (
-    <div className="guide">
-      <header className="guide-top">
-        <a className="brand" href="/" aria-label={t.homeLabel}>
-          <span className="brand-mark" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-            <span />
-          </span>
-          <span className="brand-name">{t.home}</span>
-        </a>
-        <nav className="guide-nav" aria-label={guide.lang === 'pt' ? 'Navegação' : 'Navigation'}>
-          {other ? (
-            <a
-              href={other.path}
-              hrefLang={other.lang === 'pt' ? 'pt-BR' : 'en'}
-              lang={other.lang === 'pt' ? 'pt-BR' : 'en'}
-            >
-              {t.langSwitch}
+    <LangProvider value={guide.lang}>
+      <div className="guide">
+        <header className="guide-top">
+          <a className="brand" href={t.homePath} aria-label={t.homeLabel}>
+            <span className="brand-mark" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+              <span />
+            </span>
+            <span className="brand-name">{t.home}</span>
+          </a>
+          <nav className="guide-nav" aria-label={guide.lang === 'pt' ? 'Navegação' : 'Navigation'}>
+            {other ? (
+              <a
+                href={other.path}
+                hrefLang={other.lang === 'pt' ? 'pt-BR' : 'en'}
+                lang={other.lang === 'pt' ? 'pt-BR' : 'en'}
+              >
+                {t.langSwitch}
+              </a>
+            ) : null}
+            <a className="button button-primary" href={t.homePath}>
+              {t.open}
             </a>
-          ) : null}
-          <a className="button button-primary" href="/">
-            {t.open}
-          </a>
-        </nav>
-      </header>
-
-      <main className="guide-main">
-        <article className="guide-article">
-          <h1>{guide.title}</h1>
-          <p className="guide-meta">
-            {t.updated}{' '}
-            <time dateTime={guide.updated}>{formatDate(guide.updated, guide.lang)}</time>
-          </p>
-          <Body />
-        </article>
-
-        <aside className="guide-cta" aria-labelledby="guide-cta-title">
-          <h2 id="guide-cta-title">{t.ctaTitle}</h2>
-          <p>{t.ctaBody}</p>
-          <a className="button button-primary" href={t.appPath}>
-            {t.ctaButton}
-          </a>
-        </aside>
-
-        {related.length ? (
-          <nav className="guide-related" aria-labelledby="guide-related-title">
-            <h2 id="guide-related-title">{t.more}</h2>
-            <ul>
-              {related.map((g) => (
-                <li key={g.path}>
-                  <a href={g.path}>{g.title}</a>
-                  <span>{g.description}</span>
-                </li>
-              ))}
-            </ul>
           </nav>
-        ) : null}
-      </main>
+        </header>
 
-      <footer className="guide-footer">
-        <p>
-          {t.footer} <a href="https://github.com/VictorDepX/uke-improv">{t.code}</a>
-        </p>
-      </footer>
-    </div>
+        <main className="guide-main">
+          <article className="guide-article">
+            <h1>{guide.title}</h1>
+            <p className="guide-meta">
+              {t.updated}{' '}
+              <time dateTime={guide.updated}>{formatDate(guide.updated, guide.lang)}</time>
+            </p>
+            <Body />
+          </article>
+
+          <aside className="guide-cta" aria-labelledby="guide-cta-title">
+            <h2 id="guide-cta-title">{t.ctaTitle}</h2>
+            <p>{t.ctaBody}</p>
+            <a className="button button-primary" href={t.appPath}>
+              {t.ctaButton}
+            </a>
+          </aside>
+
+          {related.length ? (
+            <nav className="guide-related" aria-labelledby="guide-related-title">
+              <h2 id="guide-related-title">{t.more}</h2>
+              <ul>
+                {related.map((g) => (
+                  <li key={g.path}>
+                    <a href={g.path}>{g.title}</a>
+                    <span>{g.description}</span>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ) : null}
+        </main>
+
+        <footer className="guide-footer">
+          <p>
+            {t.footer} <a href="https://github.com/VictorDepX/uke-improv">{t.code}</a>
+          </p>
+        </footer>
+      </div>
+    </LangProvider>
   );
 }

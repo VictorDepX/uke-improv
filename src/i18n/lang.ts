@@ -44,12 +44,14 @@ export const LOCALE = HTML_LANG;
 export const isLang = (v: unknown): v is Lang => v === 'pt' || v === 'en';
 
 // Para código fora do React (avisos, mensagens do microfone e da sincronização): o App
-// atualiza este valor sempre que o idioma da tela muda.
+// atualiza estes valores sempre que o idioma ou o formato dos nomes muda.
 let current: Lang = 'pt';
-export const setCurrentLang = (lang: Lang) => {
+let currentNames: NameFn = plain;
+export const setCurrentLang = (lang: Lang, names: NameFn = plain) => {
   current = lang;
+  currentNames = names;
 };
 export const currentLang = (): Lang => current;
 /** Mesmo que `t`, no idioma que está na tela agora. */
 export const tNow: T = ((a: Txt | string, b?: string) =>
-  makeT(current)(a as string, b as string)) as T;
+  makeT(current, currentNames)(a as string, b as string)) as T;

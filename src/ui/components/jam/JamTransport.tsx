@@ -4,8 +4,11 @@ import { BPM_RANGE, useMusicStore } from '@/store/useMusicStore';
 import { useJamPreview } from '../../hooks/useJamPreview';
 import { useToggleJam } from '../../hooks/useJamSync';
 import { TapTempo } from './TapTempo';
+import { useNames, useT } from '@/i18n';
 
 export function JamTransport() {
+  const t = useT();
+  const n = useNames();
   const { playing, ready, bpm, bar, beat } = useMusicStore((s) => s.jam);
   const preparing = playing && !ready;
   const setBpm = useMusicStore((s) => s.setBpm);
@@ -25,7 +28,11 @@ export function JamTransport() {
         aria-pressed={playing}
         aria-busy={preparing || undefined}
         data-loading={preparing || undefined}
-        aria-label={playing ? 'Parar a base' : 'Tocar a base'}
+        aria-label={
+          playing
+            ? t('Parar a base', 'Stop the backing track')
+            : t('Tocar a base', 'Play the backing track')
+        }
         onClick={toggle}
       >
         <span className="play-icon" data-playing={playing || undefined} aria-hidden="true" />
@@ -34,18 +41,18 @@ export function JamTransport() {
       <div className="transport-now" aria-live="polite">
         <span className="eyebrow">
           {preparing
-            ? 'Preparando o som…'
+            ? t('Preparando o som…', 'Preparing the sound…')
             : counting
-              ? 'Contagem'
+              ? t('Contagem', 'Count-in')
               : playing
-                ? `Compasso ${bar + 1}`
-                : 'Parado'}
+                ? t(`Compasso ${bar + 1}`, `Bar ${bar + 1}`)
+                : t('Parado', 'Stopped')}
         </span>
         <span className="transport-chord">
-          {counting && !preparing ? info.beats - beat : current}
+          {counting && !preparing ? info.beats - beat : n(current)}
         </span>
         <span className="transport-next">
-          a seguir <strong>{next}</strong>
+          {t('a seguir', 'next')} <strong>{n(next)}</strong>
         </span>
       </div>
 
@@ -66,7 +73,7 @@ export function JamTransport() {
         <button
           type="button"
           className="icon-button"
-          aria-label="Diminuir andamento"
+          aria-label={t('Diminuir andamento', 'Slower')}
           onClick={() => setBpm(bpm - 5)}
         >
           −
@@ -78,7 +85,7 @@ export function JamTransport() {
         <button
           type="button"
           className="icon-button"
-          aria-label="Aumentar andamento"
+          aria-label={t('Aumentar andamento', 'Faster')}
           onClick={() => setBpm(bpm + 5)}
         >
           +
@@ -91,7 +98,7 @@ export function JamTransport() {
           max={BPM_RANGE.max}
           value={bpm}
           onChange={(e) => setBpm(Number(e.target.value))}
-          aria-label="Andamento em BPM"
+          aria-label={t('Andamento em BPM', 'Tempo in BPM')}
         />
       </div>
     </div>

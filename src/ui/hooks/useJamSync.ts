@@ -7,6 +7,7 @@ import { ensureAudio, setLayerVolume } from '@/audio/engine/sound';
 import { useActiveProgression } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 import { useLatest } from './useLatest';
+import { tNow } from '@/i18n/lang';
 
 /**
  * Liga o motor da base ao store. Montado uma vez, na raiz do app,
@@ -58,7 +59,10 @@ export function useJamSync(): void {
       } catch {
         setJamPlaying(false);
         toast.error(
-          'Não consegui ligar o som. Toque no play de novo; se continuar, recarregue a página.',
+          tNow(
+            'Não consegui ligar o som. Toque no play de novo; se continuar, recarregue a página.',
+            "Couldn't start the sound. Press play again; if it keeps happening, reload the page.",
+          ),
         );
       }
     })();

@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import type { Shape } from '@/core/chordShapes';
+import { useNames, useT } from '@/i18n';
 
 interface ChordDiagramProps {
   shape: Shape;
@@ -24,7 +25,13 @@ export const ChordDiagram = memo(function ChordDiagram({
   const top = 14;
   const gapX = (w - 2 * left) / (STRINGS - 1);
   const gapY = (h - top - 6) / FRETS;
-  const aria = `Diagrama${label ? ` de ${label}` : ''}: casas ${shape.join(', ')} nas cordas G, C, E, A`;
+  const t = useT();
+  const n = useNames();
+  const strings = ['G', 'C', 'E', 'A'].map(n).join(', ');
+  const aria = t(
+    `Diagrama${label ? ` de ${label}` : ''}: casas ${shape.join(', ')} nas cordas ${strings}`,
+    `${label ? `${label} chord` : 'Chord'} diagram: frets ${shape.join(', ')} on strings ${strings}`,
+  );
   return (
     <svg
       className="chord-diagram"

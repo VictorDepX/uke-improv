@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from 'react';
 import { reportError } from '@/monitoring';
+import { tNow } from '@/i18n/lang';
 
 interface State {
   failed: boolean;
@@ -21,13 +22,15 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
     if (!this.state.failed) return this.props.children;
     return (
       <div className="crash" role="alert">
-        <h1>Algo deu errado nesta tela</h1>
+        <h1>{tNow('Algo deu errado nesta tela', 'Something went wrong on this screen')}</h1>
         <p>
-          O erro foi registrado. Recarregue para continuar; seus ajustes e progressões ficam
-          guardados.
+          {tNow(
+            'O erro foi registrado. Recarregue para continuar; seus ajustes e progressões ficam guardados.',
+            'The error was logged. Reload to continue; your settings and progressions are kept.',
+          )}
         </p>
         <button type="button" className="button button-primary" onClick={() => location.reload()}>
-          Recarregar
+          {tNow('Recarregar', 'Reload')}
         </button>
       </div>
     );

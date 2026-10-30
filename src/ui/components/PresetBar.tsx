@@ -1,5 +1,6 @@
 import { PRESETS, matchPreset } from '@/core/presets';
 import { useMusicStore } from '@/store/useMusicStore';
+import { useT } from '@/i18n';
 
 function useActivePresetId(): string | undefined {
   const key = useMusicStore((s) => s.key);
@@ -11,6 +12,7 @@ function useActivePresetId(): string | undefined {
 
 /** Faixa de presets: um toque ajusta tom, escala, progressão e andamento. */
 export function PresetBar() {
+  const t = useT();
   const apply = useMusicStore((s) => s.applyPreset);
   const active = useActivePresetId();
   return (
@@ -24,7 +26,7 @@ export function PresetBar() {
           className="preset"
           onClick={() => apply(p)}
         >
-          <span className="preset-name">{p.name}</span>
+          <span className="preset-name">{t(p.name)}</span>
           <span className="preset-bpm mono">{p.bpm}</span>
         </button>
       ))}
@@ -34,6 +36,7 @@ export function PresetBar() {
 
 /** Versão compacta para o modo prática. */
 export function PresetSelect() {
+  const t = useT();
   const apply = useMusicStore((s) => s.applyPreset);
   const active = useActivePresetId();
   return (
@@ -52,7 +55,7 @@ export function PresetSelect() {
       </option>
       {PRESETS.map((p) => (
         <option key={p.id} value={p.id}>
-          {p.name}
+          {t(p.name)}
         </option>
       ))}
     </select>

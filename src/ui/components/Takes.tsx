@@ -7,6 +7,7 @@ import { useMusicStore } from '@/store/useMusicStore';
 import { CLASS_SHORT } from '../format';
 import { MAX_TAKE_SECONDS, useTakes, type Take } from '../hooks/useTakes';
 import { Fretboard } from './Fretboard';
+import { useNames, useT } from '@/i18n';
 
 const clock = (s: number) => {
   const total = Math.max(0, Math.floor(s));
@@ -17,6 +18,8 @@ const pct = (x: number) => `${Math.round(x * 100)}%`;
 
 /** Ouve a gravação com a nota de cada momento marcada no braço e um resumo do que soou. */
 function TakePlayer({ take, onRemove }: { take: Take; onRemove: () => void }) {
+  const t = useT();
+  const nn = useNames();
   const audio = useRef<HTMLAudioElement>(null);
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -43,9 +46,9 @@ function TakePlayer({ take, onRemove }: { take: Take; onRemove: () => void }) {
     return () => cancelAnimationFrame(raf);
   }, [playing]);
 
-  const seek = (t: number) => {
-    if (audio.current) audio.current.currentTime = t;
-    setTime(t);
+  const seek = (at: number) => {
+    if (audio.current) audio.current.currentTime = at;
+    setTime(at);
   };
 
   const download = () => {
@@ -61,7 +64,11 @@ function TakePlayer({ take, onRemove }: { take: Take; onRemove: () => void }) {
   };
 
   return (
-    <div className="take" role="region" aria-label={`Gravação de ${clock(take.duration)}`}>
+    <div
+      className="take"
+      role="region"
+      aria-label={t(`Gravação de ${clock(take.duration)}`, `${clock(take.duration)} recording`)}
+    >
       <div className="take-head">
         <audio
           ref={audio}
@@ -76,15 +83,15 @@ function TakePlayer({ take, onRemove }: { take: Take; onRemove: () => void }) {
         {__PWA__ ? (
           // A página avulsa (artifact) não pode oferecer download de arquivo.
           <button type="button" className="link-button" onClick={download}>
-            Baixar
+            {t('Baixar', 'Download')}
           </button>
         ) : null}
         <button type="button" className="link-button" onClick={onRemove}>
-          Apagar
+          {t('Apagar', 'Delete')}
         </button>
       </div>
 
-      <div className="take-timeline" aria-label="Notas da gravação">
+      <div className="take-timeline" aria-label={t('Notas da gravação', 'Notes in the recording')}>
         {take.notes.map((n, i) => (
           <button
             key={`${n.t}-${i}`}
@@ -94,8 +101,11 @@ function TakePlayer({ take, onRemove }: { take: Take; onRemove: () => void }) {
             data-current={i === idx || undefined}
             style={{ left: `${(n.t / Math.max(take.duration, 0.1)) * 100}%` }}
             onClick={() => seek(n.t)}
-            aria-label={`${midiName(n.midi, flats)} em ${clock(n.t)}: ${CLASS_SHORT[n.cls]} sobre ${n.chord}`}
-            title={`${midiName(n.midi, flats)} · ${n.chord}`}
+            aria-label={t(
+              `${nn(midiName(n.midi, flats))} em ${clock(n.t)}: ${t(CLASS_SHORT[n.cls])} sobre ${nn(n.chord)}`,
+              `${nn(midiName(n.midi, flats))} at ${clock(n.t)}: ${t(CLASS_SHORT[n.cls])} over ${nn(n.chord)}`,
+            )}
+            title={`${nn(midiName(n.midi, flats))} · ${nn(n.chord)}`}
           />
         ))}
         <span
@@ -108,13 +118,18 @@ function TakePlayer({ take, onRemove }: { take: Take; onRemove: () => void }) {
       <p className="take-now small" aria-live="polite">
         {note ? (
           <>
-            <strong>{midiName(note.midi, flats)}</strong> sobre {note.chord}:{' '}
+            <strong>{nn(midiName(note.midi, flats))}</strong> {t('sobre', 'over')} {nn(note.chord)}:{' '}
             <span data-cls={note.cls} className="take-cls">
-              {CLASS_SHORT[note.cls]}
+              {t(CLASS_SHORT[note.cls])}
             </span>
           </>
         ) : (
-          <span className="muted">Dê play: a nota de cada momento aparece no braço.</span>
+          <span className="muted">
+            {t(
+              'Dê play: a nota de cada momento aparece no braço.',
+              'Press play: the note at each moment shows on the fretboard.',
+            )}
+          </span>
         )}
       </p>
 
@@ -143,24 +158,31 @@ function TakePlayer({ take, onRemove }: { take: Take; onRemove: () => void }) {
 
       <div className="take-summary">
         <span>
-          <strong>{summary.total}</strong> notas
+          <strong>{summary.total}</strong> {t('notas', 'notes')}
         </span>
-        <span data-cls="repouso">{pct(summary.chordTones)} do acorde</span>
-        <span>{pct(summary.inScale)} na escala</span>
+        <span data-cls="repouso">
+          {pct(summary.chordTones)} {t('do acorde', 'chord tones')}
+        </span>
+        <span>
+          {pct(summary.inScale)} {t('na escala', 'in the scale')}
+        </span>
         <span data-cls="tensao">
-          {summary.resolved}/{summary.tensions} tensões resolvidas
+          {summary.resolved}/{summary.tensions} {t('tensões resolvidas', 'tensions resolved')}
         </span>
         {summary.longestOut > 1 ? (
-          <span data-cls="fora">{summary.longestOut} fora seguidas</span>
+          <span data-cls="fora">
+            {summary.longestOut} {t('fora seguidas', 'outside in a row')}
+          </span>
         ) : null}
       </div>
-      <p className="small">{takeAdvice(summary)}</p>
+      <p className="small">{t(takeAdvice(summary))}</p>
     </div>
   );
 }
 
 /** Gravar o improviso pelo microfone e reouvir com as notas marcadas. */
 export function TakesPanel() {
+  const t = useT();
   const { takes, recordingSince, start, stop, remove } = useTakes();
   const [elapsed, setElapsed] = useState(0);
   useEffect(() => {
@@ -172,11 +194,11 @@ export function TakesPanel() {
   return (
     <div className="takes">
       <div className="takes-head">
-        <span className="eyebrow">Gravar improviso</span>
+        <span className="eyebrow">{t('Gravar improviso', 'Record your improv')}</span>
         {recordingSince !== null ? (
           <button type="button" className="button take-rec" data-on onClick={() => void stop()}>
             <span className="take-rec-dot" aria-hidden="true" />
-            Parar · {clock(elapsed)}
+            {t('Parar', 'Stop')} · {clock(elapsed)}
           </button>
         ) : (
           <button
@@ -188,21 +210,23 @@ export function TakesPanel() {
             }}
           >
             <span className="take-rec-dot" aria-hidden="true" />
-            Gravar
+            {t('Gravar', 'Record')}
           </button>
         )}
         <span className="small muted">
-          Até {MAX_TAKE_SECONDS / 60} min. Grava o microfone e as notas detectadas; fica só neste
-          aparelho.
+          {t(
+            `Até ${MAX_TAKE_SECONDS / 60} min. Grava o microfone e as notas detectadas; fica só neste aparelho.`,
+            `Up to ${MAX_TAKE_SECONDS / 60} min. Records the microphone and the detected notes; stays on this device only.`,
+          )}
         </span>
       </div>
-      {takes.map((t) => (
+      {takes.map((take) => (
         <TakePlayer
-          key={t.id}
-          take={t}
+          key={take.id}
+          take={take}
           onRemove={() => {
-            remove(t.id);
-            toast.info('Gravação apagada.');
+            remove(take.id);
+            toast.info(t('Gravação apagada.', 'Recording deleted.'));
           }}
         />
       ))}

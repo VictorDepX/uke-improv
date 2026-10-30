@@ -13,9 +13,11 @@ import { playNote } from '@/audio/engine/sound';
 import { useJamPreview } from '../hooks/useJamPreview';
 import { PresetBar } from '../components/PresetBar';
 import { ExerciseBar } from '../components/ExerciseBar';
+import { useT } from '@/i18n';
 
 /** Módulo 4: base em loop; o braço acompanha o acorde e avisa o próximo antes de cada troca. */
 export function JamPage() {
+  const t = useT();
   const registerNote = useMusicStore((s) => s.registerNote);
   const { previewChord } = useJamPreview();
 
@@ -26,11 +28,13 @@ export function JamPage() {
       <LiveFretboard previewChord={previewChord} />
       <ExerciseBar />
       <p className="hint small muted">
-        No último tempo antes de cada troca, as notas do próximo acorde ganham contorno; contorno
-        duplo marca as notas que servem nos dois.
+        {t(
+          'No último tempo antes de cada troca, as notas do próximo acorde ganham contorno; contorno duplo marca as notas que servem nos dois.',
+          'On the last beat before each change, the next chord’s notes get an outline; a double outline marks notes that fit both.',
+        )}
       </p>
       <div className="columns">
-        <Panel title="Progressão">
+        <Panel title={t('Progressão', 'Progression')}>
           <StylePicker />
           <ProgressionPicker />
         </Panel>
@@ -42,10 +46,10 @@ export function JamPage() {
         />
       </div>
       <div className="columns">
-        <Panel title="Montar progressão">
+        <Panel title={t('Montar progressão', 'Build a progression')}>
           <ProgressionEditor />
         </Panel>
-        <Panel title="Analisar cifra">
+        <Panel title={t('Analisar cifra', 'Analyze a chord chart')}>
           <ChartAnalyzer />
         </Panel>
       </div>

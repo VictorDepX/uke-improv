@@ -13,21 +13,32 @@ import { useVoicing } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 import { Panel, Segmented } from '../components/controls';
 import { keyLabelOf } from '../format';
+import { tx, useT, type Txt } from '@/i18n';
 
-const MODE_OPTIONS: { value: EarMode; label: string }[] = [
-  { value: 'interval', label: 'Intervalos' },
-  { value: 'quality', label: 'Maior × menor' },
-  { value: 'function', label: 'Função' },
+const MODE_OPTIONS: { value: EarMode; label: Txt }[] = [
+  { value: 'interval', label: tx('Intervalos', 'Intervals') },
+  { value: 'quality', label: tx('Maior × menor', 'Major vs. minor') },
+  { value: 'function', label: tx('Função', 'Function') },
 ];
 
-const MODE_HINT: Record<EarMode, string> = {
-  interval: 'Duas notas: diga a distância entre elas.',
-  quality: 'Um acorde em arpejo e depois junto: maior soa aberto, menor soa mais escuro.',
-  function: 'Uma cadência firma o tom; depois soa um acorde. Diga o grau dele no tom.',
+const MODE_HINT: Record<EarMode, Txt> = {
+  interval: tx(
+    'Duas notas: diga a distância entre elas.',
+    'Two notes: name the distance between them.',
+  ),
+  quality: tx(
+    'Um acorde em arpejo e depois junto: maior soa aberto, menor soa mais escuro.',
+    'A chord arpeggiated and then together: major sounds open, minor sounds darker.',
+  ),
+  function: tx(
+    'Uma cadência firma o tom; depois soa um acorde. Diga o grau dele no tom.',
+    'A cadence sets the key; then a chord plays. Name its degree in the key.',
+  ),
 };
 
 /** Treino de ouvido: intervalos, qualidade de acorde e função harmônica. */
 export function EarPage() {
+  const t = useT();
   const key = useMusicStore((s) => s.key);
   const voicing = useVoicing();
   const [mode, setMode] = useState<EarMode>('interval');
@@ -68,41 +79,44 @@ export function EarPage() {
   return (
     <div className="page page-ear">
       <Panel
-        title="Treino de ouvido"
+        title={t('Treino de ouvido', 'Ear training')}
         aside={
-          <span className="ear-score mono" aria-label="Placar">
+          <span className="ear-score mono" aria-label={t('Placar', 'Score')}>
             {score.correct}/{score.total}
             {score.best > 1 ? (
-              <span className="muted"> · melhor sequência {score.best}</span>
+              <span className="muted">
+                {' '}
+                · {t('melhor sequência', 'best streak')} {score.best}
+              </span>
             ) : null}
           </span>
         }
       >
         <div className="stack">
           <Segmented
-            label="Modo"
+            label={t('Modo', 'Mode')}
             value={mode}
-            options={MODE_OPTIONS}
+            options={MODE_OPTIONS.map((o) => ({ ...o, label: t(o.label) }))}
             onChange={(m) => reset(() => setMode(m))}
           />
           {mode === 'interval' ? (
             <div className="ear-options-row">
               <Segmented
-                label="Intervalos"
+                label={t('Intervalos', 'Intervals')}
                 value={intervalLevel}
                 options={[
-                  { value: 'basic', label: 'Básicos' },
-                  { value: 'all', label: 'Todos' },
+                  { value: 'basic', label: t('Básicos', 'Basic') },
+                  { value: 'all', label: t('Todos', 'All') },
                 ]}
                 onChange={(v) => reset(() => setIntervalLevel(v))}
               />
               <Segmented
-                label="Como soam"
+                label={t('Como soam', 'How they sound')}
                 value={direction}
                 options={[
-                  { value: 'up', label: 'Subindo' },
-                  { value: 'down', label: 'Descendo' },
-                  { value: 'harmonic', label: 'Juntas' },
+                  { value: 'up', label: t('Subindo', 'Rising') },
+                  { value: 'down', label: t('Descendo', 'Falling') },
+                  { value: 'harmonic', label: t('Juntas', 'Together') },
                 ]}
                 onChange={(v) => reset(() => setDirection(v))}
               />
@@ -110,23 +124,29 @@ export function EarPage() {
           ) : null}
           {mode === 'quality' ? (
             <Segmented
-              label="Acordes"
+              label={t('Acordes', 'Chords')}
               value={qualityLevel}
               options={[
-                { value: 'basic', label: 'Maior e menor' },
-                { value: 'all', label: '+ diminuto e aumentado' },
+                { value: 'basic', label: t('Maior e menor', 'Major and minor') },
+                { value: 'all', label: t('+ diminuto e aumentado', '+ diminished and augmented') },
               ]}
               onChange={(v) => reset(() => setQualityLevel(v))}
             />
           ) : null}
           <p className="small muted">
-            {MODE_HINT[mode]}
-            {mode === 'function' ? ` Tom atual: ${keyLabelOf(key)}.` : ''}
+            {t(MODE_HINT[mode])}
+            {mode === 'function'
+              ? t(` Tom atual: ${t(keyLabelOf(key))}.`, ` Current key: ${t(keyLabelOf(key))}.`)
+              : ''}
           </p>
 
           <div className="ear-actions">
             <button type="button" className="button button-primary ear-play" onClick={next}>
-              {question && !picked ? 'Nova pergunta' : question ? 'Próxima' : 'Ouvir'}
+              {question && !picked
+                ? t('Nova pergunta', 'New question')
+                : question
+                  ? t('Próxima', 'Next')
+                  : t('Ouvir', 'Listen')}
             </button>
             {question ? (
               <button
@@ -134,14 +154,14 @@ export function EarPage() {
                 className="button"
                 onClick={() => void playSequence(question.play)}
               >
-                Repetir
+                {t('Repetir', 'Repeat')}
               </button>
             ) : null}
           </div>
 
           {question ? (
-            <div className="ear-question" role="group" aria-label={question.prompt}>
-              <span className="eyebrow">{question.prompt}</span>
+            <div className="ear-question" role="group" aria-label={t(question.prompt)}>
+              <span className="eyebrow">{t(question.prompt)}</span>
               <div className="ear-choices">
                 {question.options.map((o) => (
                   <button
@@ -161,13 +181,14 @@ export function EarPage() {
                     disabled={picked !== null}
                     onClick={() => answer(o.id)}
                   >
-                    {o.label}
+                    {t(o.label)}
                   </button>
                 ))}
               </div>
               {picked ? (
                 <p className="ear-feedback" data-kind={right ? 'hit' : 'miss'} role="status">
-                  <strong>{right ? 'Isso.' : 'Não foi.'}</strong> {question.explain}
+                  <strong>{right ? t('Isso.', 'Correct.') : t('Não foi.', 'Not quite.')}</strong>{' '}
+                  {t(question.explain)}
                 </p>
               ) : null}
             </div>

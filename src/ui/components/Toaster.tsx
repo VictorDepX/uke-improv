@@ -1,7 +1,9 @@
 import { useToasts } from '../toast';
+import { useT } from '@/i18n';
 
 /** Região de avisos: lida pelos leitores de tela (polite para sucesso, assertive para erro). */
 export function Toaster() {
+  const tr = useT();
   const toasts = useToasts((s) => s.toasts);
   const dismiss = useToasts((s) => s.dismiss);
   return (
@@ -30,7 +32,7 @@ export function Toaster() {
           <button
             type="button"
             className="toast-close"
-            aria-label="Fechar aviso"
+            aria-label={tr('Fechar aviso', 'Close notice')}
             onClick={() => dismiss(t.id)}
           >
             ×

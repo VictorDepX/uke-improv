@@ -3,6 +3,7 @@ import { analyzeRecording, toMono, type RecordingEvent } from '@/audio/analysis/
 import { diatonicChords } from '@/core/harmony';
 import { midiName, prefersFlats } from '@/core/music';
 import { useMusicStore } from '@/store/useMusicStore';
+import { useNames, useT } from '@/i18n';
 
 /** Só o primeiro minuto é analisado; arquivos maiores só gastariam memória ao decodificar. */
 const MAX_RECORDING_BYTES = 50 * 1024 * 1024;
@@ -15,6 +16,8 @@ type State =
 
 /** Analisa um arquivo de áudio com os mesmos detectores do microfone. */
 export function RecordingAnalyzer() {
+  const t = useT();
+  const n = useNames();
   const inputId = useId();
   const [state, setState] = useState<State>({ phase: 'idle' });
   const key = useMusicStore((s) => s.key);
@@ -26,7 +29,10 @@ export function RecordingAnalyzer() {
     if (file.size > MAX_RECORDING_BYTES) {
       setState({
         phase: 'error',
-        message: 'Arquivo grande demais. Use uma gravação de até 50 MB (uns 5 minutos em .wav).',
+        message: t(
+          'Arquivo grande demais. Use uma gravação de até 50 MB (uns 5 minutos em .wav).',
+          'File too large. Use a recording of up to 50 MB (about 5 minutes of .wav).',
+        ),
       });
       return;
     }
@@ -46,7 +52,10 @@ export function RecordingAnalyzer() {
     } catch {
       setState({
         phase: 'error',
-        message: 'Não consegui ler esse arquivo. Tente um .wav, .mp3 ou .m4a.',
+        message: t(
+          'Não consegui ler esse arquivo. Tente um .wav, .mp3 ou .m4a.',
+          "Couldn't read that file. Try a .wav, .mp3 or .m4a.",
+        ),
       });
     }
   }
@@ -57,7 +66,7 @@ export function RecordingAnalyzer() {
   return (
     <div className="recording">
       <label htmlFor={inputId} className="file-button">
-        Analisar gravação
+        {t('Analisar gravação', 'Analyze a recording')}
         <input
           id={inputId}
           type="file"
@@ -70,9 +79,15 @@ export function RecordingAnalyzer() {
           }}
         />
       </label>
-      <span className="muted small">Até 60 s. Fica tudo no seu aparelho.</span>
+      <span className="muted small">
+        {t('Até 60 s. Fica tudo no seu aparelho.', 'Up to 60 s. Everything stays on your device.')}
+      </span>
 
-      {state.phase === 'working' ? <p role="status">Analisando {state.name}…</p> : null}
+      {state.phase === 'working' ? (
+        <p role="status">
+          {t('Analisando', 'Analyzing')} {state.name}…
+        </p>
+      ) : null}
       {state.phase === 'error' ? (
         <p className="notice" role="alert">
           {state.message}
@@ -81,7 +96,10 @@ export function RecordingAnalyzer() {
       {state.phase === 'done' ? (
         <div className="recording-result" role="status">
           <p className="small muted">
-            {state.name}: {chords.length} acordes, {notes.length} notas (no tom de {key.tonic}).
+            {t(
+              `${state.name}: ${chords.length} acordes, ${notes.length} notas (no tom de ${n(key.tonic)}).`,
+              `${state.name}: ${chords.length} chords, ${notes.length} notes (in the key of ${n(key.tonic)}).`,
+            )}
           </p>
           {chords.length ? (
             <div className="recording-row">
@@ -92,7 +110,7 @@ export function RecordingAnalyzer() {
                   className="pill"
                   onClick={() => setChord(e.symbol!)}
                 >
-                  <span className="mono muted">{e.time.toFixed(1)}s</span> {e.symbol}
+                  <span className="mono muted">{e.time.toFixed(1)}s</span> {n(e.symbol!)}
                 </button>
               ))}
             </div>
@@ -106,7 +124,7 @@ export function RecordingAnalyzer() {
                   className="pill"
                   onClick={() => registerNote(e.midi!)}
                 >
-                  {midiName(e.midi!, flats)}
+                  {n(midiName(e.midi!, flats))}
                 </button>
               ))}
             </div>

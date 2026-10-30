@@ -3,8 +3,11 @@ import { PROGRESSIONS, barLabel, meterOf } from '@/core/progressions';
 import { useActiveProgression } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 import { toast } from '../../toast';
+import { useNames, useT } from '@/i18n';
 
 export function ProgressionPicker() {
+  const t = useT();
+  const n = useNames();
   const { bars } = useActiveProgression();
   const selected = useMusicStore((s) => s.jam.progressionId);
   const custom = useMusicStore((s) => s.customProgressions);
@@ -16,8 +19,8 @@ export function ProgressionPicker() {
   const removeWithUndo = (p: Progression) => {
     const wasSelected = p.id === selected;
     remove(p.id);
-    toast.info(`“${p.name}” apagada.`, {
-      label: 'Desfazer',
+    toast.info(t(`“${t(p.name)}” apagada.`, `“${t(p.name)}” deleted.`), {
+      label: t('Desfazer', 'Undo'),
       run: () => {
         restore(p);
         if (!wasSelected) select(selected);
@@ -28,7 +31,7 @@ export function ProgressionPicker() {
 
   return (
     <div className="progressions">
-      <ol className="bars" aria-label="Compassos da progressão">
+      <ol className="bars" aria-label={t('Compassos da progressão', 'Bars of the progression')}>
         {bars.map((b, i) => (
           <li
             key={`${barLabel(b)}-${i}`}
@@ -37,12 +40,16 @@ export function ProgressionPicker() {
             data-split={b.length > 1 || undefined}
           >
             <span className="mono muted">{i + 1}</span>
-            <strong>{barLabel(b)}</strong>
+            <strong>{barLabel(b.map(n))}</strong>
           </li>
         ))}
       </ol>
 
-      <div className="progression-list" role="radiogroup" aria-label="Progressão">
+      <div
+        className="progression-list"
+        role="radiogroup"
+        aria-label={t('Progressão', 'Progression')}
+      >
         {[...PROGRESSIONS, ...custom].map((p) => (
           <div key={p.id} className="progression-item">
             <button
@@ -52,17 +59,19 @@ export function ProgressionPicker() {
               className="progression-option"
               onClick={() => select(p.id)}
             >
-              <span>{p.name}</span>
+              <span>{t(p.name)}</span>
               <span className="progression-tags">
                 {meterOf(p) !== '4/4' ? <span className="tag">{meterOf(p)}</span> : null}
-                <span className="tag">{p.mode === 'major' ? 'maior' : 'menor'}</span>
+                <span className="tag">
+                  {p.mode === 'major' ? t('maior', 'major') : t('menor', 'minor')}
+                </span>
               </span>
             </button>
             {p.custom ? (
               <button
                 type="button"
                 className="icon-button"
-                aria-label={`Apagar ${p.name}`}
+                aria-label={t(`Apagar ${t(p.name)}`, `Delete ${t(p.name)}`)}
                 onClick={() => removeWithUndo(p)}
               >
                 ×
