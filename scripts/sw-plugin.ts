@@ -71,8 +71,14 @@ self.addEventListener('fetch', (event) => {
           }
           return res;
         })
-        // Offline: a própria página, se já foi aberta; senão, o app pela raiz (ele lê o endereço).
-        .catch(() => caches.match(url.pathname).then((hit) => hit || caches.match('./'))),
+        // Offline: a própria página, se já foi aberta; senão, o início no mesmo idioma, ou a
+        // raiz (o app lê o endereço e abre a aba e o idioma certos).
+        .catch(() =>
+          caches
+            .match(url.pathname)
+            .then((hit) => hit || (url.pathname.startsWith('/en') ? caches.match('/en') : undefined))
+            .then((hit) => hit || caches.match('./')),
+        ),
     );
     return;
   }

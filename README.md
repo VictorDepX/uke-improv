@@ -29,6 +29,7 @@ Assistente de improviso e harmonia para ukulele. Escolha o tom e o acorde atual,
 | **Treino**              | Exercícios guiados ("só repouso", "resolva a tensão", "passo a passo", "alvo na troca") e treino de ouvido (intervalos, maior × menor, função harmônica).                                                                 |
 | **Modo prática**        | Tela cheia pensada para o celular deitado, com janela de 5 casas que segue a mão e tela acesa (Wake Lock).                                                                                                                |
 | **Conta (opcional)**    | E-mail e senha. Ajustes, progressões próprias e placar sincronizam entre aparelhos. Sem conta, tudo fica no aparelho.                                                                                                     |
+| **Idiomas**             | Português e inglês em todo o app (`/` e `/en`), com seletor no topo e nos Ajustes. Notas em letras (C D E) ou Dó Ré Mi.                                                                                                   |
 
 ## Começar
 
@@ -84,7 +85,8 @@ Algumas decisões:
 
 ## Páginas e busca
 
-- **Endereços:** cada aba tem caminho próprio (`/`, `/jam`, `/ouvido`, `/ajustes`); links antigos com `#jam` continuam funcionando. Na página única, as abas seguem no `#`.
+- **Endereços:** cada aba tem caminho próprio em cada idioma (`/`, `/jam`, `/ouvido`, `/ajustes` e `/en`, `/en/jam`, `/en/ear`, `/en/settings`), ligados por `hreflang`; links antigos com `#jam` continuam funcionando. Na página única, as abas seguem no `#`.
+- **Idiomas:** cada texto é escrito nos dois idiomas onde aparece (`t('Salvar', 'Save')` na interface, `tx(…)` no núcleo, em `src/i18n/`), então o tipo não deixa nenhum sem tradução. Quem escolhe um idioma vê o app nele mesmo vindo por um link do outro; quem chega com o navegador em outro idioma vê uma faixa oferecendo trocar, sem redirecionar.
 - **Pré-render:** no build, `src/entry-server.tsx` renderiza cada página em Node e `scripts/prerender.mjs` escreve um HTML por endereço, com título, descrição, canônico e idioma próprios. Buscadores leem o conteúdo sem executar JavaScript; no navegador, o app monta por cima.
 - **Guias:** páginas estáticas em português (`/guias/…`) e inglês (`/en/guides/…`), ligadas por `hreflang`, em `src/guides/`. Usam o mesmo componente de braço do app.
 - **Sitemap:** gerado no build a partir das páginas indexáveis (Ajustes fica de fora, com `noindex`).
