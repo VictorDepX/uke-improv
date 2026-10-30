@@ -4,6 +4,7 @@
  * descartado e fica o padrão; nada de tipo errado chega aos componentes.
  */
 import type { MicCalibration } from '@/audio/analysis/calibrate';
+import { isLang, type Lang } from '@/i18n/lang';
 import type { EarMode, EarScore } from './ear';
 import { EXERCISES, type ExerciseId } from './exercises';
 import { FRET_COUNT, MAX_CAPO, TUNINGS } from './fretboard';
@@ -13,6 +14,7 @@ import type {
   ChordExtras,
   KeyContext,
   LabelMode,
+  NoteNames,
   Progression,
   ScaleName,
   ScoreWeights,
@@ -41,6 +43,7 @@ const shortText = (v: unknown, max: number): v is string =>
   typeof v === 'string' && v.length > 0 && v.length <= max;
 
 const LABELS: readonly LabelMode[] = ['note', 'degree', 'interval'];
+const NOTE_NAMES: readonly NoteNames[] = ['letters', 'solfege'];
 const TONIC_RE = /^[A-G](#|b)?$/;
 const EAR_MODES: readonly EarMode[] = ['interval', 'quality', 'function'];
 const EXERCISE_IDS: readonly ExerciseId[] = EXERCISES.map((e) => e.id);
@@ -55,6 +58,8 @@ export interface SettingsShape {
   fretWindow: number | null | 'auto';
   capo: number;
   micCalibration: MicCalibration | null;
+  lang: Lang | null;
+  noteNames: NoteNames;
 }
 
 /** Só os campos de ajuste válidos; os outros ficam com o valor atual. */
@@ -63,6 +68,8 @@ export function sanitizeSettings(v: unknown): Partial<SettingsShape> {
   const out: Partial<SettingsShape> = {};
   if (oneOf(v.tuning, Object.keys(TUNINGS) as TuningName[])) out.tuning = v.tuning;
   if (oneOf(v.labels, LABELS)) out.labels = v.labels;
+  if (v.lang === null || isLang(v.lang)) out.lang = v.lang;
+  if (oneOf(v.noteNames, NOTE_NAMES)) out.noteNames = v.noteNames;
   if (typeof v.arpeggio === 'boolean') out.arpeggio = v.arpeggio;
   if (typeof v.shapes === 'boolean') out.shapes = v.shapes;
   if (isInt(v.capo, 0, MAX_CAPO)) out.capo = v.capo;

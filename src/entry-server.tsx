@@ -9,7 +9,8 @@ import { renderToPipeableStream } from 'react-dom/server';
 import { App } from './ui/App';
 import { GUIDES, translationOf } from './guides';
 import { GuidePage } from './guides/GuidePage';
-import { TABS, TAB_PATHS, type TabId } from './ui/routes';
+import { LANGS, type Lang } from './i18n/lang';
+import { TABS, TAB_PATHS } from './ui/routes';
 
 function renderToString(node: ReactNode): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -49,16 +50,22 @@ export interface RenderedPage extends PageMeta {
 }
 
 export async function renderPages(): Promise<RenderedPage[]> {
-  const tabs = await Promise.all(
-    TABS.map(async (t) => ({
-      path: TAB_PATHS[t.id as TabId],
-      title: t.title,
-      description: t.description,
-      noindex: t.id === 'ajustes',
-      lang: 'pt' as const,
-      html: await renderToString(<App initialTab={t.id} />),
-    })),
-  );
+  const tabs: RenderedPage[] = [];
+  // Uma página por vez: o idioma vai por contexto, mas o pré-render não precisa de pressa.
+  for (const lang of LANGS) {
+    const other: Lang = lang === 'pt' ? 'en' : 'pt';
+    for (const t of TABS) {
+      tabs.push({
+        path: TAB_PATHS[lang][t.id],
+        title: t.title[lang],
+        description: t.description[lang],
+        noindex: t.id === 'ajustes',
+        lang,
+        alternate: TAB_PATHS[other][t.id],
+        html: await renderToString(<App initialTab={t.id} initialLang={lang} />),
+      });
+    }
+  }
   const guides = await Promise.all(
     GUIDES.map(async (g) => ({
       path: g.path,

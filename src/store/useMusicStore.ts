@@ -1,5 +1,6 @@
 import type { MicCalibration } from '@/audio/analysis/calibrate';
 import { create } from 'zustand';
+import type { Lang } from '@/i18n/lang';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { buildNoteContext, classifyNote } from '@/core/classify';
 import { EMPTY_SCORE, scoreAnswer, type EarMode, type EarScore } from '@/core/ear';
@@ -26,6 +27,7 @@ import type {
   ChordExtras,
   KeyContext,
   LabelMode,
+  NoteNames,
   Progression,
   ScaleName,
   ScoreWeights,
@@ -78,6 +80,10 @@ export interface Settings {
   capo: number;
   /** Ganho e limiar do microfone medidos no ambiente; null = padrão. */
   micCalibration: MicCalibration | null;
+  /** Idioma escolhido pela pessoa; null = o do endereço aberto. */
+  lang: Lang | null;
+  /** Nomes das notas na tela: letras (C D E) ou Dó Ré Mi. */
+  noteNames: NoteNames;
 }
 
 export interface JamState {
@@ -230,6 +236,8 @@ export const useMusicStore = create<MusicState>()(
         arpeggio: false,
         capo: 0,
         micCalibration: null,
+        lang: null,
+        noteNames: 'letters',
       },
       customProgressions: [],
       jam: {

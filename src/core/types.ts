@@ -21,6 +21,7 @@ export type HarmonicFunction = 'T' | 'S' | 'D';
 export type TuningName = 'GCEA' | 'GCEA-lowG';
 
 export type LabelMode = 'note' | 'degree' | 'interval';
+export type NoteNames = 'letters' | 'solfege';
 
 export interface KeyContext {
   tonic: string;

@@ -29,6 +29,13 @@ function pageHtml(page) {
   html = setMeta(html, 'property', 'og:title', page.title);
   html = setMeta(html, 'property', 'og:description', page.description);
   html = setMeta(html, 'property', 'og:locale', page.lang === 'pt' ? 'pt_BR' : 'en_US');
+  if (page.lang === 'en')
+    html = setMeta(
+      html,
+      'property',
+      'og:image:alt',
+      'Uke Improv logo and the ukulele fretboard colored by note function',
+    );
   html = setMeta(html, 'name', 'twitter:title', page.title);
   html = setMeta(html, 'name', 'twitter:description', page.description);
   html = html.replace(
@@ -67,6 +74,17 @@ function pageHtml(page) {
       /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
       `<script type="application/ld+json">${JSON.stringify(article)}</script>`,
     );
+  } else if (page.lang === 'en') {
+    // App em inglês: o mesmo JSON-LD, com idioma, endereço e descrição desta versão.
+    html = html.replace(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/, (_, json) => {
+      const app = JSON.parse(json);
+      app.inLanguage = 'en';
+      app.url = `${SITE}/en`;
+      app.description =
+        'Improvisation and harmony assistant for ukulele: a fretboard that suggests the next note, a looping backing track, a looper and listening through the microphone.';
+      app.offers = { ...app.offers, priceCurrency: 'USD' };
+      return `<script type="application/ld+json">${JSON.stringify(app)}</script>`;
+    });
   }
 
   html = html.replace('</head>', `${extraHead}</head>`);
@@ -76,7 +94,9 @@ function pageHtml(page) {
 
 const pages = await renderPages();
 for (const page of pages) {
-  const file = page.path === '/' ? join(dist, 'index.html') : join(dist, `${page.path}.html`);
+  // Caminho que também é pasta de outras páginas (/en, pai de /en/jam) vira pasta/index.html.
+  const isDir = page.path === '/' || pages.some((p) => p.path.startsWith(`${page.path}/`));
+  const file = isDir ? join(dist, page.path, 'index.html') : join(dist, `${page.path}.html`);
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, pageHtml(page));
 }
