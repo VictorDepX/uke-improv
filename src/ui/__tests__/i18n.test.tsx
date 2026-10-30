@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { makeT, tx } from '@/i18n';
+import { makeT, noteNamer, tx } from '@/i18n';
 import { useMusicStore } from '@/store/useMusicStore';
 import { App } from '../App';
 import { TABS, TAB_PATHS, hrefFor, routeFromLocation } from '../routes';
@@ -103,5 +103,40 @@ describe('App em dois idiomas', () => {
   it('navegador em português numa página em português: nenhuma faixa', () => {
     render(<App />);
     expect(screen.queryByRole('region', { name: /English/ })).toBeNull();
+  });
+});
+
+describe('nomes Dó Ré Mi', () => {
+  it('troca só as letras da fundamental e do baixo', () => {
+    const pt = noteNamer('solfege', 'pt');
+    expect(['C', 'C#m7', 'Bb4', 'F#', 'G7', 'Bdim', 'D/F#', 'Ebmaj7'].map(pt)).toEqual([
+      'Dó',
+      'Dó#m7',
+      'Sib4',
+      'Fá#',
+      'Sol7',
+      'Sidim',
+      'Ré/Fá#',
+      'Mibmaj7',
+    ]);
+    expect(noteNamer('solfege', 'en')('A7')).toBe('La7');
+    expect(noteNamer('letters', 'pt')('A7')).toBe('A7');
+  });
+
+  it('com Dó Ré Mi, braço, campo harmônico e explicações usam os nomes', async () => {
+    const user = userEvent.setup();
+    useMusicStore.setState(initial, true);
+    useMusicStore.getState().updateSettings({ noteNames: 'solfege' });
+    window.history.replaceState(null, '', '/');
+    render(<App />);
+    const strip = screen.getByRole('radiogroup', { name: 'Acorde atual' });
+    expect(strip).toHaveTextContent('Sol7');
+    expect(strip).toHaveTextContent('Lám');
+    // a casa ainda é encontrada pelo nome novo; o estado guarda letras
+    await user.click(screen.getByRole('radio', { name: /Sol7/ }));
+    expect(useMusicStore.getState().currentChord).toBe('G7');
+    await user.click(screen.getByRole('button', { name: /^Si4, corda Lá, casa 2/ }));
+    const first = screen.getAllByRole('listitem').find((li) => li.querySelector('.suggestion'))!;
+    expect(first).toHaveTextContent('Dó5');
   });
 });
