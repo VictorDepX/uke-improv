@@ -17,7 +17,8 @@ describe('suggestNextNotes', () => {
     const ctx = buildNoteContext(C_MAJOR, 'G7');
     const [first] = suggestNextNotes([71], ctx, { range });
     expect(first && midiName(first.midi)).toBe('C5');
-    expect(first?.reason).toMatch(/sensível/);
+    expect(first?.reason.pt).toMatch(/sensível/);
+    expect(first?.reason.en).toMatch(/leading tone/);
   });
 
   it('a sétima do acorde (F sobre G7) resolve descendo para E', () => {
@@ -36,7 +37,7 @@ describe('suggestNextNotes', () => {
   it('depois de um salto grande, prefere voltar em passo no sentido contrário', () => {
     const ctx = buildNoteContext(C_MAJOR, 'C');
     const top = suggestNextNotes([60, 69], ctx, { range, count: 5 }); // C4 → A4 (sobe 9)
-    const recovery = top.find((s) => s.reason.includes('salto'));
+    const recovery = top.find((s) => s.reason.pt.includes('salto'));
     expect(recovery).toBeDefined();
     expect(recovery!.midi).toBeLessThan(69);
   });

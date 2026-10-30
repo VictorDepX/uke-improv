@@ -9,6 +9,9 @@ import {
   type EarSettings,
 } from '../ear';
 import { voicingFor } from '../chordShapes';
+import { makeT } from '@/i18n/lang';
+
+const pt = makeT('pt');
 
 const C = { tonic: 'C', scale: 'major' } as const;
 const settings = (over: Partial<EarSettings> = {}): EarSettings => ({
@@ -49,7 +52,7 @@ describe('treino de ouvido', () => {
 
   it('a explicação diz o nome, os semitons e as notas', () => {
     const q = makeQuestion('interval', C, settings(), seededRng(3));
-    expect(q.explain).toMatch(/^(3ª|4ª|5ª|Oitava).*\d+ semitons \([A-G]#? → [A-G]#?\)\.$/);
+    expect(pt(q.explain)).toMatch(/^(3ª|4ª|5ª|Oitava).*\d+ semitons \([A-G]#? → [A-G]#?\)\.$/);
   });
 
   it('maior × menor: a terça tocada define a resposta', () => {
@@ -82,7 +85,7 @@ describe('treino de ouvido', () => {
     expect(q.options.map((o) => o.id)).toEqual(['I', 'ii', 'iii', 'IV', 'V', 'vi']);
     const target = functionDegrees(C).find((d) => d.numeral === q.answer)!;
     expect(q.play[4]!.midis).toEqual(voicingFor(target.symbol).midis);
-    expect(q.explain).toContain(target.symbol);
+    expect(pt(q.explain)).toContain(target.symbol);
   });
 
   it('em tom menor a cadência usa iv e V7', () => {

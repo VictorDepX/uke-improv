@@ -1,3 +1,4 @@
+import { tx, type Txt } from '@/i18n/lang';
 import { buildNoteContext, classifyNote } from './classify';
 import { mod12 } from './music';
 import type { KeyContext, NoteClass } from './types';
@@ -98,13 +99,29 @@ export function summarizeTake(notes: readonly TakeNote[]): TakeSummary {
 }
 
 /** Uma frase curta sobre a gravação, com o ponto mais útil para a próxima. */
-export function takeAdvice(s: TakeSummary): string {
-  if (s.total === 0) return 'Nenhuma nota detectada. Calibre o microfone ou toque mais perto dele.';
+export function takeAdvice(s: TakeSummary): Txt {
+  if (s.total === 0)
+    return tx(
+      'Nenhuma nota detectada. Calibre o microfone ou toque mais perto dele.',
+      'No notes detected. Calibrate the microphone or play closer to it.',
+    );
   if (s.inScale < 0.75)
-    return 'Muitas notas fora da escala. Tente o exercício "Só repouso" e volte a gravar.';
+    return tx(
+      'Muitas notas fora da escala. Tente o exercício "Só repouso" e volte a gravar.',
+      'Many notes outside the scale. Try the "Rest notes only" exercise and record again.',
+    );
   if (s.tensions > 0 && s.resolved / s.tensions < 0.5)
-    return 'Boa parte das tensões ficou sem resolver: depois de uma laranja, desça ou suba para uma verde.';
+    return tx(
+      'Boa parte das tensões ficou sem resolver: depois de uma laranja, desça ou suba para uma verde.',
+      'Many tensions were left unresolved: after an orange note, step down or up to a green one.',
+    );
   if (s.chordTones < 0.3)
-    return 'Pouca nota do acorde: termine as frases numa verde para soar mais resolvido.';
-  return 'Frases dentro do tom e tensões resolvidas. Tente variar o ritmo na próxima.';
+    return tx(
+      'Pouca nota do acorde: termine as frases numa verde para soar mais resolvido.',
+      'Few chord tones: end your phrases on a green note to sound more resolved.',
+    );
+  return tx(
+    'Frases dentro do tom e tensões resolvidas. Tente variar o ritmo na próxima.',
+    'Phrases in key and tensions resolved. Try varying the rhythm next time.',
+  );
 }

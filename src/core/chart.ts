@@ -1,3 +1,4 @@
+import { nm, tx, type Txt } from '@/i18n/lang';
 import { diatonicChords, findDiatonic, sameChord } from './harmony';
 import {
   TONICS,
@@ -156,7 +157,7 @@ export interface AnalyzedChord {
   role: ChordRole;
   func?: HarmonicFunction;
   /** Explicação curta ("prepara Em", "emprestado do tom menor"). */
-  note: string;
+  note: Txt;
 }
 
 export interface KeyCandidate {
@@ -172,13 +173,13 @@ export interface ChartAnalysis {
   fit: number;
   chords: AnalyzedChord[];
   /** Por que essa escala. */
-  scaleReason: string;
+  scaleReason: Txt;
 }
 
-const FUNC_TEXT: Record<HarmonicFunction, string> = {
-  T: 'tônica',
-  S: 'subdominante',
-  D: 'dominante',
+const FUNC_TEXT: Record<HarmonicFunction, Txt> = {
+  T: tx('tônica', 'tonic'),
+  S: tx('subdominante', 'subdominant'),
+  D: tx('dominante', 'dominant'),
 };
 
 const parallel = (key: KeyContext): KeyContext => ({
@@ -249,7 +250,10 @@ function classify(symbol: string, key: KeyContext): Omit<AnalyzedChord, 'written
       numeral: `V7/${findDiatonic(target, key)!.numeral}`,
       role: 'secondary',
       func: 'D',
-      note: `dominante secundária: prepara ${target}`,
+      note: tx(
+        `dominante secundária: prepara ${nm(target)}`,
+        `secondary dominant: sets up ${nm(target)}`,
+      ),
     };
   const dTriad = findDiatonic(triad, key);
   if (dTriad)
@@ -258,7 +262,10 @@ function classify(symbol: string, key: KeyContext): Omit<AnalyzedChord, 'written
       numeral: displayNumeral(symbol, key),
       role: 'diatonic',
       func: dTriad.func,
-      note: `${FUNC_TEXT[dTriad.func]} com cor extra`,
+      note: tx(
+        `${FUNC_TEXT[dTriad.func].pt} com cor extra`,
+        `${FUNC_TEXT[dTriad.func].en} with extra color`,
+      ),
     };
   const p = parallel(key);
   if (findDiatonic(symbol, p) || findDiatonic(triad, p))
@@ -266,13 +273,16 @@ function classify(symbol: string, key: KeyContext): Omit<AnalyzedChord, 'written
       symbol,
       numeral: displayNumeral(symbol, key),
       role: 'borrowed',
-      note: key.scale === 'major' ? 'emprestado do tom menor' : 'emprestado do tom maior',
+      note:
+        key.scale === 'major'
+          ? tx('emprestado do tom menor', 'borrowed from the parallel minor')
+          : tx('emprestado do tom maior', 'borrowed from the parallel major'),
     };
   return {
     symbol,
     numeral: displayNumeral(symbol, key),
     role: 'chromatic',
-    note: 'cromático, fora do tom',
+    note: tx('cromático, fora do tom', 'chromatic, outside the key'),
   };
 }
 
@@ -322,7 +332,7 @@ function scoreKey(chords: readonly string[], key: KeyContext): number {
 function suggestScale(
   chords: readonly string[],
   key: KeyContext,
-): { scale: ScaleName; reason: string } {
+): { scale: ScaleName; reason: Txt } {
   const tonic = chromaOf(key.tonic);
   const rel = (s: string) => mod12(chordInfo(s).root - tonic);
   const has = (semis: number, major: boolean) =>
@@ -331,16 +341,31 @@ function suggestScale(
     const dom7 = chords.every((s) => isDominantQuality(s) && chordInfo(s).seventh !== null);
     const roots = new Set(chords.map(rel));
     if (dom7 && [...roots].every((r) => r === 0 || r === 5 || r === 7))
-      return { scale: 'blues', reason: 'I7, IV7 e V7: a cara do blues.' };
+      return {
+        scale: 'blues',
+        reason: tx('I7, IV7 e V7: a cara do blues.', 'I7, IV7 and V7: the sound of the blues.'),
+      };
     if (has(10, true) && !has(7, true))
-      return { scale: 'mixolydian', reason: 'bVII no lugar do V: som mixolídio.' };
-    return { scale: 'major', reason: 'Acordes do campo maior.' };
+      return {
+        scale: 'mixolydian',
+        reason: tx('bVII no lugar do V: som mixolídio.', 'bVII instead of V: a Mixolydian sound.'),
+      };
+    return { scale: 'major', reason: tx('Acordes do campo maior.', 'Chords from the major key.') };
   }
   if (has(5, true) && !has(8, true))
-    return { scale: 'dorian', reason: 'IV maior no tom menor: som dórico.' };
+    return {
+      scale: 'dorian',
+      reason: tx('IV maior no tom menor: som dórico.', 'Major IV in a minor key: a Dorian sound.'),
+    };
   if (has(7, true))
-    return { scale: 'minor', reason: 'Menor natural; sobre o V maior, a menor harmônica encaixa.' };
-  return { scale: 'minor', reason: 'Acordes do campo menor.' };
+    return {
+      scale: 'minor',
+      reason: tx(
+        'Menor natural; sobre o V maior, a menor harmônica encaixa.',
+        'Natural minor; over the major V, harmonic minor fits.',
+      ),
+    };
+  return { scale: 'minor', reason: tx('Acordes do campo menor.', 'Chords from the minor key.') };
 }
 
 /**

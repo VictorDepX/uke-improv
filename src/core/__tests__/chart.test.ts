@@ -6,6 +6,9 @@ import {
   parseChordToken,
   simplifyQuality,
 } from '../chart';
+import { makeT } from '@/i18n/lang';
+
+const pt = makeT('pt');
 
 describe('leitura da cifra', () => {
   it('converte a notação brasileira e reduz tensões', () => {
@@ -114,13 +117,11 @@ describe('análise do tom', () => {
     const a = analyze('| C | A7 | Dm | G7 | C | E7 | Am | Fm | C |');
     expect(a.key.tonic).toBe('C');
     const by = Object.fromEntries(a.chords.map((c) => [c.symbol, c]));
-    expect(by['A7']).toMatchObject({
-      role: 'secondary',
-      numeral: 'V7/ii',
-      note: 'dominante secundária: prepara Dm',
-    });
+    expect(by['A7']).toMatchObject({ role: 'secondary', numeral: 'V7/ii' });
+    expect(pt(by['A7']!.note)).toBe('dominante secundária: prepara Dm');
     expect(by['E7']).toMatchObject({ role: 'secondary', numeral: 'V7/vi' });
-    expect(by['Fm']).toMatchObject({ role: 'borrowed', note: 'emprestado do tom menor' });
+    expect(by['Fm']).toMatchObject({ role: 'borrowed' });
+    expect(pt(by['Fm']!.note)).toBe('emprestado do tom menor');
   });
 
   it('meio-diminuto é o viiø7 diatônico e o ii–V–I em F é lido em F', () => {

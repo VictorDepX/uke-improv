@@ -1,3 +1,4 @@
+import { tx, type Txt } from '@/i18n/lang';
 import { chordInfo, chromaOf, mod12, scaleChromas } from './music';
 import type { ChordInfo, Chroma, KeyContext, NoteClass } from './types';
 
@@ -44,9 +45,9 @@ export function classifyNote(chroma: Chroma, ctx: NoteContext): NoteClass {
   return 'passagem';
 }
 
-export const NOTE_CLASS_LABEL: Record<NoteClass, string> = {
-  repouso: 'Repouso',
-  passagem: 'Passagem',
-  tensao: 'Tensão',
-  fora: 'Fora da escala',
+export const NOTE_CLASS_LABEL: Record<NoteClass, Txt> = {
+  repouso: tx('Repouso', 'Rest'),
+  passagem: tx('Passagem', 'Passing'),
+  tensao: tx('Tensão', 'Tension'),
+  fora: tx('Fora da escala', 'Outside the scale'),
 };

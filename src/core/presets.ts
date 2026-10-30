@@ -1,8 +1,9 @@
+import { nm, tx, type Txt } from '@/i18n/lang';
 import type { ScaleName } from './types';
 
 export interface Preset {
   id: string;
-  name: string;
+  name: Txt;
   tonic: string;
   scale: ScaleName;
   progressionId: string;
@@ -13,10 +14,17 @@ export interface Preset {
 
 /** Combinações prontas para começar a tocar com um toque. */
 export const PRESETS: readonly Preset[] = [
-  { id: 'pop-c', name: 'Pop em C', tonic: 'C', scale: 'major', progressionId: 'pop', bpm: 90 },
+  {
+    id: 'pop-c',
+    name: tx(`Pop em ${nm('C')}`, `Pop in ${nm('C')}`),
+    tonic: 'C',
+    scale: 'major',
+    progressionId: 'pop',
+    bpm: 90,
+  },
   {
     id: 'blues-a',
-    name: 'Blues em A',
+    name: tx(`Blues em ${nm('A')}`, `Blues in ${nm('A')}`),
     tonic: 'A',
     scale: 'blues',
     progressionId: 'blues',
@@ -24,7 +32,7 @@ export const PRESETS: readonly Preset[] = [
   },
   {
     id: 'balada-g',
-    name: 'Balada em G',
+    name: tx(`Balada em ${nm('G')}`, `Ballad in ${nm('G')}`),
     tonic: 'G',
     scale: 'majorPentatonic',
     progressionId: 'doo-wop',
@@ -32,7 +40,7 @@ export const PRESETS: readonly Preset[] = [
   },
   {
     id: 'epica-am',
-    name: 'Menor épica em Am',
+    name: tx(`Menor épica em ${nm('Am')}`, `Epic minor in ${nm('Am')}`),
     tonic: 'A',
     scale: 'minorPentatonic',
     progressionId: 'minor',
@@ -40,7 +48,7 @@ export const PRESETS: readonly Preset[] = [
   },
   {
     id: 'jazz-f',
-    name: 'ii–V–I em F',
+    name: tx(`ii–V–I em ${nm('F')}`, `ii–V–I in ${nm('F')}`),
     tonic: 'F',
     scale: 'major',
     progressionId: 'jazz',
@@ -49,7 +57,7 @@ export const PRESETS: readonly Preset[] = [
   },
   {
     id: 'andaluza-em',
-    name: 'Andaluza em Em',
+    name: tx(`Andaluza em ${nm('Em')}`, `Andalusian in ${nm('Em')}`),
     tonic: 'E',
     scale: 'minor',
     progressionId: 'andaluz',
@@ -57,7 +65,7 @@ export const PRESETS: readonly Preset[] = [
   },
   {
     id: 'dorico-dm',
-    name: 'Groove dórico em Dm',
+    name: tx(`Groove dórico em ${nm('Dm')}`, `Dorian groove in ${nm('Dm')}`),
     tonic: 'D',
     scale: 'dorian',
     progressionId: 'dorian-vamp',
@@ -65,7 +73,7 @@ export const PRESETS: readonly Preset[] = [
   },
   {
     id: 'mixo-g',
-    name: 'Mixolídio em G',
+    name: tx(`Mixolídio em ${nm('G')}`, `Mixolydian in ${nm('G')}`),
     tonic: 'G',
     scale: 'mixolydian',
     progressionId: 'mixo-vamp',
@@ -73,7 +81,7 @@ export const PRESETS: readonly Preset[] = [
   },
   {
     id: 'reggae-g',
-    name: 'Reggae em G',
+    name: tx(`Reggae em ${nm('G')}`, `Reggae in ${nm('G')}`),
     tonic: 'G',
     scale: 'major',
     progressionId: 'pop',
@@ -82,7 +90,7 @@ export const PRESETS: readonly Preset[] = [
   },
   {
     id: 'bossa-c',
-    name: 'Bossa em C',
+    name: tx(`Bossa em ${nm('C')}`, `Bossa in ${nm('C')}`),
     tonic: 'C',
     scale: 'major',
     progressionId: 'turnaround',
@@ -91,7 +99,7 @@ export const PRESETS: readonly Preset[] = [
   },
   {
     id: 'valsa-d',
-    name: 'Valsa em D',
+    name: tx(`Valsa em ${nm('D')}`, `Waltz in ${nm('D')}`),
     tonic: 'D',
     scale: 'major',
     progressionId: 'valsa',
@@ -100,7 +108,7 @@ export const PRESETS: readonly Preset[] = [
   },
   {
     id: 'balada-68-c',
-    name: 'Balada 6/8 em C',
+    name: tx(`Balada 6/8 em ${nm('C')}`, `6/8 ballad in ${nm('C')}`),
     tonic: 'C',
     scale: 'majorPentatonic',
     progressionId: 'balada-68',

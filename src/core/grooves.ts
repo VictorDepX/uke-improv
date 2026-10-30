@@ -1,3 +1,4 @@
+import { tx, type Txt } from '@/i18n/lang';
 import { type Meter, stepsPerBar } from './rhythm';
 
 export type StrumDir = 'down' | 'up';
@@ -14,7 +15,7 @@ export type BassTone = 'root' | 'third' | 'fifth' | 'octave' | 'approach';
  */
 export interface Groove {
   id: string;
-  name: string;
+  name: Txt;
   meter: Meter;
   /** Palhetadas do uke: passo → direção e intensidade (0–1). */
   strum: Readonly<Record<number, readonly [StrumDir, number]>>;
@@ -39,7 +40,7 @@ const every = (n: number, total: number, vel: number, accent?: number): Record<n
 export const DEFAULT_GROOVES: Record<Meter, Groove> = {
   '4/4': {
     id: 'pop',
-    name: 'Pop',
+    name: tx('Pop', 'Pop'),
     meter: '4/4',
     strum: {
       0: ['down', 0.65],
@@ -59,7 +60,7 @@ export const DEFAULT_GROOVES: Record<Meter, Groove> = {
   },
   '3/4': {
     id: 'tres',
-    name: 'Três por quatro',
+    name: tx('Três por quatro', 'Three-four'),
     meter: '3/4',
     strum: { 0: ['down', 0.6], 4: ['down', 0.5], 6: ['up', 0.35], 8: ['down', 0.5] },
     bass: [{ step: 0, tone: 'root' }],
@@ -69,7 +70,7 @@ export const DEFAULT_GROOVES: Record<Meter, Groove> = {
   },
   '6/8': {
     id: 'seis-oito',
-    name: 'Seis por oito',
+    name: tx('Seis por oito', 'Six-eight'),
     meter: '6/8',
     // D d u D d u, em colcheias.
     strum: {
@@ -115,7 +116,7 @@ const eighths = (total: number, on: number, off: number): Record<number, number>
 export const STYLE_GROOVES: readonly Groove[] = [
   {
     id: 'reggae',
-    name: 'Reggae',
+    name: tx('Reggae', 'Reggae'),
     meter: '4/4',
     // Skank: acorde curto nas colcheias fracas.
     strum: { 2: ['down', 0.55], 6: ['down', 0.6], 10: ['down', 0.55], 14: ['down', 0.6] },
@@ -133,7 +134,7 @@ export const STYLE_GROOVES: readonly Groove[] = [
   },
   {
     id: 'bossa',
-    name: 'Bossa nova',
+    name: tx('Bossa nova', 'Bossa nova'),
     meter: '4/4',
     strum: {
       0: ['down', 0.5],
@@ -157,7 +158,7 @@ export const STYLE_GROOVES: readonly Groove[] = [
   },
   {
     id: 'swing',
-    name: 'Swing',
+    name: tx('Swing', 'Swing'),
     meter: '4/4',
     // Quatro acordes curtos por compasso, à moda da guitarra de big band.
     strum: { 0: ['down', 0.5], 4: ['down', 0.4], 8: ['down', 0.5], 12: ['down', 0.4] },
@@ -177,7 +178,7 @@ export const STYLE_GROOVES: readonly Groove[] = [
   },
   {
     id: 'valsa',
-    name: 'Valsa',
+    name: tx('Valsa', 'Waltz'),
     meter: '3/4',
     // Tum-pá-pá: baixo no 1, acorde curto no 2 e no 3.
     strum: { 4: ['down', 0.5], 8: ['down', 0.45] },

@@ -1,3 +1,4 @@
+import { nm, tx, type Txt } from '@/i18n/lang';
 import { diatonicChords, findDiatonic, sameChord } from './harmony';
 import { chordInfo, chromaName, chromaOf, mod12, modeOf, prefersFlats } from './music';
 import type {
@@ -101,23 +102,23 @@ const BORROWED: Record<Mode, BorrowedSpec[]> = {
   ],
 };
 
-const DIATONIC_REASON: Record<string, string> = {
-  'V>I': 'resolução forte (V → I)',
-  'V>i': 'resolução forte (V → i)',
-  'V>vi': 'cadência de engano (V → vi)',
-  'IV>I': 'cadência plagal (IV → I)',
-  'ii>V': 'preparação clássica (ii → V)',
-  'vii°>I': 'resolve a tensão na tônica',
-  'vii°>i': 'resolve a tensão na tônica',
-  'bVII>I': 'cadência mixolídia (bVII → I)',
-  'IV>i': 'IV maior do dórico de volta à tônica',
-  'VII>i': 'subtônica voltando para casa',
+const DIATONIC_REASON: Record<string, Txt> = {
+  'V>I': tx('resolução forte (V → I)', 'strong resolution (V → I)'),
+  'V>i': tx('resolução forte (V → i)', 'strong resolution (V → i)'),
+  'V>vi': tx('cadência de engano (V → vi)', 'deceptive cadence (V → vi)'),
+  'IV>I': tx('cadência plagal (IV → I)', 'plagal cadence (IV → I)'),
+  'ii>V': tx('preparação clássica (ii → V)', 'classic setup (ii → V)'),
+  'vii°>I': tx('resolve a tensão na tônica', 'resolves the tension to the tonic'),
+  'vii°>i': tx('resolve a tensão na tônica', 'resolves the tension to the tonic'),
+  'bVII>I': tx('cadência mixolídia (bVII → I)', 'Mixolydian cadence (bVII → I)'),
+  'IV>i': tx('IV maior do dórico de volta à tônica', 'Dorian major IV back to the tonic'),
+  'VII>i': tx('subtônica voltando para casa', 'subtonic heading home'),
 };
 
-const FUNC_REASON: Record<HarmonicFunction, string> = {
-  T: 'volta para casa',
-  S: 'afasta da tônica',
-  D: 'cria tensão para resolver',
+const FUNC_REASON: Record<HarmonicFunction, Txt> = {
+  T: tx('volta para casa', 'brings it home'),
+  S: tx('afasta da tônica', 'moves away from the tonic'),
+  D: tx('cria tensão para resolver', 'builds tension to resolve'),
 };
 
 const normalizeNumeral = (n: string): string => (n === 'V7' ? 'V' : n);
@@ -171,7 +172,10 @@ export function suggestNextChords(
       DIATONIC_REASON[`${fromNumeral}>${normalizeNumeral(d.numeral)}`] ?? FUNC_REASON[d.func];
     if (secondaryTarget && sameChord(secondaryTarget.symbol, d.symbol)) {
       score = 1;
-      reason = 'resolve a dominante secundária no alvo';
+      reason = tx(
+        'resolve a dominante secundária no alvo',
+        'resolves the secondary dominant to its target',
+      );
     }
     if (score > 0) out.push({ ...d, kind: 'diatonic', score, reason });
   }
@@ -196,7 +200,10 @@ export function suggestNextChords(
         func: 'D',
         kind: 'secondary',
         score: 0.6 * toTarget,
-        reason: `prepara ${target.symbol} (dominante secundária)`,
+        reason: tx(
+          `prepara ${nm(target.symbol)} (dominante secundária)`,
+          `sets up ${nm(target.symbol)} (secondary dominant)`,
+        ),
       });
     }
   }
@@ -213,7 +220,10 @@ export function suggestNextChords(
         func: b.func,
         kind: 'borrowed',
         score: score * 0.8,
-        reason: mode === 'major' ? 'emprestado do tom menor' : 'emprestado do modo dórico',
+        reason:
+          mode === 'major'
+            ? tx('emprestado do tom menor', 'borrowed from the parallel minor')
+            : tx('emprestado do modo dórico', 'borrowed from Dorian'),
       });
     }
   }

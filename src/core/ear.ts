@@ -1,3 +1,4 @@
+import { nm, tx, type Txt } from '@/i18n/lang';
 import { diatonicChords } from './harmony';
 import { chordInfo, chromaName, mod12, modeOf, prefersFlats } from './music';
 import type { HarmonicFunction, KeyContext } from './types';
@@ -21,32 +22,32 @@ export interface PlayEvent {
 
 export interface EarOption {
   id: string;
-  label: string;
+  label: Txt;
 }
 
 export interface EarQuestion {
   mode: EarMode;
-  prompt: string;
+  prompt: Txt;
   play: PlayEvent[];
   options: EarOption[];
   answer: string;
   /** Mostrado depois da resposta. */
-  explain: string;
+  explain: Txt;
 }
 
 export const INTERVALS = [
-  { semis: 1, label: '2ª menor' },
-  { semis: 2, label: '2ª maior' },
-  { semis: 3, label: '3ª menor' },
-  { semis: 4, label: '3ª maior' },
-  { semis: 5, label: '4ª justa' },
-  { semis: 6, label: 'Trítono' },
-  { semis: 7, label: '5ª justa' },
-  { semis: 8, label: '6ª menor' },
-  { semis: 9, label: '6ª maior' },
-  { semis: 10, label: '7ª menor' },
-  { semis: 11, label: '7ª maior' },
-  { semis: 12, label: 'Oitava' },
+  { semis: 1, label: tx('2ª menor', 'Minor 2nd') },
+  { semis: 2, label: tx('2ª maior', 'Major 2nd') },
+  { semis: 3, label: tx('3ª menor', 'Minor 3rd') },
+  { semis: 4, label: tx('3ª maior', 'Major 3rd') },
+  { semis: 5, label: tx('4ª justa', 'Perfect 4th') },
+  { semis: 6, label: tx('Trítono', 'Tritone') },
+  { semis: 7, label: tx('5ª justa', 'Perfect 5th') },
+  { semis: 8, label: tx('6ª menor', 'Minor 6th') },
+  { semis: 9, label: tx('6ª maior', 'Major 6th') },
+  { semis: 10, label: tx('7ª menor', 'Minor 7th') },
+  { semis: 11, label: tx('7ª maior', 'Major 7th') },
+  { semis: 12, label: tx('Oitava', 'Octave') },
 ] as const;
 
 export type IntervalLevel = 'basic' | 'all';
@@ -58,30 +59,42 @@ const QUALITIES = [
   {
     id: 'maj',
     suffix: '',
-    label: 'Maior',
+    label: tx('Maior', 'Major'),
     semis: [0, 4, 7],
-    why: 'terça maior (4 semitons) e quinta justa',
+    why: tx(
+      'terça maior (4 semitons) e quinta justa',
+      'major third (4 semitones) and perfect fifth',
+    ),
   },
   {
     id: 'min',
     suffix: 'm',
-    label: 'Menor',
+    label: tx('Menor', 'Minor'),
     semis: [0, 3, 7],
-    why: 'terça menor (3 semitons) e quinta justa',
+    why: tx(
+      'terça menor (3 semitons) e quinta justa',
+      'minor third (3 semitones) and perfect fifth',
+    ),
   },
   {
     id: 'dim',
     suffix: 'dim',
-    label: 'Diminuto',
+    label: tx('Diminuto', 'Diminished'),
     semis: [0, 3, 6],
-    why: 'duas terças menores: a quinta é diminuta',
+    why: tx(
+      'duas terças menores: a quinta é diminuta',
+      'two minor thirds: the fifth is diminished',
+    ),
   },
   {
     id: 'aug',
     suffix: 'aug',
-    label: 'Aumentado',
+    label: tx('Aumentado', 'Augmented'),
     semis: [0, 4, 8],
-    why: 'duas terças maiores: a quinta é aumentada',
+    why: tx(
+      'duas terças maiores: a quinta é aumentada',
+      'two major thirds: the fifth is augmented',
+    ),
   },
 ] as const;
 
@@ -99,10 +112,10 @@ const HIGH = 69;
 
 const pick = <T>(arr: readonly T[], rng: Rng): T => arr[Math.floor(rng() * arr.length)]!;
 
-const FUNC_LABEL: Record<HarmonicFunction, string> = {
-  T: 'tônica',
-  S: 'subdominante',
-  D: 'dominante',
+const FUNC_LABEL: Record<HarmonicFunction, Txt> = {
+  T: tx('tônica', 'tonic'),
+  S: tx('subdominante', 'subdominant'),
+  D: tx('dominante', 'dominant'),
 };
 
 function intervalQuestion(s: EarSettings, rng: Rng): EarQuestion {
@@ -120,14 +133,21 @@ function intervalQuestion(s: EarSettings, rng: Rng): EarQuestion {
           { midis: [first], at: 0, dur: 0.8 },
           { midis: [second], at: 0.85, dur: 1 },
         ];
-  const names = `${chromaName(mod12(first))} → ${chromaName(mod12(second))}`;
+  const names = `${nm(chromaName(mod12(first)))} → ${nm(chromaName(mod12(second)))}`;
+  const semis = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
   return {
     mode: 'interval',
-    prompt: s.direction === 'harmonic' ? 'Que intervalo soa junto?' : 'Que intervalo você ouviu?',
+    prompt:
+      s.direction === 'harmonic'
+        ? tx('Que intervalo soa junto?', 'Which interval sounds together?')
+        : tx('Que intervalo você ouviu?', 'Which interval did you hear?'),
     play,
     options: pool.map((i) => ({ id: String(i.semis), label: i.label })),
     answer: String(ivl.semis),
-    explain: `${ivl.label}: ${ivl.semis} ${ivl.semis === 1 ? 'semitom' : 'semitons'} (${names}).`,
+    explain: tx(
+      `${ivl.label.pt}: ${semis(ivl.semis, 'semitom', 'semitons')} (${names}).`,
+      `${ivl.label.en}: ${semis(ivl.semis, 'semitone', 'semitones')} (${names}).`,
+    ),
   };
 }
 
@@ -140,7 +160,7 @@ function qualityQuestion(s: EarSettings, rng: Rng): EarQuestion {
   const midis = q.semis.map((x) => root + x);
   return {
     mode: 'quality',
-    prompt: 'O acorde é…',
+    prompt: tx('O acorde é…', 'The chord is…'),
     // Arpejo e depois junto: ajuda a ouvir a terça.
     play: [
       ...midis.map((m, i) => ({ midis: [m], at: i * 0.35, dur: 0.5 })),
@@ -148,7 +168,10 @@ function qualityQuestion(s: EarSettings, rng: Rng): EarQuestion {
     ],
     options: pool.map((x) => ({ id: x.id, label: x.label })),
     answer: q.id,
-    explain: `${chromaName(mod12(root))}${q.suffix}: ${q.why}.`,
+    explain: tx(
+      `${nm(chromaName(mod12(root)) + q.suffix)}: ${q.why.pt}.`,
+      `${nm(chromaName(mod12(root)) + q.suffix)}: ${q.why.en}.`,
+    ),
   };
 }
 
@@ -173,11 +196,14 @@ function functionQuestion(key: KeyContext, s: EarSettings, rng: Rng): EarQuestio
   ];
   return {
     mode: 'function',
-    prompt: 'Depois da cadência, que grau soou?',
+    prompt: tx('Depois da cadência, que grau soou?', 'After the cadence, which degree played?'),
     play,
-    options: degrees.map((d) => ({ id: d.numeral, label: d.numeral })),
+    options: degrees.map((d) => ({ id: d.numeral, label: tx(d.numeral, d.numeral) })),
     answer: target.numeral,
-    explain: `${target.numeral} (${FUNC_LABEL[target.func]}): ${target.symbol}.`,
+    explain: tx(
+      `${target.numeral} (${FUNC_LABEL[target.func].pt}): ${nm(target.symbol)}.`,
+      `${target.numeral} (${FUNC_LABEL[target.func].en}): ${nm(target.symbol)}.`,
+    ),
   };
 }
 

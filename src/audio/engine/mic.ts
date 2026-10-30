@@ -1,3 +1,4 @@
+import { tNow } from '@/i18n/lang';
 import {
   ChordTracker,
   computeChroma,
@@ -64,7 +65,10 @@ export class MicInput {
 
   /** RMS sem ganho de cada quadro durante `ms` milissegundos (microfone ligado). */
   sampleLevels(ms: number): Promise<number[]> {
-    if (!this.ctx) return Promise.reject(new MicError('Microfone desligado.', 'other'));
+    if (!this.ctx)
+      return Promise.reject(
+        new MicError(tNow('Microfone desligado.', 'Microphone is off.'), 'other'),
+      );
     return new Promise((resolve) => {
       const values: number[] = [];
       const collect = (rms: number) => values.push(rms);
@@ -84,7 +88,13 @@ export class MicInput {
     if (this.ctx) return;
     this.setCalibration(calibration);
     if (!navigator.mediaDevices?.getUserMedia) {
-      throw new MicError('Este navegador não dá acesso ao microfone.', 'unsupported');
+      throw new MicError(
+        tNow(
+          'Este navegador não dá acesso ao microfone.',
+          "This browser doesn't give access to the microphone.",
+        ),
+        'unsupported',
+      );
     }
     // Criado antes de qualquer await, ainda dentro do gesto do usuário (exigência do iOS).
     const ctx = new AudioContext();
@@ -99,7 +109,9 @@ export class MicInput {
         err instanceof DOMException &&
         (err.name === 'NotAllowedError' || err.name === 'SecurityError');
       throw new MicError(
-        denied ? 'Permissão do microfone negada.' : 'Não foi possível abrir o microfone.',
+        denied
+          ? tNow('Permissão do microfone negada.', 'Microphone permission denied.')
+          : tNow('Não foi possível abrir o microfone.', 'Could not open the microphone.'),
         denied ? 'denied' : 'other',
       );
     }

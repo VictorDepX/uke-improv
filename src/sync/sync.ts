@@ -1,3 +1,4 @@
+import { tNow } from '@/i18n/lang';
 import {
   SECTIONS,
   mergeSnapshots,
@@ -23,14 +24,21 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** Mensagem de erro para dados de conta inválidos; null se estiverem bons. */
 export function credentialsError(email: string, password: string, name?: string): string | null {
   const creating = name !== undefined;
-  if (email.length > ACCOUNT_LIMITS.email || !EMAIL_RE.test(email)) return 'E-mail inválido.';
+  if (email.length > ACCOUNT_LIMITS.email || !EMAIL_RE.test(email))
+    return tNow('E-mail inválido.', 'Invalid email.');
   if (password.length > ACCOUNT_LIMITS.passwordMax)
-    return 'A senha pode ter no máximo 128 caracteres.';
+    return tNow(
+      'A senha pode ter no máximo 128 caracteres.',
+      'The password can have at most 128 characters.',
+    );
   // No login, senha curta só pode estar errada: o servidor responde como qualquer senha errada.
   if (creating && password.length < ACCOUNT_LIMITS.passwordMin)
-    return 'A senha precisa de pelo menos 8 caracteres.';
+    return tNow(
+      'A senha precisa de pelo menos 8 caracteres.',
+      'The password needs at least 8 characters.',
+    );
   if (creating && (name.length === 0 || name.length > ACCOUNT_LIMITS.name))
-    return 'O nome precisa ter de 1 a 60 caracteres.';
+    return tNow('O nome precisa ter de 1 a 60 caracteres.', 'The name needs 1 to 60 characters.');
   return null;
 }
 
@@ -61,16 +69,32 @@ function localSnapshot(only?: Iterable<SectionId>): Snapshot {
 function message(err: unknown): string {
   if (err instanceof api.ApiError) {
     if (err.code === 'USER_ALREADY_EXISTS' || err.code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL')
-      return 'Já existe uma conta com esse e-mail.';
-    if (err.code === 'INVALID_EMAIL_OR_PASSWORD') return 'E-mail ou senha incorretos.';
-    if (err.code === 'PASSWORD_TOO_SHORT') return 'A senha precisa de pelo menos 8 caracteres.';
-    if (err.code === 'INVALID_EMAIL' || err.code === 'VALIDATION_ERROR') return 'E-mail inválido.';
+      return tNow(
+        'Já existe uma conta com esse e-mail.',
+        'An account with this email already exists.',
+      );
+    if (err.code === 'INVALID_EMAIL_OR_PASSWORD')
+      return tNow('E-mail ou senha incorretos.', 'Wrong email or password.');
+    if (err.code === 'PASSWORD_TOO_SHORT')
+      return tNow(
+        'A senha precisa de pelo menos 8 caracteres.',
+        'The password needs at least 8 characters.',
+      );
+    if (err.code === 'INVALID_EMAIL' || err.code === 'VALIDATION_ERROR')
+      return tNow('E-mail inválido.', 'Invalid email.');
     if (err.code === 'INVALID_ORIGIN')
-      return 'Este endereço do app não está autorizado a usar contas.';
-    if (err.status === 401) return 'Sessão expirada. Entre de novo.';
+      return tNow(
+        'Este endereço do app não está autorizado a usar contas.',
+        'This app address is not allowed to use accounts.',
+      );
+    if (err.status === 401)
+      return tNow('Sessão expirada. Entre de novo.', 'Session expired. Sign in again.');
     return err.message;
   }
-  return 'Sem conexão com o servidor. As mudanças ficam no aparelho e sobem depois.';
+  return tNow(
+    'Sem conexão com o servidor. As mudanças ficam no aparelho e sobem depois.',
+    'No connection to the server. Changes stay on this device and upload later.',
+  );
 }
 
 /** Puxa do servidor, aplica o que for mais novo e envia o resto. */

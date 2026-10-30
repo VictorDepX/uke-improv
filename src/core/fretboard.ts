@@ -1,12 +1,13 @@
+import { tx, type Txt } from '@/i18n/lang';
 import { mod12 } from './music';
 import type { FretPosition, TuningName } from './types';
 
 export const FRET_COUNT = 15;
 
 /** MIDI das cordas soltas, da 4ª (G) para a 1ª (A). */
-export const TUNINGS: Record<TuningName, { label: string; open: readonly number[] }> = {
-  GCEA: { label: 'GCEA (G agudo)', open: [67, 60, 64, 69] },
-  'GCEA-lowG': { label: 'GCEA (G grave)', open: [55, 60, 64, 69] },
+export const TUNINGS: Record<TuningName, { label: Txt; open: readonly number[] }> = {
+  GCEA: { label: tx('GCEA (G agudo)', 'GCEA (high G)'), open: [67, 60, 64, 69] },
+  'GCEA-lowG': { label: tx('GCEA (G grave)', 'GCEA (low G)'), open: [55, 60, 64, 69] },
 };
 
 export const STRING_NAMES = ['G', 'C', 'E', 'A'] as const;

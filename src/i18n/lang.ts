@@ -19,10 +19,21 @@ export interface T {
   (text: Txt | string): string;
 }
 
-export function makeT(lang: Lang): T {
+/**
+ * Marca um nome de nota ou acorde dentro de um texto (`nm('G7')`), para a tela trocar pelo
+ * nome no formato escolhido (G7 ou Sol7). Sem troca, só some a marca.
+ */
+export const nm = (symbol: string): string => `\u27e6${symbol}\u27e7`;
+const NAME_RE = /\u27e6([^\u27e7]*)\u27e7/g;
+export type NameFn = (symbol: string) => string;
+const plain: NameFn = (s) => s;
+export const renderNames = (text: string, names: NameFn = plain): string =>
+  text.includes('\u27e6') ? text.replace(NAME_RE, (_, sym: string) => names(sym)) : text;
+
+export function makeT(lang: Lang, names: NameFn = plain): T {
   return ((a: Txt | string, b?: string) => {
-    if (typeof a !== 'string') return a[lang];
-    return b === undefined || lang === 'pt' ? a : b;
+    const text = typeof a !== 'string' ? a[lang] : b === undefined || lang === 'pt' ? a : b;
+    return renderNames(text, names);
   }) as T;
 }
 

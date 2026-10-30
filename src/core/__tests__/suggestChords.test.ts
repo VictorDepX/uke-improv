@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { suggestNextChords } from '../suggestChords';
+import { makeT } from '@/i18n/lang';
+
+const pt = makeT('pt');
 
 const C = { tonic: 'C', scale: 'major' as const };
 
@@ -7,8 +10,8 @@ describe('suggestNextChords', () => {
   it('sobre G em C maior, as duas primeiras sugestões são C e Am', () => {
     const top = suggestNextChords('G', C);
     expect(top.slice(0, 2).map((s) => s.symbol)).toEqual(['C', 'Am']);
-    expect(top[0]!.reason).toMatch(/V → I/);
-    expect(top[1]!.reason).toMatch(/engano/);
+    expect(pt(top[0]!.reason)).toMatch(/V → I/);
+    expect(pt(top[1]!.reason)).toMatch(/engano/);
   });
 
   it('com dominantes secundárias ligadas, E7 (prepara Am) aparece sobre G', () => {

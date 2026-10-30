@@ -9,6 +9,9 @@ import {
   type ExerciseState,
 } from '../exercises';
 import { chromaName, mod12 } from '../music';
+import { makeT } from '@/i18n/lang';
+
+const pt = makeT('pt');
 
 const C_MAJOR = { tonic: 'C', scale: 'major' } as const;
 
@@ -38,15 +41,14 @@ describe('só repouso', () => {
     const s = play('repouso', [60, 64, 62, 67]); // C E D G
     expect(s.hits).toBe(3);
     expect(s.misses).toBe(1);
-    expect(s.feedback).toEqual({ kind: 'hit', text: 'G é do acorde C.' });
+    expect(s.feedback?.kind).toBe('hit');
+    expect(pt(s.feedback!.text)).toBe('G é do acorde C.');
   });
 
   it('a nota errada diz a classe', () => {
     const s = play('repouso', [61]);
-    expect(s.feedback).toEqual({
-      kind: 'miss',
-      text: 'C# está fora da escala. Procure uma verde.',
-    });
+    expect(s.feedback?.kind).toBe('miss');
+    expect(pt(s.feedback!.text)).toBe('C# está fora da escala. Procure uma verde.');
   });
 
   it('conclui na meta e ignora o que vem depois', () => {
@@ -54,7 +56,7 @@ describe('só repouso', () => {
     const s = play('repouso', [...Array(target).fill(60), 61]);
     expect(s.done).toBe(true);
     expect(s.misses).toBe(0);
-    expect(s.feedback?.text).toMatch(/^Concluído: 8 acertos, 0 erros/);
+    expect(pt(s.feedback!.text)).toMatch(/^Concluído: 8 acertos, 0 erros/);
   });
 });
 
@@ -63,7 +65,8 @@ describe('resolva a tensão', () => {
     // Sobre C, B é a sensível (tensão) e C, meio tom acima, é do acorde.
     const s = play('resolva', [71, 72]);
     expect(s.hits).toBe(1);
-    expect(s.feedback).toEqual({ kind: 'hit', text: 'Resolveu: B → C.' });
+    expect(s.feedback?.kind).toBe('hit');
+    expect(pt(s.feedback!.text)).toBe('Resolveu: B → C.');
   });
 
   it('a 7ª do G7 resolvendo na 3ª do C, acorde a acorde', () => {
@@ -99,7 +102,7 @@ describe('passo a passo', () => {
     const s = play('passo', [60, 62, 64, 72, 71]);
     expect(s.misses).toBe(1);
     expect(s.streak).toBe(2);
-    expect(play('passo', [60, 67]).feedback?.text).toBe(
+    expect(pt(play('passo', [60, 67]).feedback!.text)).toBe(
       'Salto de 7 semitons. A frase recomeça em G.',
     );
   });
@@ -117,7 +120,7 @@ describe('passo a passo', () => {
 
 describe('alvo na troca', () => {
   it('pede a base ligada', () => {
-    expect(play('alvo', [60]).feedback?.text).toBe('Ligue a base para este exercício.');
+    expect(pt(play('alvo', [60]).feedback!.text)).toBe('Ligue a base para este exercício.');
   });
 
   it('só a primeira nota de cada compasso conta', () => {
@@ -125,6 +128,7 @@ describe('alvo na troca', () => {
     // bar −1: contagem; bar 0: C# (erro), D ignorado; bar 1: D (erro); bar 2: E (acerto)
     expect(s.hits).toBe(1);
     expect(s.misses).toBe(2);
-    expect(s.feedback).toEqual({ kind: 'hit', text: 'Alvo certo: E em C.' });
+    expect(s.feedback?.kind).toBe('hit');
+    expect(pt(s.feedback!.text)).toBe('Alvo certo: E em C.');
   });
 });

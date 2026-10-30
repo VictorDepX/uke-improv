@@ -5,6 +5,9 @@ import { chromaOf } from '../music';
 import { PRESETS } from '../presets';
 import { PROGRESSIONS, progressionChords } from '../progressions';
 import { suggestNextChords } from '../suggestChords';
+import { makeT } from '@/i18n/lang';
+
+const pt = makeT('pt');
 
 const symbols = (tonic: string, scale: Parameters<typeof diatonicChords>[0]['scale']) =>
   diatonicChords({ tonic, scale }).map((d) => d.symbol);
@@ -32,7 +35,7 @@ describe('sugestões nos modos', () => {
   it('no mixolídio, F (bVII) resolve em G', () => {
     const [first] = suggestNextChords('F', { tonic: 'G', scale: 'mixolydian' });
     expect(first!.symbol).toBe('G');
-    expect(first!.reason).toMatch(/mixolídia/);
+    expect(pt(first!.reason)).toMatch(/mixolídia/);
   });
 
   it('na menor harmônica, G#dim resolve em Am', () => {

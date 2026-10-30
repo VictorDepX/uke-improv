@@ -1,17 +1,30 @@
 import { Chord, Note, Scale } from 'tonal';
+import { tx, type Txt } from '@/i18n/lang';
 import type { ChordInfo, Chroma, KeyContext, Mode, ScaleName } from './types';
 
 export const TONICS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'] as const;
 
-export const SCALES: Record<ScaleName, { label: string; tonal: string; mode: Mode }> = {
-  major: { label: 'Maior', tonal: 'major', mode: 'major' },
-  minor: { label: 'Menor natural', tonal: 'aeolian', mode: 'minor' },
-  majorPentatonic: { label: 'Pentatônica maior', tonal: 'major pentatonic', mode: 'major' },
-  minorPentatonic: { label: 'Pentatônica menor', tonal: 'minor pentatonic', mode: 'minor' },
-  blues: { label: 'Blues', tonal: 'blues', mode: 'minor' },
-  dorian: { label: 'Dórico', tonal: 'dorian', mode: 'minor' },
-  mixolydian: { label: 'Mixolídio', tonal: 'mixolydian', mode: 'major' },
-  harmonicMinor: { label: 'Menor harmônica', tonal: 'harmonic minor', mode: 'minor' },
+export const SCALES: Record<ScaleName, { label: Txt; tonal: string; mode: Mode }> = {
+  major: { label: tx('Maior', 'Major'), tonal: 'major', mode: 'major' },
+  minor: { label: tx('Menor natural', 'Natural minor'), tonal: 'aeolian', mode: 'minor' },
+  majorPentatonic: {
+    label: tx('Pentatônica maior', 'Major pentatonic'),
+    tonal: 'major pentatonic',
+    mode: 'major',
+  },
+  minorPentatonic: {
+    label: tx('Pentatônica menor', 'Minor pentatonic'),
+    tonal: 'minor pentatonic',
+    mode: 'minor',
+  },
+  blues: { label: tx('Blues', 'Blues'), tonal: 'blues', mode: 'minor' },
+  dorian: { label: tx('Dórico', 'Dorian'), tonal: 'dorian', mode: 'minor' },
+  mixolydian: { label: tx('Mixolídio', 'Mixolydian'), tonal: 'mixolydian', mode: 'major' },
+  harmonicMinor: {
+    label: tx('Menor harmônica', 'Harmonic minor'),
+    tonal: 'harmonic minor',
+    mode: 'minor',
+  },
 };
 
 const SHARP_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];

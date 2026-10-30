@@ -1,3 +1,4 @@
+import type { Txt } from '@/i18n/lang';
 import type { Meter } from './rhythm';
 /** Classe de pitch como inteiro 0–11 (C = 0, C# = 1, … B = 11). */
 export type Chroma = number;
@@ -59,7 +60,7 @@ export interface NoteSuggestion {
   chroma: Chroma;
   cls: NoteClass;
   score: number;
-  reason: string;
+  reason: Txt;
 }
 
 export type ChordSuggestionKind = 'diatonic' | 'secondary' | 'borrowed';
@@ -70,7 +71,7 @@ export interface ChordSuggestion {
   func: HarmonicFunction;
   kind: ChordSuggestionKind;
   score: number;
-  reason: string;
+  reason: Txt;
 }
 
 export interface ScoreWeights {
@@ -87,7 +88,8 @@ export interface ChordExtras {
 
 export interface Progression {
   id: string;
-  name: string;
+  /** Prontas: nos dois idiomas. Próprias: o texto que a pessoa (ou a cifra) deu. */
+  name: Txt | string;
   mode: Mode;
   /**
    * Um item por compasso, com numerais relativos à tônica e intervalos da escala maior

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { noteIndexAt, summarizeTake, takeAdvice, takeNote } from '../take';
 import { pickMimeType } from '@/audio/engine/recorder';
+import { makeT } from '@/i18n/lang';
+
+const pt = makeT('pt');
 
 const C = { tonic: 'C', scale: 'major' } as const;
 const take = (pairs: [number, number, string][]) =>
@@ -45,11 +48,11 @@ describe('gravação do improviso', () => {
     expect(s).toMatchObject({ total: 7, tensions: 2, resolved: 1, longestOut: 2 });
     expect(s.chordTones).toBeCloseTo(3 / 7);
     expect(s.inScale).toBeCloseTo(5 / 7);
-    expect(takeAdvice(s)).toMatch(/fora da escala/);
+    expect(pt(takeAdvice(s))).toMatch(/fora da escala/);
   });
 
   it('o conselho aponta o ponto mais útil', () => {
-    expect(takeAdvice(summarizeTake([]))).toMatch(/Nenhuma nota/);
+    expect(pt(takeAdvice(summarizeTake([])))).toMatch(/Nenhuma nota/);
     const unresolved = summarizeTake(
       take([
         [0, 71, 'C'],
@@ -58,7 +61,7 @@ describe('gravação do improviso', () => {
         [1.5, 67, 'C'],
       ]),
     );
-    expect(takeAdvice(unresolved)).toMatch(/tensões ficou sem resolver/);
+    expect(pt(takeAdvice(unresolved))).toMatch(/tensões ficou sem resolver/);
     const good = summarizeTake(
       take([
         [0, 71, 'C'],
@@ -67,7 +70,7 @@ describe('gravação do improviso', () => {
         [1.5, 67, 'C'],
       ]),
     );
-    expect(takeAdvice(good)).toMatch(/dentro do tom/);
+    expect(pt(takeAdvice(good))).toMatch(/dentro do tom/);
   });
 
   it('escolhe o formato de gravação suportado', () => {
