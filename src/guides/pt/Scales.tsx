@@ -177,6 +177,7 @@ export function ScalesPt() {
       <p>
         Cada tom tem sua página, com as notas, as casas no braço e os acordes que combinam:{' '}
         <a href="/escalas/sol-maior">sol maior</a>, <a href="/escalas/re-maior">ré maior</a>,{' '}
+        <a href="/escalas/fa-maior">fá maior</a>, <a href="/escalas/si-menor">si menor</a>,{' '}
         <a href="/escalas/la-menor">lá menor</a>,{' '}
         <a href="/escalas/pentatonica-menor-de-mi">pentatônica menor de mi</a>,{' '}
         <a href="/escalas/blues-de-la">blues de lá</a> e outras no{' '}

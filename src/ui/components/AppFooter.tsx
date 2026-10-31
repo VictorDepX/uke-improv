@@ -16,7 +16,10 @@ export function AppFooter({ title, about }: { title: string; about: string }) {
       <div className="app-footer-inner">
         <section aria-labelledby="about-title">
           <h2 id="about-title">{title}</h2>
-          <p>{about}</p>
+          {/* Parágrafos separados por linha em branco no texto da página. */}
+          {about.split('\n\n').map((p) => (
+            <p key={p.slice(0, 24)}>{p}</p>
+          ))}
         </section>
         <nav aria-labelledby="guides-title">
           <h2 id="guides-title">{t('Guias', 'Guides')}</h2>

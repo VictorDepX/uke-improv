@@ -34,7 +34,7 @@ const HUBS: Guide[] = [
     kind: 'hub',
     lang: 'pt',
     path: HUB_PATH.pt,
-    title: 'Guias de ukulele: improviso, escalas e acordes por tom',
+    title: 'Guias de ukulele: improviso, escalas e tons',
     description:
       'Todos os guias do Uke Improv: como improvisar, escalas por tom, campo harmônico de cada tom e progressões, com diagramas para ukulele.',
     updated: '2026-10-31',
@@ -45,7 +45,7 @@ const HUBS: Guide[] = [
     kind: 'hub',
     lang: 'en',
     path: HUB_PATH.en,
-    title: 'Ukulele guides: improvising, scales and chords by key',
+    title: 'Ukulele guides: improvising, scales and keys',
     description:
       'All Uke Improv guides: how to improvise, scales in every key, the chords of each key and progressions, with ukulele diagrams.',
     updated: '2026-10-31',

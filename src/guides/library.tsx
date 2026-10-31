@@ -462,7 +462,8 @@ function keyGuide(tonic: string, minor: boolean, lang: GuideLang): Guide {
     path: keyPath(tonic, minor, lang),
     title:
       lang === 'pt'
-        ? `Campo harmônico de ${noteName(tonic, 'pt')} ${minor ? 'menor' : 'maior'} no ukulele`
+        ? // Tons com sustenido estouram o título; o "no ukulele" sai e a descrição o mantém.
+          `Campo harmônico de ${noteName(tonic, 'pt')} ${minor ? 'menor' : 'maior'}${tonic.length > 1 && minor ? '' : ' no ukulele'}`
         : `Chords in the key of ${tonic} ${minor ? 'minor' : 'major'} on ukulele`,
     description:
       lang === 'pt'

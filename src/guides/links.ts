@@ -31,7 +31,7 @@ export const ARTICLES: readonly GuideMeta[] = [
     id: 'scales',
     lang: 'pt',
     path: '/guias/escalas-no-ukulele',
-    title: 'Escalas no ukulele: maior, menor, pentatônica e blues',
+    title: 'Escalas no ukulele: maior, menor, pentatônica, blues',
     description:
       'Escala maior, menor, pentatônica e blues no braço do ukulele (GCEA), casa por casa, e quando usar cada uma.',
     updated: '2026-10-31',
@@ -40,7 +40,7 @@ export const ARTICLES: readonly GuideMeta[] = [
     id: 'progressions',
     lang: 'pt',
     path: '/guias/progressoes-de-acordes-para-ukulele',
-    title: 'Progressões de acordes para ukulele: 11 voltas para tocar e improvisar',
+    title: 'Progressões de acordes para ukulele',
     description:
       'As progressões mais usadas (pop, anos 50, ii–V–I, blues, andaluza, valsa) com os acordes em dó, sol e lá menor, e como improvisar sobre cada uma.',
     updated: '2026-10-31',
@@ -67,7 +67,7 @@ export const ARTICLES: readonly GuideMeta[] = [
     id: 'progressions',
     lang: 'en',
     path: '/en/guides/ukulele-chord-progressions',
-    title: 'Ukulele chord progressions: 11 loops to play and improvise over',
+    title: 'Ukulele chord progressions to improvise over',
     description:
       'The most used progressions (pop, 50s, ii–V–I, blues, Andalusian, waltz) with the chords in C, G and A minor, and how to improvise over each one.',
     updated: '2026-10-31',

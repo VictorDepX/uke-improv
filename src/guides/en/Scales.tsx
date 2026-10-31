@@ -177,6 +177,7 @@ export function ScalesEn() {
       <p>
         Every key has its own page, with the notes, the frets on the fretboard and the chords that
         fit: <a href="/en/scales/g-major">G major</a>, <a href="/en/scales/d-major">D major</a>,{' '}
+        <a href="/en/scales/f-major">F major</a>, <a href="/en/scales/b-minor">B minor</a>,{' '}
         <a href="/en/scales/a-minor">A minor</a>,{' '}
         <a href="/en/scales/e-minor-pentatonic">E minor pentatonic</a>,{' '}
         <a href="/en/scales/a-blues">A blues</a> and more in the{' '}
