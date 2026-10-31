@@ -11,7 +11,8 @@ describe('guias', () => {
     for (const g of GUIDES) {
       expect(translationOf(g)?.lang).toBe(g.lang === 'pt' ? 'en' : 'pt');
       expect(g.description.length).toBeLessThanOrEqual(160);
-      expect(g.path.startsWith(g.lang === 'pt' ? '/guias/' : '/en/guides/')).toBe(true);
+      expect(g.path.startsWith(g.lang === 'pt' ? '/' : '/en/')).toBe(true);
+      expect(g.path.startsWith('/en/')).toBe(g.lang === 'en');
     }
   });
 
@@ -25,7 +26,8 @@ describe('guias', () => {
     for (const g of GUIDES) {
       const html = renderToStaticMarkup(<GuidePage guide={g} />);
       expect(html).toContain(`<h1>${g.title}</h1>`);
-      expect(html).toContain('<figure class="guide-board">');
+      if (g.kind === 'scale' || g.id === 'improvise' || g.id === 'scales')
+        expect(html).toContain('<figure class="guide-board">');
       expect(html).toContain(`href="${translationOf(g)!.path}"`);
       // os links internos apontam para páginas que existem
       const internal = [...html.matchAll(/href="(\/[^"#]*)"/g)].map((m) => m[1]!);
@@ -38,5 +40,25 @@ describe('guias', () => {
     const html = renderToStaticMarkup(<GuidePage guide={en} />);
     expect(html).toContain('href="/en/jam"');
     expect(html).not.toContain('Portuguese for now');
+  });
+
+  it('páginas geradas: escala com as notas certas e campo harmônico com o relativo', () => {
+    const pent = GUIDES.find((g) => g.path === '/escalas/pentatonica-menor-de-la')!;
+    const html = renderToStaticMarkup(<GuidePage guide={pent} />);
+    expect(html).toContain('as notas A C D E G');
+    expect(translationOf(pent)!.path).toBe('/en/scales/a-minor-pentatonic');
+    const g = GUIDES.find((x) => x.path === '/en/keys/g-major')!;
+    const keyHtml = renderToStaticMarkup(<GuidePage guide={g} />);
+    expect(keyHtml).toContain('G, Am, Bm, C, D, Em, F#dim');
+    expect(keyHtml).toContain('href="/en/keys/e-minor"');
+  });
+
+  it('o índice liga todas as páginas de conteúdo do idioma', () => {
+    for (const lang of ['pt', 'en'] as const) {
+      const hub = GUIDES.find((g) => g.kind === 'hub' && g.lang === lang)!;
+      const html = renderToStaticMarkup(<GuidePage guide={hub} />);
+      for (const g of GUIDES.filter((x) => x.lang === lang && x !== hub))
+        expect(html).toContain(`href="${g.path}"`);
+    }
   });
 });

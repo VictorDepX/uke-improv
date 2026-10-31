@@ -66,7 +66,7 @@ describe('App em dois idiomas', () => {
     expect(screen.getByRole('link', { name: 'Explore' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Ear' })).toHaveAttribute('href', '/en/ear');
     expect(document.documentElement.lang).toBe('en');
-    expect(document.title).toMatch(/improvise on ukulele/);
+    expect(document.title).toMatch(/improvise on the ukulele/);
   });
 
   it('o botão EN troca o idioma, o endereço e guarda a escolha', async () => {
@@ -138,5 +138,29 @@ describe('nomes Dó Ré Mi', () => {
     await user.click(screen.getByRole('button', { name: /^Si4, corda Lá, casa 2/ }));
     const first = screen.getAllByRole('listitem').find((li) => li.querySelector('.suggestion'))!;
     expect(first).toHaveTextContent('Dó5');
+  });
+});
+
+describe('páginas avulsas', () => {
+  beforeEach(() => {
+    useMusicStore.setState(initial, true);
+    setBrowserLanguages(['pt-BR']);
+  });
+
+  it('/afinador mostra o título e o afinador, e não entra no menu de abas', async () => {
+    window.history.replaceState(null, '', '/afinador');
+    render(<App />);
+    expect(screen.getByRole('heading', { level: 1, name: 'Afinador de ukulele' })).toBeVisible();
+    expect(await screen.findByRole('button', { name: 'Ligar microfone' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Afinador' })).toBeNull();
+    expect(document.title).toMatch(/^Afinador de ukulele online/);
+  });
+
+  it('cada aba do menu tem um H1 para leitores e buscadores', () => {
+    window.history.replaceState(null, '', '/en/ear');
+    render(<App />);
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Ukulele ear training' }),
+    ).toBeInTheDocument();
   });
 });

@@ -12,7 +12,7 @@ import { RecordingAnalyzer } from './RecordingAnalyzer';
 import { useNames, useT } from '@/i18n';
 
 /** Módulo 2: escuta em tempo real, com afinador e indicador da classe da nota tocada. */
-export function MicPanel() {
+export function MicPanel({ hint }: { hint?: string } = {}) {
   const t = useT();
   const n = useNames();
   const { status, start, stop } = useMicControl();
@@ -112,10 +112,11 @@ export function MicPanel() {
             </p>
           ) : (
             <p className="empty">
-              {t(
-                'Toque no uke perto do celular: a nota vira entrada para as sugestões e o acorde detectado pode virar o acorde atual.',
-                'Play your uke near the phone: the note feeds the suggestions and the detected chord can become the current chord.',
-              )}
+              {hint ??
+                t(
+                  'Toque no uke perto do celular: a nota vira entrada para as sugestões e o acorde detectado pode virar o acorde atual.',
+                  'Play your uke near the phone: the note feeds the suggestions and the detected chord can become the current chord.',
+                )}
             </p>
           )}
           <RecordingAnalyzer />

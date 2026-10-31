@@ -1,5 +1,6 @@
 import { LangProvider } from '@/i18n';
 import { GUIDES, translationOf, type Guide } from './index';
+import { HUB_PATH } from './links';
 
 const TEXT = {
   pt: {
@@ -13,6 +14,7 @@ const TEXT = {
       'O Uke Improv mostra no braço quais notas soam bem sobre cada acorde, toca a base e escuta o que você toca pelo microfone. É grátis e funciona no celular.',
     ctaButton: 'Tocar com a base',
     more: 'Outros guias',
+    guides: 'Guias',
     footer: 'Uke Improv é gratuito e de código aberto.',
     code: 'Código no GitHub',
     homePath: '/',
@@ -29,6 +31,7 @@ const TEXT = {
       'Uke Improv shows on the fretboard which notes sound good over each chord, plays the backing track and listens to you through the microphone. It is free and works on your phone.',
     ctaButton: 'Play along',
     more: 'More guides',
+    guides: 'Guides',
     footer: 'Uke Improv is free and open source.',
     code: 'Code on GitHub',
     homePath: '/en',
@@ -47,7 +50,9 @@ const formatDate = (iso: string, lang: Guide['lang']) =>
 export function GuidePage({ guide }: { guide: Guide }) {
   const t = TEXT[guide.lang];
   const other = translationOf(guide);
-  const related = GUIDES.filter((g) => g.lang === guide.lang && g.id !== guide.id);
+  const related = GUIDES.filter(
+    (g) => g.lang === guide.lang && g.kind === 'article' && g.id !== guide.id,
+  );
   const { Body } = guide;
   return (
     <LangProvider value={guide.lang}>
@@ -72,6 +77,7 @@ export function GuidePage({ guide }: { guide: Guide }) {
                 {t.langSwitch}
               </a>
             ) : null}
+            <a href={HUB_PATH[guide.lang]}>{t.guides}</a>
             <a className="button button-primary" href={t.homePath}>
               {t.open}
             </a>

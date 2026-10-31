@@ -150,6 +150,39 @@ export function ScalesEn() {
           <a href="/en/guides/how-to-improvise-on-ukulele">how to improvise on the ukulele</a>.
         </li>
       </ol>
+
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>
+          <strong>Playing the scale as an exercise instead of a phrase.</strong> Running up and down
+          helps you memorize it, but when improvising use few notes, repeat ideas and leave silence.
+        </li>
+        <li>
+          <strong>Stopping on any note.</strong> End your phrases on the tonic or on a tone of the
+          chord that is playing; that is what makes the scale sound resolved.
+        </li>
+        <li>
+          <strong>Staying stuck in the first five frets.</strong> Once you know the open position,
+          play the same scale from fret 5 and fret 7: on the ukulele, the same notes repeat twelve
+          frets higher.
+        </li>
+        <li>
+          <strong>Using the wrong scale for the key.</strong> If the song is in G, the scale is G.
+          To find the key from the chords, use the{' '}
+          <a href="/en/chord-chart-analyzer">chord chart analyzer</a>.
+        </li>
+      </ul>
+
+      <h2>The same scales in other keys</h2>
+      <p>
+        Every key has its own page, with the notes, the frets on the fretboard and the chords that
+        fit: <a href="/en/scales/g-major">G major</a>, <a href="/en/scales/d-major">D major</a>,{' '}
+        <a href="/en/scales/a-minor">A minor</a>,{' '}
+        <a href="/en/scales/e-minor-pentatonic">E minor pentatonic</a>,{' '}
+        <a href="/en/scales/a-blues">A blues</a> and more in the{' '}
+        <a href="/en/guides">guide index</a>. For the chords of each key, see pages like{' '}
+        <a href="/en/keys/c-major">chords in the key of C major</a>.
+      </p>
     </>
   );
 }

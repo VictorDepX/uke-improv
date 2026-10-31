@@ -7,11 +7,15 @@ export const EarPage = lazyPage(() => import('./pages/EarPage').then((m) => m.Ea
 export const SettingsPage = lazyPage(() =>
   import('./pages/SettingsPage').then((m) => m.SettingsPage),
 );
+export const TunerPage = lazyPage(() => import('./pages/TunerPage').then((m) => m.TunerPage));
+export const ChartPage = lazyPage(() => import('./pages/ChartPage').then((m) => m.ChartPage));
 
 /** Baixa o pacote da aba antes de montar o app, para ela aparecer já completa. */
 export function preloadTab(tab: TabId): Promise<unknown> {
   if (tab === 'jam') return JamPage.preload();
   if (tab === 'ouvido') return EarPage.preload();
   if (tab === 'ajustes') return SettingsPage.preload();
+  if (tab === 'afinador') return TunerPage.preload();
+  if (tab === 'cifra') return ChartPage.preload();
   return Promise.resolve();
 }

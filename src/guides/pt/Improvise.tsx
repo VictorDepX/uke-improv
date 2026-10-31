@@ -86,6 +86,55 @@ export function ImprovisePt() {
           <strong>2 min:</strong> livre, com pergunta e resposta.
         </li>
       </ol>
+
+      <h2>Erros comuns</h2>
+      <ul>
+        <li>
+          <strong>Tocar notas demais.</strong> Frase boa tem começo, meio e fim. Quatro notas bem
+          colocadas valem mais que vinte corridas.
+        </li>
+        <li>
+          <strong>Ignorar o acorde da vez.</strong> A escala diz quais notas existem no tom; o
+          acorde diz quais delas repousam agora. Quando o acorde muda, mude o alvo.
+        </li>
+        <li>
+          <strong>Ter medo da nota &quot;errada&quot;.</strong> Uma nota fora vira cromatismo se
+          você resolver meio tom ao lado logo depois. O erro é parar nela.
+        </li>
+        <li>
+          <strong>Treinar sem base.</strong> Sozinho, qualquer nota soa bem. Com a base tocando é
+          que se ouve tensão e resolução de verdade.
+        </li>
+      </ul>
+
+      <h2>Exercício: uma frase por acorde</h2>
+      <p>
+        Na volta C – G – Am – F, toque uma frase curta por compasso que termine numa nota do acorde
+        seguinte: E ou G antes do G, A ou C antes do Am, F ou A antes do F, C ou E antes do C.
+        Comece com duas notas por frase e vá aumentando. Esse é o exercício &quot;Alvo na
+        troca&quot; do app, que confere cada nota pelo microfone.
+      </p>
+
+      <h2>Próximos passos</h2>
+      <ul>
+        <li>
+          <a href="/guias/progressoes-de-acordes-para-ukulele">
+            Progressões de acordes para ukulele
+          </a>
+          : outras voltas para improvisar.
+        </li>
+        <li>
+          <a href="/escalas/pentatonica-menor-de-la">Pentatônica menor de lá</a> e as outras{' '}
+          <a href="/guias">escalas por tom</a>.
+        </li>
+        <li>
+          <a href="/afinador">Afinador de ukulele</a>: afine antes de tocar com a base.
+        </li>
+        <li>
+          <a href="/ouvido">Treino de ouvido</a>: reconhecer intervalos ajuda a tocar o que você
+          imagina.
+        </li>
+      </ul>
     </>
   );
 }

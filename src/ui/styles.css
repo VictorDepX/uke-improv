@@ -3529,3 +3529,34 @@ input[type='range'] {
 .guide-board-frame {
   max-width: 100%;
 }
+
+/* Título das páginas avulsas do app (afinador, analisador de cifra). */
+.page-title {
+  margin: 4px 0 14px;
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+/* Acordes com diagrama nas páginas de escala e de campo harmônico. */
+.guide-chords {
+  list-style: none;
+  margin: 12px 0 20px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+}
+
+.guide-chords li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 64px;
+}
+
+.guide-chords .mono {
+  font-size: 12px;
+  color: var(--fg-muted);
+}

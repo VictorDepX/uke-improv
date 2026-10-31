@@ -8,7 +8,7 @@ import { useJamSync } from './hooks/useJamSync';
 import { useWakeLock } from './hooks/useWakeLock';
 import { ExplorePage } from './pages/ExplorePage';
 import { AppFooter } from './components/AppFooter';
-import { EarPage, JamPage, SettingsPage } from './pageLoaders';
+import { ChartPage, EarPage, JamPage, SettingsPage, TunerPage } from './pageLoaders';
 import { Toaster } from './components/Toaster';
 import { HTML_LANG, LangProvider, makeT, noteNamer, setCurrentLang, useT, type Lang } from '@/i18n';
 import { LangHint } from './components/LangHint';
@@ -19,6 +19,7 @@ import {
   hrefFor,
   routeFromLocation,
   type Route,
+  type TabDef,
   type TabId,
 } from './routes';
 import { useAccountToasts } from './hooks/useAccountToasts';
@@ -27,6 +28,8 @@ import { useAccountToasts } from './hooks/useAccountToasts';
 const PracticeMode = lazy(() =>
   import('./components/practice/PracticeMode').then((m) => ({ default: m.PracticeMode })),
 );
+
+const NAV_TABS = TABS.filter((t: TabDef) => !t.hidden);
 
 function PageSkeleton() {
   const t = useT();
@@ -53,6 +56,7 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
   // app nele mesmo vindo por um link do outro; sem escolha, vale o do endereço.
   const chosenLang = useMusicStore((s) => s.settings.lang);
   const tab = route.tab;
+  const current: TabDef = TABS.find((x) => x.id === tab)!;
   const lang = chosenLang ?? route.lang;
   const noteNames = useMusicStore((s) => s.settings.noteNames);
   const names = useMemo(() => noteNamer(noteNames, lang), [noteNames, lang]);
@@ -155,7 +159,7 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
               <span className="practice-open-label">{t('Praticar', 'Practice')}</span>
             </button>
             <nav className="tabs" aria-label={t('Seções', 'Sections')}>
-              {TABS.map((def) => (
+              {NAV_TABS.map((def) => (
                 <a
                   key={def.id}
                   href={hrefFor(def.id, lang)}
@@ -187,6 +191,8 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
         </header>
         <LangHint lang={lang} onSwitch={switchLang} />
         <main className="main">
+          {/* Nas abas do menu o título fica para leitores e buscadores; nas páginas avulsas, aparece. */}
+          <h1 className={current.hidden ? 'page-title' : 'sr-only'}>{current.h1[lang]}</h1>
           <Suspense fallback={<PageSkeleton />}>
             {tab === 'explorar' ? (
               <ExplorePage />
@@ -194,12 +200,16 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
               <JamPage />
             ) : tab === 'ouvido' ? (
               <EarPage />
+            ) : tab === 'afinador' ? (
+              <TunerPage />
+            ) : tab === 'cifra' ? (
+              <ChartPage />
             ) : (
               <SettingsPage />
             )}
           </Suspense>
         </main>
-        <AppFooter />
+        <AppFooter title={current.h1[lang]} about={current.about[lang]} />
         {practiceOpen ? (
           <Suspense fallback={null}>
             <PracticeMode onClose={closePractice} />

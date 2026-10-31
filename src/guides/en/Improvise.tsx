@@ -84,6 +84,53 @@ export function ImproviseEn() {
           <strong>2 min:</strong> free play, with call and response.
         </li>
       </ol>
+
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>
+          <strong>Playing too many notes.</strong> A good phrase has a beginning, a middle and an
+          end. Four well-placed notes beat twenty rushed ones.
+        </li>
+        <li>
+          <strong>Ignoring the current chord.</strong> The scale tells you which notes are in the
+          key; the chord tells you which of them rest right now. When the chord changes, change your
+          target.
+        </li>
+        <li>
+          <strong>Fearing the &quot;wrong&quot; note.</strong> An outside note becomes a chromatic
+          passing note if you resolve a half step away right after. The mistake is stopping on it.
+        </li>
+        <li>
+          <strong>Practicing without a backing track.</strong> Alone, any note sounds fine. With a
+          backing track playing, you actually hear tension and resolution.
+        </li>
+      </ul>
+
+      <h2>Exercise: one phrase per chord</h2>
+      <p>
+        Over the C – G – Am – F loop, play a short phrase in each bar that ends on a note of the
+        next chord: E or G before the G, A or C before the Am, F or A before the F, C or E before
+        the C. Start with two notes per phrase and build up. This is the &quot;Target the
+        change&quot; exercise in the app, which checks each note through the microphone.
+      </p>
+
+      <h2>Next steps</h2>
+      <ul>
+        <li>
+          <a href="/en/guides/ukulele-chord-progressions">Ukulele chord progressions</a>: more loops
+          to improvise over.
+        </li>
+        <li>
+          <a href="/en/scales/a-minor-pentatonic">A minor pentatonic</a> and the other{' '}
+          <a href="/en/guides">scales by key</a>.
+        </li>
+        <li>
+          <a href="/en/tuner">Ukulele tuner</a>: tune up before playing with the backing track.
+        </li>
+        <li>
+          <a href="/en/ear">Ear training</a>: recognizing intervals helps you play what you imagine.
+        </li>
+      </ul>
     </>
   );
 }

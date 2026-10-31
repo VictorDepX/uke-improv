@@ -150,6 +150,39 @@ export function ScalesPt() {
           <a href="/guias/como-improvisar-no-ukulele">como improvisar no ukulele</a>.
         </li>
       </ol>
+
+      <h2>Erros comuns</h2>
+      <ul>
+        <li>
+          <strong>Tocar a escala como exercício, não como frase.</strong> Subir e descer ajuda a
+          decorar, mas no improviso use poucas notas, repita ideias e deixe silêncio.
+        </li>
+        <li>
+          <strong>Parar em qualquer nota.</strong> Termine as frases na tônica ou numa nota do
+          acorde que está soando; é isso que faz a escala soar resolvida.
+        </li>
+        <li>
+          <strong>Ficar preso às cinco primeiras casas.</strong> Depois de dominar a posição aberta,
+          toque a mesma escala a partir da casa 5 e da casa 7: no ukulele, as mesmas notas se
+          repetem doze casas acima.
+        </li>
+        <li>
+          <strong>Usar a escala errada para o tom.</strong> Se a música está em sol, a escala é a de
+          sol. Para descobrir o tom pela cifra, use o{' '}
+          <a href="/analisar-cifra">analisador de cifra</a>.
+        </li>
+      </ul>
+
+      <h2>As mesmas escalas em outros tons</h2>
+      <p>
+        Cada tom tem sua página, com as notas, as casas no braço e os acordes que combinam:{' '}
+        <a href="/escalas/sol-maior">sol maior</a>, <a href="/escalas/re-maior">ré maior</a>,{' '}
+        <a href="/escalas/la-menor">lá menor</a>,{' '}
+        <a href="/escalas/pentatonica-menor-de-mi">pentatônica menor de mi</a>,{' '}
+        <a href="/escalas/blues-de-la">blues de lá</a> e outras no{' '}
+        <a href="/guias">índice de guias</a>. Para os acordes de cada tom, veja o campo harmônico,
+        como o de <a href="/campo-harmonico/do-maior">dó maior</a>.
+      </p>
     </>
   );
 }

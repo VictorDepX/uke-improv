@@ -70,9 +70,27 @@ function pageHtml(page) {
       image: `${SITE}/og.png`,
       publisher: { '@type': 'Organization', name: 'Uke Improv', url: `${SITE}/` },
     };
+    // Trilha: Uke Improv › Guias › página (o índice de guias para em Guias).
+    const home = page.lang === 'pt' ? '/' : '/en';
+    const hub = page.lang === 'pt' ? '/guias' : '/en/guides';
+    const crumbs = [
+      { name: 'Uke Improv', path: home },
+      { name: page.lang === 'pt' ? 'Guias' : 'Guides', path: hub },
+      ...(page.path === hub ? [] : [{ name: article.headline, path: page.path }]),
+    ];
+    const breadcrumb = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: crumbs.map((c, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: c.name,
+        item: urlOf(c.path),
+      })),
+    };
     html = html.replace(
       /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
-      `<script type="application/ld+json">${JSON.stringify(article)}</script>`,
+      `<script type="application/ld+json">${JSON.stringify(article)}</script>\n    <script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`,
     );
   } else if (page.lang === 'en') {
     // App em inglês: o mesmo JSON-LD, com idioma, endereço e descrição desta versão.

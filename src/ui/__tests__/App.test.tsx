@@ -401,7 +401,7 @@ describe('App', () => {
     render(<App />);
     await openTab(user, 'Jam');
     expect(window.location.pathname).toBe('/jam');
-    expect(document.title).toMatch(/^Jam/);
+    expect(document.title).toMatch(/^Base para improvisar/);
     await user.click(screen.getByRole('link', { name: 'Explorar' }));
     expect(window.location.pathname).toBe('/');
   });
