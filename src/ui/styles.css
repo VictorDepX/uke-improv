@@ -3560,3 +3560,8 @@ input[type='range'] {
   font-size: 12px;
   color: var(--fg-muted);
 }
+
+/* Texto da página em vários parágrafos. */
+.app-footer section p + p {
+  margin-top: 10px;
+}
