@@ -158,6 +158,16 @@ export function SettingsPage() {
               onChange={(labels) => update({ labels })}
             />
             <Toggle
+              id="set-left"
+              label={t('Canhoto', 'Left-handed')}
+              hint={t(
+                'Braço espelhado: casas da direita para a esquerda.',
+                'Mirrored fretboard: frets run right to left.',
+              )}
+              checked={settings.leftHanded}
+              onChange={(leftHanded) => update({ leftHanded })}
+            />
+            <Toggle
               id="set-arpeggio"
               label={t('Só arpejo', 'Arpeggio only')}
               hint={t(

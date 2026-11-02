@@ -3,12 +3,18 @@ import { PROGRESSIONS, barLabel, meterOf } from '@/core/progressions';
 import { useActiveProgression } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 import { toast } from '../../toast';
-import { useNames, useT } from '@/i18n';
+import { encodeShare } from '@/core/share';
+import { TAB_PATHS } from '../../routes';
+import { useLang, useNames, useT } from '@/i18n';
 
 export function ProgressionPicker() {
   const t = useT();
   const n = useNames();
-  const { bars } = useActiveProgression();
+  const { bars, progression } = useActiveProgression();
+  const lang = useLang();
+  const key = useMusicStore((s) => s.key);
+  const bpm = useMusicStore((s) => s.jam.bpm);
+  const grooveId = useMusicStore((s) => s.jam.grooveId);
   const selected = useMusicStore((s) => s.jam.progressionId);
   const custom = useMusicStore((s) => s.customProgressions);
   const { playing, bar } = useMusicStore((s) => s.jam);
@@ -29,6 +35,27 @@ export function ProgressionPicker() {
   };
   const active = playing && bar >= 0 ? bar % bars.length : -1;
 
+  // Link com tom, progressão, andamento e estilo; quem abre ganha a progressão já selecionada.
+  const share = async () => {
+    const code = encodeShare({
+      key,
+      progression: { ...progression, name: t(progression.name) },
+      bpm,
+      grooveId,
+    });
+    const url = `${location.origin}${TAB_PATHS[lang].jam}?s=${code}`;
+    try {
+      if (navigator.share) await navigator.share({ title: t(progression.name), url });
+      else {
+        await navigator.clipboard.writeText(url);
+        toast.success(t('Link copiado.', 'Link copied.'));
+      }
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError')
+        toast.error(t('Não consegui copiar o link.', "Couldn't copy the link."));
+    }
+  };
+
   return (
     <div className="progressions">
       <ol className="bars" aria-label={t('Compassos da progressão', 'Bars of the progression')}>
@@ -44,6 +71,10 @@ export function ProgressionPicker() {
           </li>
         ))}
       </ol>
+
+      <button type="button" className="link-button" onClick={() => void share()}>
+        {t('Compartilhar esta progressão', 'Share this progression')}
+      </button>
 
       <div
         className="progression-list"

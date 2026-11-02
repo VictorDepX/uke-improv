@@ -924,7 +924,7 @@ input[type='range'] {
 }
 
 .fb[data-orientation='vertical'] .fb-fret-num[data-inlay]::after {
-  left: 2px;
+  inset-inline-start: 2px;
 }
 
 .fb-cell {
@@ -959,7 +959,7 @@ input[type='range'] {
 }
 
 .fb[data-orientation='horizontal'] .fb-cell::after {
-  right: -1px;
+  inset-inline-end: -1px;
   top: 0;
   bottom: 0;
   width: 3px;
@@ -967,7 +967,7 @@ input[type='range'] {
 
 .fb[data-orientation='horizontal'] .fb-cell[data-fret='open']::after {
   width: 6px;
-  right: -3px;
+  inset-inline-end: -3px;
   background: var(--nut);
 }
 
@@ -2198,7 +2198,7 @@ input[type='range'] {
 /* Janela longe da pestana: o traste depois das cordas soltas vira tracejado (casas puladas). */
 .fb[data-windowed][data-orientation='horizontal'] .fb-cell[data-fret='open']::after {
   width: 3px;
-  right: -1px;
+  inset-inline-end: -1px;
   background: repeating-linear-gradient(to bottom, var(--fret) 0 5px, transparent 5px 10px);
 }
 
@@ -3616,4 +3616,49 @@ input[type='range'] {
   .pulse.on {
     animation-duration: 0.4s;
   }
+}
+
+/* Canhoto: o braço espelhado (casas da direita para a esquerda; no celular, cordas invertidas). */
+:root[data-hand='left'] .fb-scroll {
+  direction: rtl; /* a rolagem também começa do lado da mão */
+}
+:root[data-hand='left'] .fb > * {
+  direction: ltr;
+}
+/* As casas continuam em ltr (texto como C#), então o traste vai para o outro lado à mão. */
+:root[data-hand='left'] .fb[data-orientation='horizontal'] .fb-cell::after {
+  inset-inline-end: auto;
+  inset-inline-start: -1px;
+}
+:root[data-hand='left'] .fb[data-orientation='horizontal'] .fb-cell[data-fret='open']::after {
+  inset-inline-start: -3px;
+}
+
+/* Boas-vindas da primeira visita: cartão fixo no canto, sem empurrar o conteúdo. */
+.welcome {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  width: min(380px, calc(100vw - 32px));
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+.welcome h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+}
+.welcome ol {
+  margin: 0 0 10px;
+  padding-left: 1.2em;
+  display: grid;
+  gap: 6px;
+  font-size: 0.875rem;
+}
+.welcome .button {
+  margin-top: 6px;
 }

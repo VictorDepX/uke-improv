@@ -31,6 +31,8 @@ async function openTab(user: ReturnType<typeof userEvent.setup>, name: string) {
 describe('App', () => {
   beforeEach(() => {
     useMusicStore.setState(initial, true);
+    // As boas-vindas são um diálogo; aqui elas já foram vistas.
+    useMusicStore.getState().updateSettings({ onboarded: true });
     window.history.replaceState(null, '', '/');
   });
 

@@ -8,8 +8,9 @@ import { isLang, type Lang } from '@/i18n/lang';
 import type { EarMode, EarScore } from './ear';
 import { EXERCISES, type ExerciseId } from './exercises';
 import { FRET_COUNT, MAX_CAPO, TUNINGS } from './fretboard';
-import { SCALES } from './music';
-import { METERS } from './rhythm';
+import { numeralToChord } from './harmony';
+import { SCALES, isValidChord } from './music';
+import { METERS, parseBar } from './rhythm';
 import type {
   ChordExtras,
   KeyContext,
@@ -66,6 +67,8 @@ export interface SettingsShape {
   highContrast: boolean;
   colorblind: boolean;
   pulse: boolean;
+  leftHanded: boolean;
+  onboarded: boolean;
 }
 
 /** Só os campos de ajuste válidos; os outros ficam com o valor atual. */
@@ -77,7 +80,7 @@ export function sanitizeSettings(v: unknown): Partial<SettingsShape> {
   if (v.lang === null || isLang(v.lang)) out.lang = v.lang;
   if (oneOf(v.noteNames, NOTE_NAMES)) out.noteNames = v.noteNames;
   if (oneOf(v.theme, THEMES)) out.theme = v.theme;
-  for (const k of ['highContrast', 'colorblind', 'pulse'] as const)
+  for (const k of ['highContrast', 'colorblind', 'pulse', 'leftHanded', 'onboarded'] as const)
     if (typeof v[k] === 'boolean') out[k] = v[k];
   if (typeof v.arpeggio === 'boolean') out.arpeggio = v.arpeggio;
   if (typeof v.shapes === 'boolean') out.shapes = v.shapes;
@@ -118,6 +121,18 @@ export function sanitizeSettings(v: unknown): Partial<SettingsShape> {
 }
 
 /** Progressões próprias válidas, no máximo LIMITS.progressions; as inválidas saem. */
+/** Compasso de numerais que o app sabe tocar ("ii V7"); um inválido quebraria a base. */
+function validBar(bar: string): boolean {
+  try {
+    const parts = parseBar(bar);
+    // Grafia explícita ("VII:m7b5") aceita qualquer qualidade; o acorde resultante decide.
+    const c = { tonic: 'C', scale: 'major' } as const;
+    return parts.length > 0 && parts.every((n) => isValidChord(numeralToChord(n, c)));
+  } catch {
+    return false;
+  }
+}
+
 export function sanitizeProgressions(v: unknown): Progression[] {
   if (!Array.isArray(v)) return [];
   const out: Progression[] = [];
@@ -130,7 +145,7 @@ export function sanitizeProgressions(v: unknown): Progression[] {
       !Array.isArray(numerals) ||
       numerals.length === 0 ||
       numerals.length > LIMITS.barsPerProgression ||
-      !numerals.every((n) => shortText(n, LIMITS.numeralLength))
+      !numerals.every((n) => shortText(n, LIMITS.numeralLength) && validBar(n))
     )
       continue;
     const prog: Progression = {

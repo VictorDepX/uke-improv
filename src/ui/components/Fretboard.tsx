@@ -130,9 +130,11 @@ export const Fretboard = memo(function Fretboard({
       return;
     }
     // Passo em [casa, corda] por seta; no braço vertical as casas correm para baixo.
+    // Canhoto (braço espelhado por direction: rtl): esquerda e direita trocam de sentido.
+    const flip = getComputedStyle(e.currentTarget).direction === 'rtl' ? -1 : 1;
     const steps: Record<string, [number, number]> = vertical
-      ? { ArrowDown: [1, 0], ArrowUp: [-1, 0], ArrowRight: [0, 1], ArrowLeft: [0, -1] }
-      : { ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowUp: [0, -1] };
+      ? { ArrowDown: [1, 0], ArrowUp: [-1, 0], ArrowRight: [0, flip], ArrowLeft: [0, -flip] }
+      : { ArrowRight: [flip, 0], ArrowLeft: [-flip, 0], ArrowDown: [0, 1], ArrowUp: [0, -1] };
     const jump: Record<string, number> = { Home: -Infinity, End: Infinity };
     const step = steps[e.key];
     if (!step && !(e.key in jump)) return;

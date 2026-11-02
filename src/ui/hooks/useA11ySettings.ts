@@ -6,6 +6,7 @@ export function useA11ySettings(): void {
   const theme = useMusicStore((s) => s.settings.theme);
   const highContrast = useMusicStore((s) => s.settings.highContrast);
   const colorblind = useMusicStore((s) => s.settings.colorblind);
+  const leftHanded = useMusicStore((s) => s.settings.leftHanded);
   useEffect(() => {
     const d = document.documentElement.dataset;
     if (theme === 'auto') delete d.theme;
@@ -14,7 +15,9 @@ export function useA11ySettings(): void {
     else delete d.contrast;
     if (colorblind) d.palette = 'colorblind';
     else delete d.palette;
-  }, [theme, highContrast, colorblind]);
+    if (leftHanded) d.hand = 'left';
+    else delete d.hand;
+  }, [theme, highContrast, colorblind, leftHanded]);
 
   // Pulso: a cada tempo da base, vibra (onde houver) e pisca a borda da tela.
   useEffect(

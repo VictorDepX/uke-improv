@@ -24,6 +24,9 @@ import {
 } from './routes';
 import { useAccountToasts } from './hooks/useAccountToasts';
 import { useA11ySettings } from './hooks/useA11ySettings';
+import { useShortcuts } from './hooks/useShortcuts';
+import { useSharedLink } from './hooks/useSharedLink';
+import { Welcome } from './components/Welcome';
 
 // Abas fora da inicial e o modo prática vêm em pacotes separados, baixados ao abrir.
 const PracticeMode = lazy(() =>
@@ -70,6 +73,8 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
   const shapes = useMusicStore((s) => s.settings.shapes);
   const updateSettings = useMusicStore((s) => s.updateSettings);
   useJamSync();
+  useSharedLink();
+  useShortcuts(useCallback(() => setPracticeOpen(true), []));
   useAccountToasts();
   // Tocando, a tela não pode apagar: celular na estante, mãos no uke.
   useWakeLock(practiceOpen || jamPlaying);
@@ -219,6 +224,7 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
           </Suspense>
         ) : null}
         <Toaster />
+        <Welcome />
         {pulse ? <div id="pulse" className="pulse" aria-hidden="true" /> : null}
       </div>
     </LangProvider>

@@ -31,6 +31,7 @@ Assistente de improviso e harmonia para ukulele. Escolha o tom e o acorde atual,
 | **Conta (opcional)**    | E-mail e senha. Ajustes, progressões próprias e placar sincronizam entre aparelhos. Sem conta, tudo fica no aparelho.                                                                                                                   |
 | **Idiomas**             | Português e inglês em todo o app (`/` e `/en`), com seletor no topo e nos Ajustes. Notas em letras (C D E) ou Dó Ré Mi.                                                                                                                 |
 | **Acessibilidade**      | Braço navegável pelas setas (Enter toca, I explica), tema claro/escuro, alto contraste, paleta para daltonismo, pulso da base visível e na vibração, fontes que seguem o tamanho do navegador. Testes com axe-core em todas as páginas. |
+| **Atalhos e extras**    | Boas-vindas na primeira visita; atalhos (espaço toca a base, P modo prática, 1–7 acordes, ? lista); modo canhoto; link para compartilhar a progressão com tom, andamento e estilo; gravações em WAV; aviso de versão nova.              |
 
 ## Começar
 

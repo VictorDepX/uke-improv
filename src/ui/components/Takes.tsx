@@ -1,3 +1,4 @@
+import { blobToWav } from '@/audio/engine/wav';
 import { toast } from '../toast';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { buildNoteContext } from '@/core/classify';
@@ -51,16 +52,26 @@ function TakePlayer({ take, onRemove }: { take: Take; onRemove: () => void }) {
     setTime(at);
   };
 
-  const download = () => {
+  const save = (href: string, ext: string) => {
     const a = document.createElement('a');
-    a.href = take.url;
-    const ext = take.blob.type.includes('mp4')
-      ? 'm4a'
-      : take.blob.type.includes('ogg')
-        ? 'ogg'
-        : 'webm';
+    a.href = href;
     a.download = `improviso-${new Date(take.createdAt).toISOString().slice(0, 16).replace(/[:T]/g, '-')}.${ext}`;
     a.click();
+  };
+  const download = () =>
+    save(
+      take.url,
+      take.blob.type.includes('mp4') ? 'm4a' : take.blob.type.includes('ogg') ? 'ogg' : 'webm',
+    );
+  // WAV abre em qualquer editor de áudio; o arquivo original é menor.
+  const downloadWav = async () => {
+    try {
+      const url = URL.createObjectURL(await blobToWav(take.blob));
+      save(url, 'wav');
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    } catch {
+      toast.error(t('Não consegui converter para WAV.', "Couldn't convert to WAV."));
+    }
   };
 
   return (
@@ -84,6 +95,11 @@ function TakePlayer({ take, onRemove }: { take: Take; onRemove: () => void }) {
           // A página avulsa (artifact) não pode oferecer download de arquivo.
           <button type="button" className="link-button" onClick={download}>
             {t('Baixar', 'Download')}
+          </button>
+        ) : null}
+        {__PWA__ ? (
+          <button type="button" className="link-button" onClick={() => void downloadWav()}>
+            {t('Baixar WAV', 'Download WAV')}
           </button>
         ) : null}
         <button type="button" className="link-button" onClick={onRemove}>

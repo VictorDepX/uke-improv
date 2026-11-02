@@ -93,6 +93,10 @@ export interface Settings {
   colorblind: boolean;
   /** Tempo da base também na vibração e num piscar da borda da tela. */
   pulse: boolean;
+  /** Braço espelhado para quem toca com a mão esquerda nas cordas. */
+  leftHanded: boolean;
+  /** Já viu (ou fechou) as boas-vindas. */
+  onboarded: boolean;
 }
 
 export interface JamState {
@@ -251,6 +255,8 @@ export const useMusicStore = create<MusicState>()(
         highContrast: false,
         colorblind: false,
         pulse: false,
+        leftHanded: false,
+        onboarded: false,
       },
       customProgressions: [],
       jam: {
