@@ -24,6 +24,7 @@ import {
 } from './routes';
 import { useAccountToasts } from './hooks/useAccountToasts';
 import { useA11ySettings } from './hooks/useA11ySettings';
+import { HUB_PATH } from '@/guides/links';
 import { useShortcuts } from './hooks/useShortcuts';
 import { useSharedLink } from './hooks/useSharedLink';
 import { Welcome } from './components/Welcome';
@@ -33,7 +34,9 @@ const PracticeMode = lazy(() =>
   import('./components/practice/PracticeMode').then((m) => ({ default: m.PracticeMode })),
 );
 
-const NAV_TABS = TABS.filter((t: TabDef) => !t.hidden);
+// Ordem do menu: tocar (Explorar, Jam, Cifra), ferramentas (Afinador, Ouvido), Ajustes.
+const NAV_ORDER: TabId[] = ['explorar', 'jam', 'cifra', 'afinador', 'ouvido', 'ajustes'];
+const NAV_TABS = NAV_ORDER.map((id) => TABS.find((t) => t.id === id)!);
 
 function PageSkeleton() {
   const t = useT();
@@ -100,6 +103,13 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
       if (hash !== want) history.replaceState(null, '', `${pathname}${search}${want}`);
     }
   }, [tab, lang, names]);
+
+  // No celular o menu rola de lado: a aba aberta fica sempre à vista.
+  useEffect(() => {
+    document
+      .querySelector('.tab[aria-current="page"]')
+      ?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+  }, [tab]);
 
   // Voltar e avançar do navegador trocam de aba (e de idioma, se o endereço mudar).
   useEffect(() => {
@@ -181,6 +191,9 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
                   {def.label[lang]}
                 </a>
               ))}
+              <a className="tab" href={HUB_PATH[lang]}>
+                {t('Guias', 'Guides')}
+              </a>
             </nav>
             <a
               className="lang-switch"
@@ -199,8 +212,7 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
         </header>
         <LangHint lang={lang} onSwitch={switchLang} />
         <main className="main">
-          {/* Nas abas do menu o título fica para leitores e buscadores; nas páginas avulsas, aparece. */}
-          <h1 className={current.hidden ? 'page-title' : 'sr-only'}>{current.h1[lang]}</h1>
+          <h1 className="sr-only">{current.h1[lang]}</h1>
           <Suspense fallback={<PageSkeleton />}>
             {tab === 'explorar' ? (
               <ExplorePage />

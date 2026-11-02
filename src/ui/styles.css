@@ -3530,14 +3530,6 @@ input[type='range'] {
   max-width: 100%;
 }
 
-/* Título das páginas avulsas do app (afinador, analisador de cifra). */
-.page-title {
-  margin: 4px 0 14px;
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  line-height: 1.2;
-}
-
 /* Acordes com diagrama nas páginas de escala e de campo harmônico. */
 .guide-chords {
   list-style: none;
@@ -3661,4 +3653,43 @@ input[type='range'] {
 }
 .welcome .button {
   margin-top: 6px;
+}
+
+/*
+ * Menu com 7 itens: abaixo de ~1320 px ele desce para uma linha própria; no celular essa linha
+ * rola na horizontal (a aba aberta é trazida para a vista).
+ */
+@media (max-width: 1319px) and (min-width: 761px) and (min-height: 541px) {
+  .topbar-inner {
+    grid-template-columns: auto 1fr auto auto;
+    grid-template-areas:
+      'brand key practice lang'
+      'tabs tabs tabs tabs';
+  }
+  .tabs {
+    justify-self: start;
+  }
+}
+@media (max-width: 760px), (max-height: 540px) {
+  .topbar-inner {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'brand toggle practice lang'
+      'tabs tabs tabs tabs'
+      'key key key key';
+  }
+  .tabs {
+    justify-self: stretch;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .tab {
+    flex: 1 0 auto;
+    text-align: center;
+    white-space: nowrap;
+  }
 }
