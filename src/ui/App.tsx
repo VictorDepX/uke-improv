@@ -23,6 +23,7 @@ import {
   type TabId,
 } from './routes';
 import { useAccountToasts } from './hooks/useAccountToasts';
+import { useA11ySettings } from './hooks/useA11ySettings';
 
 // Abas fora da inicial e o modo prática vêm em pacotes separados, baixados ao abrir.
 const PracticeMode = lazy(() =>
@@ -72,6 +73,8 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
   useAccountToasts();
   // Tocando, a tela não pode apagar: celular na estante, mãos no uke.
   useWakeLock(practiceOpen || jamPlaying);
+  useA11ySettings();
+  const pulse = useMusicStore((s) => s.settings.pulse);
 
   // Título, descrição e idioma da página; o endereço acompanha (link antigo com # vira o
   // caminho novo, e trocar de idioma troca o caminho).
@@ -216,6 +219,7 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
           </Suspense>
         ) : null}
         <Toaster />
+        {pulse ? <div id="pulse" className="pulse" aria-hidden="true" /> : null}
       </div>
     </LangProvider>
   );

@@ -20,8 +20,8 @@ export const EXERCISES: readonly ExerciseDef[] = [
     id: 'repouso',
     title: tx('Só repouso', 'Rest notes only'),
     goal: tx(
-      'Toque só notas do acorde atual (as verdes). Troque de acorde quando quiser.',
-      'Play only notes of the current chord (the green ones). Change chords whenever you like.',
+      'Toque só notas do acorde atual (repouso). Troque de acorde quando quiser.',
+      'Play only notes of the current chord (rest notes). Change chords whenever you like.',
     ),
     target: 8,
     unit: tx('notas do acorde', 'chord tones'),
@@ -30,8 +30,8 @@ export const EXERCISES: readonly ExerciseDef[] = [
     id: 'resolva',
     title: tx('Resolva a tensão', 'Resolve the tension'),
     goal: tx(
-      'Toque uma tensão (laranja) e, logo depois, uma nota do acorde a até um tom de distância.',
-      'Play a tension note (orange), then a chord tone no more than a whole step away.',
+      'Toque uma tensão e, logo depois, uma nota do acorde a até um tom de distância.',
+      'Play a tension note, then a chord tone no more than a whole step away.',
     ),
     target: 4,
     unit: tx('resoluções', 'resolutions'),
@@ -165,8 +165,8 @@ function evaluate(s: ExerciseState, note: ExerciseNote): ExerciseState {
             misses: s.misses + 1,
             feedback: miss(
               tx(
-                `${n.name} ${CLASS_TEXT[n.cls].pt}. Procure uma verde.`,
-                `${n.name} ${CLASS_TEXT[n.cls].en}. Look for a green one.`,
+                `${n.name} ${CLASS_TEXT[n.cls].pt}. Procure uma de repouso.`,
+                `${n.name} ${CLASS_TEXT[n.cls].en}. Look for a rest note.`,
               ),
             ),
           };
@@ -221,9 +221,7 @@ function evaluate(s: ExerciseState, note: ExerciseNote): ExerciseState {
           }
         : {
             ...s,
-            feedback: info(
-              tx('Comece por uma tensão (laranja).', 'Start with a tension note (orange).'),
-            ),
+            feedback: info(tx('Comece por uma nota de tensão.', 'Start with a tension note.')),
           };
     }
 
@@ -313,8 +311,8 @@ function evaluate(s: ExerciseState, note: ExerciseNote): ExerciseState {
             misses: s.misses + 1,
             feedback: miss(
               tx(
-                `${n.name} ${CLASS_TEXT[n.cls].pt} em ${n.chord}. Mire uma verde.`,
-                `${n.name} ${CLASS_TEXT[n.cls].en} on ${n.chord}. Aim for a green one.`,
+                `${n.name} ${CLASS_TEXT[n.cls].pt} em ${n.chord}. Mire uma de repouso.`,
+                `${n.name} ${CLASS_TEXT[n.cls].en} on ${n.chord}. Aim for a rest note.`,
               ),
             ),
           };

@@ -112,13 +112,13 @@ export function takeAdvice(s: TakeSummary): Txt {
     );
   if (s.tensions > 0 && s.resolved / s.tensions < 0.5)
     return tx(
-      'Boa parte das tensões ficou sem resolver: depois de uma laranja, desça ou suba para uma verde.',
-      'Many tensions were left unresolved: after an orange note, step down or up to a green one.',
+      'Boa parte das tensões ficou sem resolver: depois de uma tensão, desça ou suba para uma nota de repouso.',
+      'Many tensions were left unresolved: after a tension note, step down or up to a rest note.',
     );
   if (s.chordTones < 0.3)
     return tx(
-      'Pouca nota do acorde: termine as frases numa verde para soar mais resolvido.',
-      'Few chord tones: end your phrases on a green note to sound more resolved.',
+      'Pouca nota do acorde: termine as frases numa nota de repouso para soar mais resolvido.',
+      'Few chord tones: end your phrases on a rest note to sound more resolved.',
     );
   return tx(
     'Frases dentro do tom e tensões resolvidas. Tente variar o ritmo na próxima.',

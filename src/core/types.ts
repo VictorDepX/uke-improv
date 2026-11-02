@@ -23,6 +23,7 @@ export type TuningName = 'GCEA' | 'GCEA-lowG';
 
 export type LabelMode = 'note' | 'degree' | 'interval';
 export type NoteNames = 'letters' | 'solfege';
+export type Theme = 'auto' | 'light' | 'dark';
 
 export interface KeyContext {
   tonic: string;

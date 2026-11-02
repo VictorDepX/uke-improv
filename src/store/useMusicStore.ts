@@ -28,6 +28,7 @@ import type {
   KeyContext,
   LabelMode,
   NoteNames,
+  Theme,
   Progression,
   ScaleName,
   ScoreWeights,
@@ -84,6 +85,14 @@ export interface Settings {
   lang: Lang | null;
   /** Nomes das notas na tela: letras (C D E) ou Dó Ré Mi. */
   noteNames: NoteNames;
+  /** Claro, escuro ou o do sistema. */
+  theme: Theme;
+  /** Texto secundário e bordas mais fortes (também liga sozinho com o ajuste do sistema). */
+  highContrast: boolean;
+  /** Cores das notas que se distinguem com daltonismo (azul, amarelo, vermelhão). */
+  colorblind: boolean;
+  /** Tempo da base também na vibração e num piscar da borda da tela. */
+  pulse: boolean;
 }
 
 export interface JamState {
@@ -238,6 +247,10 @@ export const useMusicStore = create<MusicState>()(
         micCalibration: null,
         lang: null,
         noteNames: 'letters',
+        theme: 'auto',
+        highContrast: false,
+        colorblind: false,
+        pulse: false,
       },
       customProgressions: [],
       jam: {

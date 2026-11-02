@@ -1,4 +1,12 @@
-import { memo, useMemo, useRef, type CSSProperties } from 'react';
+import {
+  memo,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+} from 'react';
 import { classifyNote, type NoteContext } from '@/core/classify';
 import {
   FRET_COUNT,
@@ -104,6 +112,45 @@ export const Fretboard = memo(function Fretboard({
   // Horizontal: 1ª corda (A) em cima, como tablatura. Vertical: G à esquerda, como diagrama.
   const strings = vertical ? [0, 1, 2, 3] : [3, 2, 1, 0];
 
+  // Teclado: o braço é uma parada só no Tab; as setas andam entre as casas (tabindex móvel).
+  const [focusPos, setFocusPos] = useState({ string: strings[0]!, fret: frets[0]! });
+  const tabStop = frets.includes(focusPos.fret)
+    ? focusPos
+    : { string: strings[0]!, fret: frets[0]! };
+  const hintId = useId();
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    const el = e.target as HTMLElement;
+    const string = Number(el.dataset.string);
+    const fret = Number(el.dataset.fretNum);
+    if (Number.isNaN(string) || Number.isNaN(fret)) return;
+    if (e.key === 'i' && onInspect) {
+      e.preventDefault();
+      const pos = byString[string]!.find((p) => p.fret === fret);
+      if (pos) onInspect(pos);
+      return;
+    }
+    // Passo em [casa, corda] por seta; no braço vertical as casas correm para baixo.
+    const steps: Record<string, [number, number]> = vertical
+      ? { ArrowDown: [1, 0], ArrowUp: [-1, 0], ArrowRight: [0, 1], ArrowLeft: [0, -1] }
+      : { ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowUp: [0, -1] };
+    const jump: Record<string, number> = { Home: -Infinity, End: Infinity };
+    const step = steps[e.key];
+    if (!step && !(e.key in jump)) return;
+    e.preventDefault();
+    const clamp = (i: number, len: number) => Math.max(0, Math.min(len - 1, i));
+    const fi = step
+      ? clamp(frets.indexOf(fret) + step[0], frets.length)
+      : jump[e.key]! < 0
+        ? 0
+        : frets.length - 1;
+    const si = step ? clamp(strings.indexOf(string) + step[1], 4) : strings.indexOf(string);
+    const next = { string: strings[si]!, fret: frets[fi]! };
+    setFocusPos(next);
+    e.currentTarget
+      .querySelector<HTMLElement>(`[data-string="${next.string}"][data-fret-num="${next.fret}"]`)
+      ?.focus();
+  };
+
   const cell = (pos: FretPosition) => {
     const cls: NoteClass = classifyNote(pos.chroma, ctx);
     const r = rank.get(pos.midi);
@@ -127,6 +174,10 @@ export const Fretboard = memo(function Fretboard({
         type="button"
         className="fb-cell"
         data-fret={pos.fret === 0 ? 'open' : undefined}
+        data-string={pos.string}
+        data-fret-num={pos.fret}
+        tabIndex={pos.string === tabStop.string && pos.fret === tabStop.fret ? 0 : -1}
+        onFocus={() => setFocusPos({ string: pos.string, fret: pos.fret })}
         style={style}
         onClick={() => {
           if (press.current?.fired) {
@@ -190,7 +241,15 @@ export const Fretboard = memo(function Fretboard({
         }
         role="group"
         aria-label={t('Braço do ukulele', 'Ukulele fretboard')}
+        aria-describedby={hintId}
+        onKeyDown={onKeyDown}
       >
+        <span id={hintId} className="sr-only">
+          {t(
+            'Setas andam entre as casas; Enter toca a nota; I explica a cor.',
+            'Arrow keys move between frets; Enter plays the note; I explains the color.',
+          )}
+        </span>
         <div
           className="fb-wood"
           aria-hidden="true"

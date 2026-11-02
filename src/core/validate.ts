@@ -15,6 +15,7 @@ import type {
   KeyContext,
   LabelMode,
   NoteNames,
+  Theme,
   Progression,
   ScaleName,
   ScoreWeights,
@@ -44,6 +45,7 @@ const shortText = (v: unknown, max: number): v is string =>
 
 const LABELS: readonly LabelMode[] = ['note', 'degree', 'interval'];
 const NOTE_NAMES: readonly NoteNames[] = ['letters', 'solfege'];
+const THEMES: readonly Theme[] = ['auto', 'light', 'dark'];
 const TONIC_RE = /^[A-G](#|b)?$/;
 const EAR_MODES: readonly EarMode[] = ['interval', 'quality', 'function'];
 const EXERCISE_IDS: readonly ExerciseId[] = EXERCISES.map((e) => e.id);
@@ -60,6 +62,10 @@ export interface SettingsShape {
   micCalibration: MicCalibration | null;
   lang: Lang | null;
   noteNames: NoteNames;
+  theme: Theme;
+  highContrast: boolean;
+  colorblind: boolean;
+  pulse: boolean;
 }
 
 /** Só os campos de ajuste válidos; os outros ficam com o valor atual. */
@@ -70,6 +76,9 @@ export function sanitizeSettings(v: unknown): Partial<SettingsShape> {
   if (oneOf(v.labels, LABELS)) out.labels = v.labels;
   if (v.lang === null || isLang(v.lang)) out.lang = v.lang;
   if (oneOf(v.noteNames, NOTE_NAMES)) out.noteNames = v.noteNames;
+  if (oneOf(v.theme, THEMES)) out.theme = v.theme;
+  for (const k of ['highContrast', 'colorblind', 'pulse'] as const)
+    if (typeof v[k] === 'boolean') out[k] = v[k];
   if (typeof v.arpeggio === 'boolean') out.arpeggio = v.arpeggio;
   if (typeof v.shapes === 'boolean') out.shapes = v.shapes;
   if (isInt(v.capo, 0, MAX_CAPO)) out.capo = v.capo;

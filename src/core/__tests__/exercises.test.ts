@@ -48,7 +48,7 @@ describe('só repouso', () => {
   it('a nota errada diz a classe', () => {
     const s = play('repouso', [61]);
     expect(s.feedback?.kind).toBe('miss');
-    expect(pt(s.feedback!.text)).toBe('C# está fora da escala. Procure uma verde.');
+    expect(pt(s.feedback!.text)).toBe('C# está fora da escala. Procure uma de repouso.');
   });
 
   it('conclui na meta e ignora o que vem depois', () => {

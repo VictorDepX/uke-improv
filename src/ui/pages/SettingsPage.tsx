@@ -1,6 +1,6 @@
 import { MAX_CAPO, TUNINGS, WINDOW_SIZE, maxWindowStart } from '@/core/fretboard';
 import { DEFAULT_WEIGHTS } from '@/core/suggestNotes';
-import type { LabelMode, NoteNames, ScoreWeights, TuningName } from '@/core/types';
+import type { LabelMode, NoteNames, ScoreWeights, Theme, TuningName } from '@/core/types';
 import { tx, useLang, useNames, useT, type Lang, type Txt } from '@/i18n';
 import { useMusicStore } from '@/store/useMusicStore';
 import { AccountPanel } from '../components/AccountPanel';
@@ -78,6 +78,50 @@ export function SettingsPage() {
               { value: 'solfege', label: lang === 'pt' ? 'Dó Ré Mi' : 'Do Re Mi' },
             ]}
             onChange={(noteNames: NoteNames) => update({ noteNames })}
+          />
+        </div>
+      </Panel>
+      <Panel title={t('Acessibilidade', 'Accessibility')}>
+        <div className="stack">
+          <Segmented
+            label={t('Tema', 'Theme')}
+            value={settings.theme}
+            options={[
+              { value: 'auto', label: t('Do sistema', 'System') },
+              { value: 'light', label: t('Claro', 'Light') },
+              { value: 'dark', label: t('Escuro', 'Dark') },
+            ]}
+            onChange={(theme: Theme) => update({ theme })}
+          />
+          <Toggle
+            id="set-contrast"
+            label={t('Alto contraste', 'High contrast')}
+            hint={t(
+              'Textos secundários e bordas mais fortes.',
+              'Stronger secondary text and borders.',
+            )}
+            checked={settings.highContrast}
+            onChange={(highContrast) => update({ highContrast })}
+          />
+          <Toggle
+            id="set-colorblind"
+            label={t('Cores para daltonismo', 'Colorblind-friendly colors')}
+            hint={t(
+              'Repouso azul, passagem amarelo, tensão vermelhão. As formas continuam.',
+              'Rest blue, passing yellow, tension vermilion. Shapes stay the same.',
+            )}
+            checked={settings.colorblind}
+            onChange={(colorblind) => update({ colorblind })}
+          />
+          <Toggle
+            id="set-pulse"
+            label={t('Pulso visível e na vibração', 'Visible and vibrating pulse')}
+            hint={t(
+              'Com a base tocando, a borda da tela pisca a cada tempo e o celular vibra (mais forte no 1).',
+              'With the backing track playing, the screen edge flashes on every beat and the phone vibrates (stronger on 1).',
+            )}
+            checked={settings.pulse}
+            onChange={(pulse) => update({ pulse })}
           />
         </div>
       </Panel>
