@@ -158,3 +158,13 @@ describe('exercícios', () => {
     expect(saved.state.exercise).toBeUndefined();
   });
 });
+
+describe('janela mostrada sem região escolhida (celular deitado)', () => {
+  it('as setas andam a janela que segue a mão, sem mudar o ajuste do usuário', () => {
+    useMusicStore.setState(useMusicStore.getInitialState(), true);
+    expect(useMusicStore.getState().settings.fretWindow).toBeNull();
+    useMusicStore.getState().shiftWindow(1, true);
+    expect(useMusicStore.getState().autoWindowStart).toBe(2);
+    expect(useMusicStore.getState().settings.fretWindow).toBeNull();
+  });
+});

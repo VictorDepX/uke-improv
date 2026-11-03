@@ -103,3 +103,11 @@ describe('numeral explícito', () => {
     expect(numeralToChord('VII:m7b5', { tonic: 'F', scale: 'major' })).toBe('Em7b5');
   });
 });
+
+describe('grafia dos modos', () => {
+  it('em C mixolídio o bVII é Bb, não A#', () => {
+    expect(diatonicChords({ tonic: 'C', scale: 'mixolydian' }).map((d) => d.symbol)).toContain(
+      'Bb',
+    );
+  });
+});

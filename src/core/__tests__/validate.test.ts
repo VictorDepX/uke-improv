@@ -101,3 +101,10 @@ describe('validação de dados externos', () => {
     });
   });
 });
+
+describe('janela do braço salva por versões antigas (15 casas)', () => {
+  it('uma janela que começava além da última possível volta para a última', () => {
+    const out = sanitizeSettings({ fretWindow: 11 });
+    expect(out.fretWindow).toBe(8);
+  });
+});

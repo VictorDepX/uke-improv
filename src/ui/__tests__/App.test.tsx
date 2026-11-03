@@ -275,6 +275,23 @@ describe('App', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('"Resolva a tensão" avisa quando o acorde atual não tem nota de tensão', async () => {
+    const user = userEvent.setup();
+    act(() => useMusicStore.getState().setTonic('A'));
+    act(() => useMusicStore.getState().setScale('dorian'));
+    render(<App />);
+    expect(document.querySelectorAll('.page-explore .fb-dot[data-cls="tensao"]')).toHaveLength(0);
+    await user.click(screen.getByRole('radio', { name: /Resolva a tensão/ }));
+    const bar = screen.getByRole('region', { name: 'Exercício: Resolva a tensão' });
+    expect(bar).toHaveTextContent(/não há nota de tensão/);
+    // Um acorde com sétima sempre tem: o aviso some e as tensões aparecem.
+    await user.click(screen.getByRole('radio', { name: /^IVD$/ }));
+    expect(bar).not.toHaveTextContent(/não há nota de tensão/);
+    expect(
+      document.querySelectorAll('.page-explore .fb-dot[data-cls="tensao"]').length,
+    ).toBeGreaterThan(0);
+  });
+
   it('com a região automática, o braço mostra 5 casas e anda com as setas', async () => {
     const user = userEvent.setup();
     useMusicStore.getState().updateSettings({ fretWindow: 'auto' });

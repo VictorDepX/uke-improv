@@ -158,7 +158,8 @@ export interface MusicState {
   /** Registra uma nota. Sem `fret` (microfone), usa a posição mais próxima da mão. */
   registerNote: (midi: number, pos?: HandPosition) => void;
   /** Desloca a janela de casas (fixa ou automática). */
-  shiftWindow: (delta: number) => void;
+  /** Com `followView`, a tela mostra a janela que segue a mão mesmo sem região escolhida. */
+  shiftWindow: (delta: number, followView?: boolean) => void;
   clearNotes: () => void;
   updateSettings: (patch: Partial<Settings>) => void;
   setWeights: (patch: Partial<ScoreWeights>) => void;
@@ -327,10 +328,10 @@ export const useMusicStore = create<MusicState>()(
             autoWindowStart: followWindow(s.autoWindowStart, pos.fret, capo),
           };
         }),
-      shiftWindow: (delta) =>
+      shiftWindow: (delta, followView = false) =>
         set((s) => {
           const { fretWindow: w, capo } = s.settings;
-          if (w === 'auto')
+          if (w === 'auto' || (w === null && followView))
             return { autoWindowStart: clampWindowStart(s.autoWindowStart + delta, capo) };
           if (typeof w === 'number')
             return { settings: { ...s.settings, fretWindow: clampWindowStart(w + delta, capo) } };

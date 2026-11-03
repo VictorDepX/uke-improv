@@ -36,12 +36,22 @@ export function isAvoidFourth(chroma: Chroma, ctx: NoteContext): boolean {
   return ctx.chord.isMajor && mod12(chroma - ctx.chord.root) === 5;
 }
 
+/**
+ * Nota a evitar: da escala, meio tom acima de uma nota do acorde (a 4ª sobre acorde maior, a 6ª
+ * menor sobre acorde menor, a 2ª menor sobre o iii). Choca com a vizinha e pede para descer.
+ * Devolve a nota do acorde logo abaixo, ou null.
+ */
+export function avoidTarget(chroma: Chroma, ctx: NoteContext): Chroma | null {
+  const below = mod12(chroma - 1);
+  return ctx.scale.has(mod12(chroma)) && ctx.chord.stable.includes(below) ? below : null;
+}
+
 export function classifyNote(chroma: Chroma, ctx: NoteContext): NoteClass {
   const c = mod12(chroma);
   if (ctx.chord.stable.includes(c)) return 'repouso';
   if (ctx.chord.seventh === c) return 'tensao';
   if (!ctx.scale.has(c)) return 'fora';
-  if (isLeadingTone(c, ctx) || isAvoidFourth(c, ctx)) return 'tensao';
+  if (isLeadingTone(c, ctx) || avoidTarget(c, ctx) !== null) return 'tensao';
   return 'passagem';
 }
 

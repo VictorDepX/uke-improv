@@ -1,7 +1,9 @@
 import { EXERCISES, exerciseDef, exerciseProgress, type ExerciseId } from '@/core/exercises';
 import { useMusicStore } from '@/store/useMusicStore';
 import { useToggleJam } from '../hooks/useJamSync';
-import { useT } from '@/i18n';
+import { useNames, useT } from '@/i18n';
+import { classifyNote } from '@/core/classify';
+import { useNoteContext } from '@/store/selectors';
 import { Segmented, Select } from './controls';
 import { Icon } from './Icon';
 
@@ -16,6 +18,10 @@ export function ExerciseBar({ compact = false }: { compact?: boolean }) {
   const start = useMusicStore((s) => s.startExercise);
   const playing = useMusicStore((s) => s.jam.playing);
   const toggleJam = useToggleJam();
+  const ctx = useNoteContext();
+  const current = useMusicStore((s) => s.currentChord);
+  const arpeggio = useMusicStore((s) => s.settings.arpeggio);
+  const n = useNames();
 
   if (!exercise && compact) return null;
 
@@ -63,6 +69,12 @@ export function ExerciseBar({ compact = false }: { compact?: boolean }) {
   const def = exerciseDef(exercise.id);
   const progress = Math.min(exerciseProgress(exercise), def.target);
   const fb = exercise.feedback;
+  // Pentatônicas, acordes dóricos e o "Só arpejo" podem não ter tensão sobre o acorde atual:
+  // sem aviso, "Resolva a tensão" pareceria quebrado.
+  const noTension =
+    exercise.id === 'resolva' &&
+    !exercise.done &&
+    !Array.from({ length: 12 }, (_, c) => c).some((c) => classifyNote(c, ctx) === 'tensao');
   const askJam = def.needsJam && !playing && !exercise.done;
 
   return (
@@ -119,6 +131,19 @@ export function ExerciseBar({ compact = false }: { compact?: boolean }) {
       <p className="exercise-feedback" data-kind={fb?.kind} aria-live="polite">
         {t(fb?.text ?? def.goal)}
       </p>
+      {noTension ? (
+        <p className="notice exercise-notice" role="status">
+          {arpeggio
+            ? t(
+                `Com "Só arpejo" ligado, sobre ${n(current)} não há nota de tensão. Desligue em Ajustes ou escolha um acorde com sétima.`,
+                `With "Arpeggio only" on, ${n(current)} has no tension note. Turn it off in Settings or pick a seventh chord.`,
+              )
+            : t(
+                `Sobre ${n(current)}, nesta escala, não há nota de tensão. Escolha outro acorde do tom (os de sétima sempre têm) ou outra escala.`,
+                `Over ${n(current)}, in this scale, there is no tension note. Pick another chord in the key (seventh chords always have one) or another scale.`,
+              )}
+        </p>
+      ) : null}
     </section>
   );
 }

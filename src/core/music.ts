@@ -47,6 +47,9 @@ export function modeOf(scale: ScaleName): Mode {
 }
 
 export function prefersFlats(key: KeyContext): boolean {
+  // Mixolídio usa a armadura do tom uma 4ª acima (C mixolídio = F maior: Bb, não A#).
+  if (key.scale === 'mixolydian')
+    return FLAT_TONICS.has(FLAT_NAMES[mod12(chromaOf(key.tonic) + 5)]!);
   return modeOf(key.scale) === 'major'
     ? FLAT_TONICS.has(key.tonic)
     : FLAT_MINOR_TONICS.has(key.tonic);

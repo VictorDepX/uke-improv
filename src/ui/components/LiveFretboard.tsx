@@ -60,7 +60,7 @@ export function LiveFretboard({
             className="icon-button"
             aria-label={t('Casas mais graves', 'Lower frets')}
             disabled={windowStart <= 1}
-            onClick={() => shiftWindow(-1)}
+            onClick={() => shiftWindow(-1, auto)}
           >
             ‹
           </button>
@@ -74,7 +74,7 @@ export function LiveFretboard({
             className="icon-button"
             aria-label={t('Casas mais agudas', 'Higher frets')}
             disabled={windowStart >= maxWindowStart(capo)}
-            onClick={() => shiftWindow(1)}
+            onClick={() => shiftWindow(1, auto)}
           >
             ›
           </button>

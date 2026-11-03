@@ -1,5 +1,11 @@
 import { nm, tx, type Txt } from '@/i18n/lang';
-import { classifyNote, isAvoidFourth, isLeadingTone, type NoteContext } from './classify';
+import {
+  avoidTarget,
+  classifyNote,
+  isAvoidFourth,
+  isLeadingTone,
+  type NoteContext,
+} from './classify';
 import { chromaName, mod12 } from './music';
 import { tendencyOf } from './suggestNotes';
 import type { Chroma, NoteClass } from './types';
@@ -110,6 +116,12 @@ export function explainNote(
     why = tx(
       `É a 4ª sobre um acorde maior: choca com a 3ª (${third}). Use de passagem e resolva descendo.`,
       `It is the 4th over a major chord: it clashes with the 3rd (${third}). Use it in passing and resolve down.`,
+    );
+  } else if (avoidTarget(c, ctx) !== null) {
+    const tone = n(avoidTarget(c, ctx)!);
+    why = tx(
+      `Fica meio tom acima de ${tone}, nota de ${chord}: as duas chocam. Use de passagem e resolva descendo para ${tone}.`,
+      `It sits a half step above ${tone}, a note of ${chord}: the two clash. Use it in passing and resolve down to ${tone}.`,
     );
   } else if (cls === 'passagem') {
     const down = n(nearestChordTone(c, ctx, -1));

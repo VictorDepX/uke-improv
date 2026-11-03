@@ -1,5 +1,11 @@
 import { tx, type Txt } from '@/i18n/lang';
-import { classifyNote, isAvoidFourth, isLeadingTone, type NoteContext } from './classify';
+import {
+  avoidTarget,
+  classifyNote,
+  isAvoidFourth,
+  isLeadingTone,
+  type NoteContext,
+} from './classify';
 import { mod12 } from './music';
 import type { NoteClass, NoteSuggestion, ScoreWeights } from './types';
 
@@ -52,6 +58,11 @@ export function tendencyOf(midi: number, ctx: NoteContext): Tendency | null {
     return {
       targets: [midi - 1],
       reason: tx('resolve a quarta na terça', 'resolves the fourth to the third'),
+    };
+  if (avoidTarget(c, ctx) !== null)
+    return {
+      targets: [midi - 1],
+      reason: tx('desce meio tom para a nota do acorde', 'falls a half step to the chord tone'),
     };
   if (!ctx.scale.has(c)) {
     const steps = [midi + 1, midi - 1].filter((m) => ctx.scale.has(mod12(m)));

@@ -7,7 +7,7 @@ import type { MicCalibration } from '@/audio/analysis/calibrate';
 import { isLang, type Lang } from '@/i18n/lang';
 import type { EarMode, EarScore } from './ear';
 import { EXERCISES, type ExerciseId } from './exercises';
-import { FRET_COUNT, MAX_CAPO, TUNINGS } from './fretboard';
+import { MAX_CAPO, MAX_WINDOW_START, TUNINGS } from './fretboard';
 import { numeralToChord } from './harmony';
 import { SCALES, isValidChord } from './music';
 import { METERS, parseBar } from './rhythm';
@@ -85,8 +85,9 @@ export function sanitizeSettings(v: unknown): Partial<SettingsShape> {
   if (typeof v.arpeggio === 'boolean') out.arpeggio = v.arpeggio;
   if (typeof v.shapes === 'boolean') out.shapes = v.shapes;
   if (isInt(v.capo, 0, MAX_CAPO)) out.capo = v.capo;
-  if (v.fretWindow === null || v.fretWindow === 'auto' || isInt(v.fretWindow, 0, FRET_COUNT))
-    out.fretWindow = v.fretWindow;
+  if (v.fretWindow === null || v.fretWindow === 'auto') out.fretWindow = v.fretWindow;
+  // Janelas salvas quando o braço tinha 15 casas podem passar da última possível agora.
+  else if (isInt(v.fretWindow, 1, 15)) out.fretWindow = Math.min(v.fretWindow, MAX_WINDOW_START);
   const w = v.weights;
   if (isObj(w) && ['cls', 'proximity', 'resolution', 'contour'].every((k) => isNum(w[k], 0, 10)))
     out.weights = {
