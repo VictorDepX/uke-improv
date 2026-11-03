@@ -168,3 +168,49 @@ describe('janela mostrada sem região escolhida (celular deitado)', () => {
     expect(useMusicStore.getState().settings.fretWindow).toBeNull();
   });
 });
+
+describe('base ligada por um exercício ou pelo modo prática', () => {
+  beforeEach(() => useMusicStore.setState(useMusicStore.getInitialState(), true));
+
+  it('encerrar o exercício para a base que ele ligou', () => {
+    const s = useMusicStore.getState();
+    s.startExercise('alvo');
+    s.setJamPlaying(true, 'exercise');
+    s.startExercise(null);
+    expect(useMusicStore.getState().jam.playing).toBe(false);
+  });
+
+  it('trocar para um exercício que não usa a base também para', () => {
+    const s = useMusicStore.getState();
+    s.startExercise('alvo');
+    s.setJamPlaying(true, 'exercise');
+    s.startExercise('repouso');
+    expect(useMusicStore.getState().jam.playing).toBe(false);
+  });
+
+  it('a base ligada no Jam continua tocando quando o exercício acaba', () => {
+    const s = useMusicStore.getState();
+    s.setJamPlaying(true);
+    s.startExercise('alvo');
+    s.startExercise(null);
+    expect(useMusicStore.getState().jam.playing).toBe(true);
+  });
+});
+
+describe('levar a mesma progressão ao Jam de novo', () => {
+  beforeEach(() => useMusicStore.setState(useMusicStore.getInitialState(), true));
+
+  it('reaproveita a progressão própria igual em vez de criar outra', () => {
+    const chart = {
+      key: { tonic: 'C', scale: 'major' as const },
+      bars: [['C'], ['F'], ['G'], ['C']],
+      name: 'C → F → G → C',
+    };
+    useMusicStore.getState().loadChart(chart);
+    useMusicStore.getState().loadChart(chart);
+    expect(useMusicStore.getState().customProgressions).toHaveLength(1);
+    expect(useMusicStore.getState().jam.progressionId).toBe(
+      useMusicStore.getState().customProgressions[0]!.id,
+    );
+  });
+});

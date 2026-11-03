@@ -15,7 +15,8 @@ import { Segmented } from '../components/controls';
 import { Icon } from '../components/Icon';
 import { PageHead } from '../components/PageHead';
 import { keyLabelOf } from '../format';
-import { tx, useT, type Txt } from '@/i18n';
+import { tNow, tx, useT, type Txt } from '@/i18n';
+import { toast } from '../toast';
 
 const MODE_OPTIONS: { value: EarMode; label: Txt }[] = [
   { value: 'interval', label: tx('Intervalos', 'Intervals') },
@@ -58,6 +59,17 @@ export function EarPage() {
   );
 
   const next = useCallback(() => {
+    // Com a base tocando não dá para ouvir a pergunta: ela para antes.
+    const jam = useMusicStore.getState();
+    if (jam.jam.playing) {
+      jam.setJamPlaying(false);
+      toast.info(
+        tNow(
+          'Base parada para você ouvir a pergunta.',
+          'Backing stopped so you can hear the question.',
+        ),
+      );
+    }
     const q = makeQuestion(mode, key, settings);
     setQuestion(q);
     setPicked(null);

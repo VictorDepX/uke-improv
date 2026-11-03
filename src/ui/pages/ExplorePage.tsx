@@ -3,7 +3,6 @@ import { playNote } from '@/audio/engine/sound';
 import { useMusicStore } from '@/store/useMusicStore';
 import { ChordStrip } from '../components/ChordStrip';
 import { ChordSuggestions } from '../components/ChordSuggestions';
-import { ExerciseBar } from '../components/ExerciseBar';
 import { KeyPicker } from '../components/KeyPicker';
 import { ListenBar } from '../components/ListenBar';
 import { LiveFretboard } from '../components/LiveFretboard';
@@ -13,7 +12,7 @@ import { ExitsBar } from '../components/ExitsBar';
 import { useLandscapePhone } from '../hooks/useMediaQuery';
 
 /**
- * Explorar: visor, tom, acordes do tom, braço, saídas da última nota, modo e escuta; na lateral,
+ * Explorar: visor, tom, acordes do tom, braço, saídas da última nota e escuta; na lateral,
  * o próximo acorde. No celular a coluna principal se desfaz e as peças seguem a ordem do toque.
  */
 export function ExplorePage() {
@@ -41,7 +40,6 @@ export function ExplorePage() {
           {landscape ? <ExitsBar /> : null}
         </div>
         <NoteSuggestions onPlayMidi={playMidi} />
-        <ExerciseBar />
         <ListenBar />
       </div>
       <aside className="explore-side">

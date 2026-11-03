@@ -5,7 +5,7 @@ import { looper } from '@/audio/looper/looper';
 import { resolveGroove } from '@/core/grooves';
 import { ensureAudio, setLayerVolume } from '@/audio/engine/sound';
 import { useActiveProgression } from '@/store/selectors';
-import { useMusicStore } from '@/store/useMusicStore';
+import { useMusicStore, type JamOwner } from '@/store/useMusicStore';
 import { useLatest } from './useLatest';
 import { tNow } from '@/i18n/lang';
 
@@ -90,14 +90,17 @@ export function useJamSync(): void {
   }, [playing, layers]);
 }
 
-/** Alterna a base. Liga o áudio dentro do gesto do usuário antes de mudar o estado. */
-export function useToggleJam(): () => void {
+/**
+ * Alterna a base. Liga o áudio dentro do gesto do usuário antes de mudar o estado.
+ * `owner`: quem liga (exercício ou modo prática), para a base parar junto quando eles acabam.
+ */
+export function useToggleJam(owner: JamOwner | null = null): () => void {
   const setJamPlaying = useMusicStore((s) => s.setJamPlaying);
   return useCallback(() => {
     const { playing } = useMusicStore.getState().jam;
     // Base e looper dividem o relógio (Transport): ligar a base encerra o looper.
     if (!playing && looper.active) looper.clear();
     if (!playing) void ensureAudio().catch(() => undefined);
-    setJamPlaying(!playing);
-  }, [setJamPlaying]);
+    setJamPlaying(!playing, owner);
+  }, [setJamPlaying, owner]);
 }

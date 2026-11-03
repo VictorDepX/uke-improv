@@ -281,15 +281,15 @@ describe('App', () => {
     act(() => useMusicStore.getState().setScale('dorian'));
     render(<App />);
     expect(document.querySelectorAll('.page-explore .fb-dot[data-cls="tensao"]')).toHaveLength(0);
-    await user.click(screen.getByRole('radio', { name: /Resolva a tensão/ }));
-    const bar = screen.getByRole('region', { name: 'Exercício: Resolva a tensão' });
+    await user.click(screen.getByRole('button', { name: 'Abrir modo prática' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Modo prática' });
+    await user.selectOptions(within(dialog).getByLabelText('Exercício'), 'resolva');
+    const bar = within(dialog).getByRole('region', { name: 'Exercício: Resolva a tensão' });
     expect(bar).toHaveTextContent(/não há nota de tensão/);
-    // Um acorde com sétima sempre tem: o aviso some e as tensões aparecem.
-    await user.click(screen.getByRole('radio', { name: /^IVD$/ }));
+    // O IV maior (D) tem: o aviso some e as tensões aparecem.
+    await user.click(within(dialog).getByRole('radio', { name: /^IVD$/ }));
     expect(bar).not.toHaveTextContent(/não há nota de tensão/);
-    expect(
-      document.querySelectorAll('.page-explore .fb-dot[data-cls="tensao"]').length,
-    ).toBeGreaterThan(0);
+    expect(dialog.querySelectorAll('.fb-dot[data-cls="tensao"]').length).toBeGreaterThan(0);
   });
 
   it('com a região automática, o braço mostra 5 casas e anda com as setas', async () => {
@@ -376,20 +376,51 @@ describe('App', () => {
     expect(screen.getByRole('region', { name: 'Visor' })).toHaveTextContent('forma de C');
   });
 
-  it('um exercício guiado avalia as notas tocadas no braço', async () => {
+  it('os exercícios ficam no modo prática e avaliam as notas tocadas no braço', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole('radio', { name: /Só repouso/ }));
-    const bar = screen.getByRole('region', { name: 'Exercício: Só repouso' });
+    // O Explorar não tem mais os modos.
+    expect(screen.queryByRole('radio', { name: /Só repouso/ })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Abrir modo prática' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Modo prática' });
+    await user.selectOptions(within(dialog).getByLabelText('Exercício'), 'repouso');
+    const bar = within(dialog).getByRole('region', { name: 'Exercício: Só repouso' });
     expect(within(bar).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
-    await user.click(screen.getByRole('button', { name: /^E4, corda C, casa 4/ }));
+    await user.click(within(dialog).getByRole('button', { name: /^E4, corda C, casa 4/ }));
     expect(within(bar).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '1');
     expect(bar).toHaveTextContent('E é do acorde C.');
-    await user.click(screen.getByRole('button', { name: /^F4, corda E, casa 1/ }));
+    await user.click(within(dialog).getByRole('button', { name: /^F4, corda E, casa 1/ }));
     expect(bar).toHaveTextContent('F é tensão. Procure uma de repouso.');
     expect(within(bar).getByLabelText('1 erros')).toBeInTheDocument();
     await user.click(within(bar).getByRole('button', { name: 'Encerrar exercício' }));
-    expect(screen.getByRole('region', { name: 'Exercícios guiados' })).toBeInTheDocument();
+    expect(within(dialog).queryByRole('region', { name: /Exercício:/ })).toBeNull();
+  });
+
+  it('encerrar o exercício para a base que ele ligou; sair do modo prática para a dele', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Abrir modo prática' }));
+    let dialog = await screen.findByRole('dialog', { name: 'Modo prática' });
+    await user.selectOptions(within(dialog).getByLabelText('Exercício'), 'alvo');
+    await user.click(within(dialog).getByRole('button', { name: 'Tocar a base' }));
+    expect(useMusicStore.getState().jam.playing).toBe(true);
+    await user.click(within(dialog).getByRole('button', { name: 'Encerrar exercício' }));
+    expect(useMusicStore.getState().jam.playing).toBe(false);
+
+    await user.click(within(dialog).getByRole('button', { name: 'Tocar base' }));
+    expect(useMusicStore.getState().jam.playing).toBe(true);
+    await user.keyboard('{Escape}');
+    expect(useMusicStore.getState().jam.playing).toBe(false);
+
+    // Ligada no Jam, a base segue ao trocar de aba, e a barra oferece parar.
+    await openTab(user, 'Jam');
+    await user.click(screen.getByRole('button', { name: 'Tocar base' }));
+    await openTab(user, 'Ouvido');
+    expect(useMusicStore.getState().jam.playing).toBe(true);
+    await user.click(screen.getByRole('button', { name: 'Parar a base' }));
+    expect(useMusicStore.getState().jam.playing).toBe(false);
+    dialog = screen.queryByRole('dialog', { name: 'Modo prática' })!;
+    expect(dialog).toBeNull();
   });
 
   it('em Ajustes, trocar rótulos para grau muda o texto das casas', async () => {

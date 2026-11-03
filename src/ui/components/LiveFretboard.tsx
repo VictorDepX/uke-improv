@@ -8,7 +8,7 @@ import { useLandscapePhone } from '../hooks/useMediaQuery';
 import { Fretboard } from './Fretboard';
 import { Legend } from './Legend';
 import { NoteInfo } from './NoteInfo';
-import { nm, tx, useT } from '@/i18n';
+import { nm, tx, useNames, useT } from '@/i18n';
 
 /** Braço ligado ao store: tocar uma casa soa a nota e alimenta as sugestões. */
 export function LiveFretboard({
@@ -27,6 +27,8 @@ export function LiveFretboard({
   const last = useMusicStore((s) => s.lastPos);
   const registerNote = useMusicStore((s) => s.registerNote);
   const shiftWindow = useMusicStore((s) => s.shiftWindow);
+  const updateSettings = useMusicStore((s) => s.updateSettings);
+  const n = useNames();
   const currentChord = useMusicStore((s) => s.currentChord);
   const [inspected, setInspected] = useState<FretPosition | null>(null);
   const closeInfo = useCallback(() => setInspected(null), []);
@@ -69,6 +71,15 @@ export function LiveFretboard({
             {auto ? <span className="tag">{t('segue a mão', 'follows your hand')}</span> : null}
             {capo ? <span className="capo-badge">Capo {capo}</span> : null}
           </span>
+          {settings.fretWindow !== null ? (
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => updateSettings({ fretWindow: null })}
+            >
+              {t('Braço inteiro', 'Whole fretboard')}
+            </button>
+          ) : null}
           <button
             type="button"
             className="icon-button"
@@ -79,6 +90,21 @@ export function LiveFretboard({
             ›
           </button>
         </div>
+      ) : null}
+      {settings.arpeggio ? (
+        <p className="fb-status" role="status">
+          {t(
+            `Só arpejo ligado: fora de ${n(currentChord)}, as notas aparecem como cromatismo.`,
+            `Arpeggio only is on: notes outside ${n(currentChord)} show as chromatic.`,
+          )}{' '}
+          <button
+            type="button"
+            className="link-button"
+            onClick={() => updateSettings({ arpeggio: false })}
+          >
+            {t('Desligar', 'Turn off')}
+          </button>
+        </p>
       ) : null}
       <Fretboard
         ctx={ctx}

@@ -7,7 +7,7 @@ import { Icon } from './components/Icon';
 import { MicToggle } from './components/MicToggle';
 import { ChordStrip } from './components/ChordStrip';
 import { useLandscapePhone } from './hooks/useMediaQuery';
-import { useJamSync } from './hooks/useJamSync';
+import { useJamSync, useToggleJam } from './hooks/useJamSync';
 import { useWakeLock } from './hooks/useWakeLock';
 import { ExplorePage } from './pages/ExplorePage';
 import { AppFooter } from './components/AppFooter';
@@ -94,6 +94,7 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
   const shapes = useMusicStore((s) => s.settings.shapes);
   const updateSettings = useMusicStore((s) => s.updateSettings);
   useJamSync();
+  const toggleJam = useToggleJam();
   useSharedLink();
   useShortcuts(useCallback(() => setPracticeOpen(true), []));
   useAccountToasts();
@@ -271,6 +272,13 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
             </div>
           ) : null}
           {tab === 'explorar' ? <MicToggle /> : null}
+          {/* Base tocando fora do Jam: sem isso, só o espaço a pararia. */}
+          {jamPlaying && tab !== 'jam' ? (
+            <button type="button" className="button shell-jam" onClick={toggleJam}>
+              <Icon name="stop" />
+              <span className="shell-jam-label">{t('Parar a base', 'Stop the backing')}</span>
+            </button>
+          ) : null}
           <button
             type="button"
             className="practice-open button button-primary"

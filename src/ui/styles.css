@@ -445,6 +445,45 @@ button:disabled {
   flex: none;
 }
 
+.shell-jam {
+  flex: none;
+  border-color: var(--accent);
+}
+
+.shell-jam .icon {
+  width: 22px;
+  height: 22px;
+  color: var(--accent-text);
+}
+
+/* Celular: só o ícone (o nome continua para leitores de tela). */
+@media (max-width: 1023px), (max-height: 540px) {
+  .shell .shell-jam {
+    width: var(--touch);
+    padding: 0;
+    border-color: var(--accent);
+  }
+  .shell-jam .icon {
+    width: 28px;
+    height: 28px;
+  }
+  .shell-jam-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+.fb-status {
+  margin: 0;
+  padding: 0 8px;
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
 @media (min-width: 1024px) and (min-height: 541px) {
   .app {
     display: grid;
@@ -504,9 +543,13 @@ button:disabled {
     color: var(--fg);
     text-decoration: underline;
   }
-  .practice-open {
+  .practice-open,
+  .shell-jam {
     margin-top: 16px;
     width: 100%;
+  }
+  .shell-jam + .practice-open {
+    margin-top: 8px;
   }
 }
 
@@ -1236,8 +1279,7 @@ input[type='range'] {
   color: var(--accent-fg);
 }
 
-.scale-narrow,
-.mode-narrow {
+.scale-narrow {
   display: none;
 }
 
@@ -1980,17 +2022,6 @@ input[type='range'] {
   border-radius: var(--radius);
 }
 
-.exercise-mode .field-row {
-  grid-template-columns: 72px minmax(0, 1fr);
-}
-
-.exercise-goal {
-  margin: 0 0 0 88px;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  color: var(--fg-muted);
-}
-
 @media (min-width: 1024px) and (min-height: 541px) {
   .page-explore {
     grid-template-columns: minmax(0, 1fr) 336px;
@@ -2039,9 +2070,6 @@ input[type='range'] {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius);
-  }
-  .page-explore .exercise-bar {
-    order: 3;
   }
   .listen-bar {
     order: 4;
@@ -2098,15 +2126,6 @@ input[type='range'] {
 }
 
 @media (max-width: 760px) {
-  .mode-wide {
-    display: none;
-  }
-  .mode-narrow {
-    display: block;
-  }
-  .exercise-goal {
-    margin-left: 0;
-  }
   .note-exits {
     flex-direction: column;
   }
@@ -3687,6 +3706,15 @@ input[type='range'] {
 
 .exercise-bar[data-compact] .exercise-actions {
   order: 2;
+}
+
+.exercise-bar[data-compact] {
+  flex-wrap: wrap;
+}
+
+.exercise-bar[data-compact] .exercise-notice {
+  order: 3;
+  flex-basis: 100%;
 }
 
 /* ---------- Presets (bases prontas) ---------- */

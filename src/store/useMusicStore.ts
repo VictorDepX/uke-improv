@@ -5,6 +5,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { buildNoteContext, classifyNote } from '@/core/classify';
 import { EMPTY_SCORE, scoreAnswer, type EarMode, type EarScore } from '@/core/ear';
 import {
+  exerciseDef,
   startExercise as freshExercise,
   stepExercise,
   type ExerciseId,
@@ -114,7 +115,14 @@ export interface JamState {
   /** Estilo da base (null = batida padrão do compasso). */
   grooveId: string | null;
   layers: Record<Layer, number>;
+  /**
+   * Quem ligou a base, quando não foi o Jam: o exercício (Alvo na troca) ou o modo prática.
+   * Ao encerrar o exercício ou sair do modo prática, a base que eles ligaram para junto.
+   */
+  startedBy: JamOwner | null;
 }
+
+export type JamOwner = 'exercise' | 'practice';
 
 export interface MicState {
   status: MicStatus;
@@ -169,7 +177,7 @@ export interface MusicState {
   addCustomProgression: (p: Progression) => void;
   removeCustomProgression: (id: string) => void;
   setBpm: (bpm: number) => void;
-  setJamPlaying: (playing: boolean) => void;
+  setJamPlaying: (playing: boolean, startedBy?: JamOwner | null) => void;
   setJamPosition: (pos: { bar: number; beat: number; segment: number }) => void;
   setGroove: (id: string | null) => void;
   setLayerVolume: (layer: Layer, value: number) => void;
@@ -262,6 +270,7 @@ export const useMusicStore = create<MusicState>()(
       customProgressions: [],
       jam: {
         playing: false,
+        startedBy: null,
         ready: false,
         bpm: 90,
         progressionId: PROGRESSIONS[0]!.id,
@@ -388,9 +397,17 @@ export const useMusicStore = create<MusicState>()(
         set((s) => ({
           jam: { ...s.jam, bpm: clamp(Math.round(bpm), BPM_RANGE.min, BPM_RANGE.max) },
         })),
-      setJamPlaying: (playing) =>
+      setJamPlaying: (playing, startedBy = null) =>
         set((s) => ({
-          jam: { ...s.jam, playing, ready: false, bar: playing ? -1 : 0, beat: 0, segment: -1 },
+          jam: {
+            ...s.jam,
+            playing,
+            ready: false,
+            bar: playing ? -1 : 0,
+            beat: 0,
+            segment: -1,
+            startedBy: playing ? startedBy : null,
+          },
         })),
       setJamPosition: (pos) => set((s) => ({ jam: { ...s.jam, ...pos, ready: true } })),
       setGroove: (grooveId) => set((s) => ({ jam: { ...s.jam, grooveId } })),
@@ -399,7 +416,19 @@ export const useMusicStore = create<MusicState>()(
           jam: { ...s.jam, layers: { ...s.jam.layers, [layer]: clamp(value, 0, 1) } },
         })),
 
-      startExercise: (id) => set({ exercise: id ? freshExercise(id) : null }),
+      startExercise: (id) =>
+        set((s) => {
+          const stopJam =
+            s.jam.playing &&
+            s.jam.startedBy === 'exercise' &&
+            (id === null || !exerciseDef(id).needsJam);
+          return {
+            exercise: id ? freshExercise(id) : null,
+            ...(stopJam
+              ? { jam: { ...s.jam, playing: false, bar: 0, beat: 0, segment: -1, startedBy: null } }
+              : {}),
+          };
+        }),
       recordEarAnswer: (mode, right) =>
         set((s) => ({
           progress: {
@@ -434,15 +463,25 @@ export const useMusicStore = create<MusicState>()(
         }),
       loadChart: ({ key, bars, name }) => {
         const numerals = bars.map((bar) => bar.map((c) => toAbsoluteNumeral(c, key)));
-        const progression = { ...makeCustomProgression(numerals, modeOf(key.scale)), name };
-        set((s) => ({
-          key,
-          currentChord: bars[0]?.[0] ?? tonicChord(key),
-          chordHistory: [],
-          lastNotes: [],
-          customProgressions: [...s.customProgressions, progression],
-          jam: { ...s.jam, progressionId: progression.id, bar: 0, beat: 0, segment: 0 },
-        }));
+        const fresh = { ...makeCustomProgression(numerals, modeOf(key.scale)), name };
+        set((s) => {
+          // A mesma volta levada de novo reaproveita a que já existe (sem duplicar a lista).
+          const same = s.customProgressions.find(
+            (p) =>
+              p.name === fresh.name &&
+              p.mode === fresh.mode &&
+              p.numerals.join('|') === fresh.numerals.join('|'),
+          );
+          const progression = same ?? fresh;
+          return {
+            key,
+            currentChord: bars[0]?.[0] ?? tonicChord(key),
+            chordHistory: [],
+            lastNotes: [],
+            customProgressions: same ? s.customProgressions : [...s.customProgressions, fresh],
+            jam: { ...s.jam, progressionId: progression.id, bar: 0, beat: 0, segment: 0 },
+          };
+        });
       },
       setMic: (patch) => set((s) => ({ mic: { ...s.mic, ...patch } })),
 
@@ -533,6 +572,7 @@ export const useMusicStore = create<MusicState>()(
             bar: 0,
             beat: 0,
             segment: 0,
+            startedBy: null,
           },
           mic: {
             ...current.mic,

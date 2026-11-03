@@ -67,7 +67,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
   const diatonic = useDiatonicChords();
   const { bars, meter, timeline } = useActiveProgression();
   const { next, previewChord } = useJamPreview();
-  const toggleJam = useToggleJam();
+  const toggleJam = useToggleJam('practice');
   const activeBar = jam.playing && jam.bar >= 0 ? jam.bar % bars.length : -1;
   const func = diatonic.find((d) => sameChord(d.symbol, current))?.func;
   const upcoming = next ?? timeline[1 % Math.max(1, timeline.length)]?.chord ?? null;
@@ -87,6 +87,9 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
       window.removeEventListener('keydown', onKey);
       document.body.style.overflow = prevOverflow;
       exitImmersive();
+      // Sair do modo prática para a base que foi ligada nele.
+      const s = useMusicStore.getState();
+      if (s.jam.playing && s.jam.startedBy === 'practice') s.setJamPlaying(false);
     };
   }, [onClose]);
 
@@ -233,7 +236,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
         </div>
       )}
 
-      <ExerciseBar compact />
+      <ExerciseBar />
 
       <div className="practice-board">
         <LiveFretboard previewChord={previewChord} legend={false} />

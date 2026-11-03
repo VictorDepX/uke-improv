@@ -4,67 +4,24 @@ import { useToggleJam } from '../hooks/useJamSync';
 import { useNames, useT } from '@/i18n';
 import { classifyNote } from '@/core/classify';
 import { useNoteContext } from '@/store/selectors';
-import { Segmented, Select } from './controls';
 import { Icon } from './Icon';
 
 /**
- * Exercícios guiados. Sem exercício: a lista para escolher. Com um em andamento:
- * progresso e o retorno de cada nota, tocada na tela ou no microfone.
- * `compact` (modo prática) mostra só o exercício em andamento, numa linha.
+ * Exercício em andamento (modo prática): progresso e o retorno de cada nota, tocada na tela ou
+ * no microfone, numa linha. A escolha fica no seletor do modo prática (ExerciseSelect).
  */
-export function ExerciseBar({ compact = false }: { compact?: boolean }) {
+export function ExerciseBar() {
   const t = useT();
   const exercise = useMusicStore((s) => s.exercise);
   const start = useMusicStore((s) => s.startExercise);
   const playing = useMusicStore((s) => s.jam.playing);
-  const toggleJam = useToggleJam();
+  const toggleJam = useToggleJam('exercise');
   const ctx = useNoteContext();
   const current = useMusicStore((s) => s.currentChord);
   const arpeggio = useMusicStore((s) => s.settings.arpeggio);
   const n = useNames();
 
-  if (!exercise && compact) return null;
-
-  const modes = [
-    { value: 'livre', label: t('Livre', 'Free') },
-    ...EXERCISES.map((e) => ({ value: e.id as string, label: t(e.title) })),
-  ];
-  const pick = (v: string) => start(v === 'livre' ? null : (v as ExerciseId));
-  const picker = compact ? null : (
-    <div className="exercise-mode">
-      <div className="field-row mode-wide">
-        <Segmented
-          label={t('Modo', 'Mode')}
-          value={exercise?.id ?? 'livre'}
-          options={modes}
-          onChange={pick}
-        />
-      </div>
-      <div className="mode-narrow">
-        <Select
-          id="exercise-mode"
-          label={t('Modo', 'Mode')}
-          value={exercise?.id ?? 'livre'}
-          options={modes}
-          onChange={pick}
-        />
-      </div>
-    </div>
-  );
-
-  if (!exercise) {
-    return (
-      <section className="exercise-bar" aria-label={t('Exercícios guiados', 'Guided exercises')}>
-        {picker}
-        <p className="exercise-goal">
-          {t(
-            'Livre: sem regra, o braço só sugere. Os outros modos conferem cada nota que você toca.',
-            'Free: no rules, the fretboard only suggests. The other modes check every note you play.',
-          )}
-        </p>
-      </section>
-    );
-  }
+  if (!exercise) return null;
 
   const def = exerciseDef(exercise.id);
   const progress = Math.min(exerciseProgress(exercise), def.target);
@@ -81,13 +38,12 @@ export function ExerciseBar({ compact = false }: { compact?: boolean }) {
     <section
       className="exercise-bar"
       data-active
-      data-compact={compact || undefined}
+      data-compact
       data-done={exercise.done || undefined}
       aria-label={t(`Exercício: ${t(def.title)}`, `Exercise: ${t(def.title)}`)}
     >
-      {picker}
       <div className="exercise-head">
-        {compact ? <strong className="exercise-title">{t(def.title)}</strong> : null}
+        <strong className="exercise-title">{t(def.title)}</strong>
         <div
           className="exercise-meter"
           role="progressbar"
