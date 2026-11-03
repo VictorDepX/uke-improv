@@ -978,7 +978,7 @@ input[type='range'] {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   padding: 1px 7px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--surface-2);
   color: var(--fg-muted);
 }
@@ -2644,228 +2644,118 @@ input[type='range'] {
 }
 
 /* ---------- Modo prática ---------- */
-/* Tela inteira sobre o app: cabeçalho de uma linha, faixa de acordes e o braço no resto. */
+/* Tela inteira sobre o app: visor e transporte, pads, o braço grande e os seletores embaixo. */
 .practice {
   position: fixed;
   inset: 0;
-  z-index: 20;
+  z-index: 60;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 20px;
+  padding: max(24px, env(safe-area-inset-top, 0px)) max(32px, env(safe-area-inset-right, 0px))
+    max(24px, env(safe-area-inset-bottom, 0px)) max(32px, env(safe-area-inset-left, 0px));
   background: var(--bg);
-  padding-top: max(8px, env(safe-area-inset-top, 0px));
-  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
-  padding-left: max(12px, env(safe-area-inset-left, 0px));
-  padding-right: max(12px, env(safe-area-inset-right, 0px));
   overflow: hidden;
 }
 
 .practice-head {
   flex: none;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 14px;
-  min-height: 48px;
+  gap: 16px;
 }
 
-.practice-close {
-  flex: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  display: grid;
-  place-items: center;
-}
-
-.practice-close span {
-  width: 14px;
-  height: 14px;
-  background:
-    linear-gradient(45deg, transparent 45%, currentColor 45% 55%, transparent 55%),
-    linear-gradient(-45deg, transparent 45%, currentColor 45% 55%, transparent 55%);
-}
-
-.practice-chord {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
+.practice-lcd {
   min-width: 0;
-}
-
-.practice-chord-now {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 2.375rem;
-  line-height: 1;
-}
-
-.practice-chord-next {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.25rem;
-  color: var(--fg-muted);
-  white-space: nowrap;
-}
-
-.practice-suggestions {
-  list-style: none;
-  margin: 0 0 0 auto;
-  padding: 0;
-  display: flex;
-  gap: 6px;
-}
-
-.practice-hint {
-  color: var(--fg-muted);
-  font-size: 0.875rem;
-}
-
-.practice-note {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px 4px 4px;
-  border: 0;
-  border-radius: 999px;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 1.125rem;
-}
-
-.practice-note[data-cls='repouso'] {
-  background: var(--c-rest);
-  color: var(--c-rest-fg);
-}
-.practice-note[data-cls='passagem'] {
-  background: var(--c-pass);
-  color: var(--c-pass-fg);
-}
-.practice-note[data-cls='tensao'] {
-  background: var(--c-tens);
-  color: var(--c-tens-fg);
-}
-.practice-note[data-cls='fora'] {
-  background: var(--c-out);
-  color: var(--c-out-fg);
-}
-
-.practice-note-rank {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: rgb(0 0 0 / 0.22);
-  font: 600 0.6875rem var(--font-mono);
+  overflow-x: auto;
 }
 
 .practice-transport {
-  flex: none;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 16px;
+  margin-left: auto;
 }
 
-.practice-play {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 0;
-  background: var(--c-pass);
-  display: grid;
-  place-items: center;
-}
-
-.practice-play .play-icon {
-  width: 16px;
-  height: 18px;
-  margin-left: 3px;
-}
-
-.practice-play .play-icon[data-playing] {
-  width: 14px;
-  height: 14px;
+.practice-transport .bpm {
   margin-left: 0;
 }
 
-.practice-bpm {
-  min-width: 2.6em;
-  text-align: center;
-  font-size: 0.9375rem;
-}
-
 .practice-strip {
+  flex: none;
   list-style: none;
   margin: 0;
-  padding: 0 0 2px;
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  flex: none;
+  padding: 0;
 }
 
-.practice-chip {
-  flex: none;
-  padding: 4px 12px;
-  border: 1px solid var(--line);
-  border-bottom: 3px solid var(--f-color, var(--line));
-  border-radius: 8px;
-  background: var(--surface);
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 0.9375rem;
+.practice-strip .chord-chip[data-active] {
+  background: var(--selected);
+  color: var(--on-selected);
 }
 
-.practice-chip[data-func='T'] {
-  --f-color: var(--c-rest);
-}
-.practice-chip[data-func='S'] {
-  --f-color: var(--c-pass);
-}
-.practice-chip[data-func='D'] {
-  --f-color: var(--c-tens);
-}
-
-.practice-chip[aria-checked='true'],
-.practice-chip[data-active] {
-  background: var(--fg);
-  color: var(--bg);
-  border-color: var(--fg);
-}
-
-/* O braço ocupa toda a altura restante; as casas crescem junto. */
 .practice-board {
-  --fb-cell-h: 40px;
+  --fb-cell-h: 56px;
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
 }
 
 .practice-board .live-fretboard {
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.practice-board .fb-scroll {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
 }
 
 .practice-board .fb[data-orientation='horizontal'] {
+  flex: 1;
   height: 100%;
+  max-height: 420px;
   min-height: 190px;
-  grid-template-rows: 22px repeat(4, minmax(40px, 1fr));
+  grid-template-rows: 28px repeat(4, minmax(44px, 1fr));
 }
 
-.practice-board .fb-dot:not([data-cls='fora']) {
-  width: 34px;
-  height: 34px;
-  font-size: 0.8125rem;
+/* Marcador G (40 px) no modo prática. */
+.practice-board .fb-dot[data-cls='repouso'],
+[data-shapes] .practice-board .fb-dot[data-cls='repouso'] {
+  width: 40px;
+  height: 40px;
 }
 
-.practice-board .fb-dot[data-cls='fora']:not(:empty),
-.practice-board .fb-dot[data-cls='fora'][data-preview] {
-  width: 30px;
-  height: 30px;
+[data-shapes] .practice-board .fb-dot[data-cls='passagem'],
+.practice-board .fb-dot[data-cls='passagem'] {
+  width: 36px;
+  height: 36px;
+}
+
+[data-shapes] .practice-board .fb-dot[data-cls='tensao'] {
+  width: 42px;
+  height: 42px;
+}
+
+.practice-board .fb-dot {
+  font-size: 0.9375rem;
+}
+
+.practice-board .fb-dot[data-last]::after {
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
 }
 
 .practice-board .fb[data-orientation='vertical'] {
@@ -2880,47 +2770,80 @@ input[type='range'] {
   color: var(--fg-muted);
 }
 
-/* Celular em pé: cabeçalho em duas linhas e braço vertical com rolagem. */
+.practice-row {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  min-width: 0;
+}
+
+.practice-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+  margin-left: auto;
+}
+
+.practice-toggles .toggle {
+  min-width: 200px;
+}
+
+/* Celular em pé: cabeçalho em linhas e braço vertical com rolagem. */
 @media (orientation: portrait) and (max-width: 640px) {
   .practice {
     overflow-y: auto;
-  }
-  .practice-head {
-    flex-wrap: wrap;
-  }
-  .practice-suggestions {
-    order: 3;
-    margin-left: 0;
-    width: 100%;
+    gap: 12px;
+    padding-inline: var(--gutter-l) var(--gutter-r);
   }
   .practice-transport {
-    margin-left: auto;
+    margin-left: 0;
   }
   .practice-board {
     flex: none;
+    padding: 0;
+    background: none;
+    border: 0;
   }
   .practice-rotate {
     display: block;
-    order: -1;
+  }
+  .practice-toggles {
+    margin-left: 0;
+    width: 100%;
+  }
+  .practice-row .select {
+    width: 100%;
   }
 }
 
-/* Celular deitado: telas baixas pedem cabeçalho menor. */
-@media (max-height: 420px) {
+/* Celular deitado: telas baixas pedem tudo mais compacto. */
+@media (max-height: 540px) {
   .practice {
-    gap: 6px;
-  }
-  .practice-chord-now {
-    font-size: 1.875rem;
-  }
-  .practice-chord-next {
-    font-size: 1.0625rem;
-  }
-  .practice-note {
-    font-size: 1rem;
+    gap: 8px;
+    padding-block: 8px;
   }
   .practice-head {
+    gap: 8px;
+  }
+  .practice-strip .chord-chip {
+    height: auto;
     min-height: 44px;
+    padding: 4px 0 7px;
+    align-items: center;
+    gap: 0;
+  }
+  .practice-strip .chord-chip-numeral {
+    font-size: 0.625rem;
+    line-height: 0.75rem;
+  }
+  .practice-strip .chord-chip-symbol {
+    font-size: 1.1875rem;
+    line-height: 1.375rem;
+  }
+  .practice-board {
+    padding: 4px 8px;
   }
 }
 
@@ -2939,51 +2862,6 @@ input[type='range'] {
   font-family: var(--font-mono);
   font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
-}
-
-.practice-row {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.practice-row .practice-strip {
-  flex: 1;
-  min-width: 0;
-}
-
-.practice-region {
-  flex: none;
-  padding: 5px 12px;
-  border: 1px solid var(--accent);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--accent);
-  font-weight: 600;
-  font-size: 0.8125rem;
-  white-space: nowrap;
-}
-
-.practice-region[aria-pressed='true'] {
-  background: var(--accent-soft);
-}
-
-.practice-board .live-fretboard {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.practice-board .fb-scroll {
-  flex: 1;
-  min-height: 0;
-}
-
-.practice-board .fb-window-nav .icon-button {
-  width: 28px;
-  height: 28px;
 }
 
 /* Janela longe da pestana: o traste depois das cordas soltas vira tracejado (casas puladas). */
@@ -3007,7 +2885,7 @@ input[type='range'] {
 }
 
 .fb-fret-num[data-capo] {
-  color: var(--accent);
+  color: var(--accent-text);
   font-weight: 600;
 }
 
@@ -3015,9 +2893,9 @@ input[type='range'] {
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--accent-text);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 600;
@@ -4647,31 +4525,98 @@ input[type='range'] {
   inset-inline-start: -3px;
 }
 
-/* Boas-vindas da primeira visita: cartão fixo no canto, sem empurrar o conteúdo. */
-.welcome {
+/* Boas-vindas da primeira visita: diálogo no centro, sobre o app escurecido. */
+.welcome-layer {
   position: fixed;
-  right: max(16px, env(safe-area-inset-right, 0px));
-  bottom: max(16px, env(safe-area-inset-bottom, 0px));
-  z-index: 40;
-  width: min(380px, calc(100vw - 32px));
-  padding: 18px 20px;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.welcome {
+  position: relative;
+  z-index: 41;
+  width: min(520px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  display: grid;
+  gap: 20px;
+  padding: 24px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: var(--shadow-lg);
 }
+
 .welcome h2 {
-  margin: 0 0 8px;
-  font-family: var(--font-display);
-  font-size: 1.125rem;
+  font-size: 1.5rem;
+  line-height: 1.75rem;
 }
-.welcome ol {
-  margin: 0 0 10px;
-  padding-left: 1.2em;
+
+.welcome-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  gap: 6px;
-  font-size: 0.875rem;
+  gap: 16px;
 }
-.welcome .button {
-  margin-top: 6px;
+
+.welcome-steps li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  line-height: 1.5rem;
+}
+
+.welcome-num {
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.welcome-keys {
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.welcome-keys dl {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.welcome-keys dl > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.welcome-keys dt,
+.welcome-keys dd {
+  margin: 0;
+}
+
+.welcome-keys dd {
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+kbd {
+  display: inline-block;
+  min-width: 26px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-align: center;
+}
+
+/* Sem teclado (toque), os atalhos não servem. */
+@media (pointer: coarse) {
+  .welcome-keys {
+    display: none;
+  }
 }

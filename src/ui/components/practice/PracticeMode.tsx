@@ -1,9 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { playNote } from '@/audio/engine/sound';
-import { sameChord } from '@/core/harmony';
+import { chordToNumeral, findDiatonic, sameChord } from '@/core/harmony';
+import { exerciseDef, exerciseProgress } from '@/core/exercises';
+import { METERS } from '@/core/rhythm';
+import { FUNC_LABEL } from '../../format';
+import { Icon } from '../Icon';
+import { Toggle } from '../controls';
 import { barLabel } from '@/core/progressions';
-import { midiName, prefersFlats } from '@/core/music';
-import { useActiveProgression, useDiatonicChords, useNoteSuggestions } from '@/store/selectors';
+import { useActiveProgression, useDiatonicChords } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 import { useJamPreview } from '../../hooks/useJamPreview';
 import { useToggleJam } from '../../hooks/useJamSync';
@@ -54,19 +57,22 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
   const current = useMusicStore((s) => s.currentChord);
   const key = useMusicStore((s) => s.key);
   const jam = useMusicStore((s) => s.jam);
+  const exercise = useMusicStore((s) => s.exercise);
   const setChord = useMusicStore((s) => s.setChord);
   const setBpm = useMusicStore((s) => s.setBpm);
-  const registerNote = useMusicStore((s) => s.registerNote);
   const followHand = useMusicStore((s) => s.settings.fretWindow === 'auto');
   const updateSettings = useMusicStore((s) => s.updateSettings);
   const arpeggio = useMusicStore((s) => s.settings.arpeggio);
-  const suggestions = useNoteSuggestions();
+  const lastNotes = useMusicStore((s) => s.lastNotes);
   const diatonic = useDiatonicChords();
-  const { bars } = useActiveProgression();
+  const { bars, meter, timeline } = useActiveProgression();
   const { next, previewChord } = useJamPreview();
   const toggleJam = useToggleJam();
-  const flats = prefersFlats(key);
   const activeBar = jam.playing && jam.bar >= 0 ? jam.bar % bars.length : -1;
+  const func = diatonic.find((d) => sameChord(d.symbol, current))?.func;
+  const upcoming = next ?? timeline[1 % Math.max(1, timeline.length)]?.chord ?? null;
+  const def = exercise ? exerciseDef(exercise.id) : null;
+  const beats = METERS[meter].beats;
 
   useEffect(() => {
     void enterImmersive();
@@ -95,147 +101,137 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
         <button
           ref={closeRef}
           type="button"
-          className="practice-close"
+          className="icon-button practice-close"
           onClick={onClose}
           aria-label={t('Sair do modo prática', 'Exit practice mode')}
         >
-          <span aria-hidden="true" />
+          <Icon name="close" />
         </button>
 
-        <div className="practice-chord" aria-live="polite">
-          <span className="practice-chord-now">{n(current)}</span>
-          {next ? (
-            <span className="practice-chord-next">
-              <span aria-hidden="true">→</span> {n(next)}
+        <div className="transport-lcd practice-lcd" aria-live="polite">
+          <div className="visor-cell">
+            <span className="visor-label">{t('Acorde', 'Chord')}</span>
+            <span className="visor-value">
+              <span className="visor-big">{n(current)}</span>
+              <span className="visor-detail">
+                {[chordToNumeral(current, key), func ? t(FUNC_LABEL[func]) : null]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </span>
             </span>
+          </div>
+          {upcoming && jam.playing ? (
+            <div className="visor-cell">
+              <span className="visor-label">{t('A seguir', 'Next')}</span>
+              <span className="visor-value">
+                <span className="visor-big">{n(upcoming)}</span>
+                <span className="visor-detail">{chordToNumeral(upcoming, key)}</span>
+              </span>
+            </div>
           ) : null}
+          <div className="visor-cell">
+            <span className="visor-label">{t('Exercício', 'Exercise')}</span>
+            <span className="visor-value">
+              <span className="visor-big">{def ? t(def.title) : t('Livre', 'Free')}</span>
+              <span className="visor-detail">
+                {exercise && def
+                  ? `${Math.min(exerciseProgress(exercise), def.target)}/${def.target}`
+                  : lastNotes.length === 0
+                    ? t('toque uma casa', 'tap a fret')
+                    : ''}
+              </span>
+            </span>
+          </div>
         </div>
-
-        <ol
-          className="practice-suggestions"
-          aria-label={t('Próximas notas sugeridas', 'Suggested next notes')}
-        >
-          {suggestions.length === 0 ? (
-            <li className="practice-hint">{t('Toque uma casa', 'Tap a fret')}</li>
-          ) : (
-            suggestions.map((s, i) => (
-              <li key={s.midi}>
-                <button
-                  type="button"
-                  className="practice-note"
-                  data-cls={s.cls}
-                  onClick={() => {
-                    registerNote(s.midi);
-                    void playNote(s.midi);
-                  }}
-                >
-                  <span className="practice-note-rank">{i + 1}</span>
-                  {n(midiName(s.midi, flats))}
-                </button>
-              </li>
-            ))
-          )}
-        </ol>
 
         <div className="practice-transport">
+          <div className="beats" aria-hidden="true">
+            {Array.from({ length: beats }, (_, b) => (
+              <span
+                key={b}
+                className="beat"
+                data-on={(jam.playing && b === jam.beat) || undefined}
+              />
+            ))}
+          </div>
           <button
             type="button"
-            className="practice-play"
+            className="button play-button practice-play"
             aria-pressed={jam.playing}
-            aria-label={
-              jam.playing
-                ? t('Parar a base', 'Stop the backing track')
-                : t('Tocar a base', 'Play the backing track')
-            }
+            data-playing={jam.playing || undefined}
             onClick={toggleJam}
           >
-            <span
-              className="play-icon"
-              data-playing={jam.playing || undefined}
-              aria-hidden="true"
-            />
+            <Icon name={jam.playing ? 'stop' : 'play'} />
+            {jam.playing ? t('Parar', 'Stop') : t('Tocar base', 'Play backing')}
           </button>
-          <button
-            type="button"
-            className="icon-button"
-            aria-label={t('Diminuir andamento', 'Slower')}
-            onClick={() => setBpm(jam.bpm - 5)}
-          >
-            −
-          </button>
-          <span className="practice-bpm mono" aria-label={`${jam.bpm} BPM`}>
-            {jam.bpm}
-          </span>
-          <button
-            type="button"
-            className="icon-button"
-            aria-label={t('Aumentar andamento', 'Faster')}
-            onClick={() => setBpm(jam.bpm + 5)}
-          >
-            +
-          </button>
-          <TapTempo className="practice-tap" />
+          <div className="bpm">
+            <button
+              type="button"
+              className="icon-button"
+              aria-label={t('Diminuir andamento', 'Slower')}
+              onClick={() => setBpm(jam.bpm - 5)}
+            >
+              <Icon name="minus" />
+            </button>
+            <span className="bpm-value">
+              <span className="mono">{jam.bpm}</span>
+              <small>BPM</small>
+            </span>
+            <button
+              type="button"
+              className="icon-button"
+              aria-label={t('Aumentar andamento', 'Faster')}
+              onClick={() => setBpm(jam.bpm + 5)}
+            >
+              <Icon name="plus" />
+            </button>
+            <TapTempo className="button practice-tap" />
+          </div>
         </div>
       </div>
 
-      <div className="practice-row">
-        {jam.playing ? (
-          <ol
-            className="practice-strip"
-            aria-label={t('Compassos da progressão', 'Bars of the progression')}
-          >
-            {bars.map((b, i) => (
-              <li
-                key={`${barLabel(b)}-${i}`}
-                className="practice-chip"
-                data-active={i === activeBar || undefined}
-              >
-                {barLabel(b.map(n))}
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <div
-            className="practice-strip"
-            role="radiogroup"
-            aria-label={t('Acorde atual', 'Current chord')}
-          >
-            {diatonic.map((d) => (
-              <button
-                key={d.numeral}
-                type="button"
-                role="radio"
-                aria-checked={sameChord(d.symbol, current)}
-                className="practice-chip"
-                data-func={d.func}
-                onClick={() => setChord(d.symbol)}
-              >
-                {n(d.symbol)}
-              </button>
-            ))}
-          </div>
-        )}
-        <PresetSelect />
-        <ExerciseSelect />
-        <button
-          type="button"
-          className="practice-region"
-          aria-pressed={arpeggio}
-          onClick={() => updateSettings({ arpeggio: !arpeggio })}
+      {jam.playing ? (
+        <ol
+          className="chord-strip practice-strip"
+          aria-label={t('Compassos da progressão', 'Bars of the progression')}
         >
-          {t('Só arpejo', 'Arpeggio only')}
-        </button>
-        <button
-          type="button"
-          className="practice-region"
-          aria-pressed={followHand}
-          onClick={() => updateSettings({ fretWindow: followHand ? null : 'auto' })}
+          {bars.map((b, i) => (
+            <li
+              key={`${barLabel(b)}-${i}`}
+              className="chord-chip"
+              data-func={findDiatonic(b[0]!, key)?.func}
+              data-active={i === activeBar || undefined}
+              aria-current={i === activeBar || undefined}
+            >
+              <span className="chord-chip-numeral mono">
+                {b.map((c) => chordToNumeral(c, key)).join(' ')}
+              </span>
+              <span className="chord-chip-symbol">{barLabel(b.map(n))}</span>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <div
+          className="chord-strip practice-strip"
+          role="radiogroup"
+          aria-label={t('Acorde atual', 'Current chord')}
         >
-          {followHand
-            ? t('Braço inteiro', 'Whole fretboard')
-            : t('Seguir a mão', 'Follow your hand')}
-        </button>
-      </div>
+          {diatonic.map((d) => (
+            <button
+              key={d.numeral}
+              type="button"
+              role="radio"
+              aria-checked={sameChord(d.symbol, current)}
+              className="chord-chip"
+              data-func={d.func}
+              onClick={() => setChord(d.symbol)}
+            >
+              <span className="chord-chip-numeral mono">{d.numeral}</span>
+              <span className="chord-chip-symbol">{n(d.symbol)}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <ExerciseBar compact />
 
@@ -248,6 +244,25 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
           'Turn your phone sideways to see the whole fretboard.',
         )}
       </p>
+
+      <div className="practice-row">
+        <PresetSelect />
+        <ExerciseSelect />
+        <div className="practice-toggles">
+          <Toggle
+            id="practice-arpeggio"
+            label={t('Só arpejo', 'Arpeggio only')}
+            checked={arpeggio}
+            onChange={(v) => updateSettings({ arpeggio: v })}
+          />
+          <Toggle
+            id="practice-follow"
+            label={t('Seguir a mão', 'Follow your hand')}
+            checked={followHand}
+            onChange={(v) => updateSettings({ fretWindow: v ? 'auto' : null })}
+          />
+        </div>
+      </div>
     </div>
   );
 }

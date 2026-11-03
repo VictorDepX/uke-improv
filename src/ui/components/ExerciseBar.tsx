@@ -135,10 +135,12 @@ export function ExerciseSelect() {
       value={id}
       onChange={(e) => start((e.target.value || null) as ExerciseId | null)}
     >
-      <option value="">{t('Exercício', 'Exercise')}</option>
+      <option value="">
+        {t('Exercício', 'Exercise')}: {t('Livre', 'Free')}
+      </option>
       {EXERCISES.map((e) => (
         <option key={e.id} value={e.id}>
-          {t(e.title)}
+          {t('Exercício', 'Exercise')}: {t(e.title)}
         </option>
       ))}
     </select>

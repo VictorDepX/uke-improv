@@ -48,7 +48,7 @@ export function PresetSelect() {
     <select
       id="practice-preset"
       className="select practice-preset"
-      aria-label="Preset"
+      aria-label={t('Base pronta', 'Ready-made backing')}
       value={active ?? ''}
       onChange={(e) => {
         const preset = PRESETS.find((p) => p.id === e.target.value);
@@ -56,11 +56,11 @@ export function PresetSelect() {
       }}
     >
       <option value="" disabled>
-        Preset
+        {t('Base: escolha uma', 'Backing: pick one')}
       </option>
       {PRESETS.map((p) => (
         <option key={p.id} value={p.id}>
-          {t(p.name)}
+          {t('Base', 'Backing')}: {t(p.name)} · {p.bpm} BPM
         </option>
       ))}
     </select>
