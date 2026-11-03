@@ -11,3 +11,7 @@ export function useMediaQuery(query: string): boolean {
     () => false,
   );
 }
+
+/** Celular deitado: tela baixa e larga. O braço vira janela de 5 casas e os acordes sobem. */
+export const LANDSCAPE_PHONE = '(max-height: 540px) and (orientation: landscape)';
+export const useLandscapePhone = () => useMediaQuery(LANDSCAPE_PHONE);

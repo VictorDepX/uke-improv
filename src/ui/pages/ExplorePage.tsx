@@ -9,6 +9,8 @@ import { ListenBar } from '../components/ListenBar';
 import { LiveFretboard } from '../components/LiveFretboard';
 import { NoteSuggestions } from '../components/NoteSuggestions';
 import { Visor } from '../components/Visor';
+import { ExitsBar } from '../components/ExitsBar';
+import { useLandscapePhone } from '../hooks/useMediaQuery';
 
 /**
  * Explorar: visor, tom, acordes do tom, braço, saídas da última nota, modo e escuta; na lateral,
@@ -23,6 +25,8 @@ export function ExplorePage() {
     },
     [registerNote],
   );
+  // Deitado, os acordes do tom vão para a barra do topo (App) e o resumo das saídas fica sob o braço.
+  const landscape = useLandscapePhone();
 
   return (
     <div className="page page-explore">
@@ -31,9 +35,10 @@ export function ExplorePage() {
         <div id="key-picker" className="key-picker-slot">
           <KeyPicker />
         </div>
-        <ChordStrip />
+        {landscape ? null : <ChordStrip />}
         <div className="board-panel">
-          <LiveFretboard />
+          <LiveFretboard legend={!landscape} />
+          {landscape ? <ExitsBar /> : null}
         </div>
         <NoteSuggestions onPlayMidi={playMidi} />
         <ExerciseBar />

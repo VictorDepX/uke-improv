@@ -510,6 +510,108 @@ button:disabled {
   }
 }
 
+/* Celular deitado: os acordes do tom ficam na própria barra, compactos. */
+.shell-pads {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.shell-pads .chord-strip {
+  display: flex;
+  gap: 4px;
+}
+
+.shell-pads .chord-chip {
+  flex: none;
+  width: 52px;
+  height: 44px;
+  padding: 3px 0 6px;
+  align-items: center;
+  gap: 0;
+}
+
+.shell-pads .chord-chip-numeral {
+  font-size: 0.625rem;
+  line-height: 0.75rem;
+}
+
+.shell-pads .chord-chip-symbol {
+  font-size: 1.125rem;
+  line-height: 1.25rem;
+}
+
+@media (max-height: 540px) and (orientation: landscape) {
+  .shell {
+    position: static;
+    min-height: 50px;
+    padding-block: 3px;
+  }
+  .shell-title {
+    flex: none;
+    margin-right: 0;
+  }
+  .shell-pads + .mic-toggle,
+  .shell:not(:has(.shell-pads)) .shell-title {
+    margin-right: auto;
+  }
+  .shell-pads {
+    margin-right: auto;
+  }
+}
+
+/* Resumo das saídas sob o braço (celular deitado). */
+.exits-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 0;
+  border-top: 1px solid var(--line);
+  margin: 4px -11px -15px;
+}
+
+.exits-bar-part {
+  flex: 1 1 280px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  min-width: 0;
+}
+
+.exits-bar-part + .exits-bar-part {
+  border-left: 1px solid var(--line);
+}
+
+.exits-bar-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.exits-bar-note .suggestion-rank {
+  height: auto;
+  margin-left: 6px;
+}
+
+.exits-bar-chord {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  margin-left: 8px;
+}
+
+.exits-bar-chord strong {
+  font-family: var(--font-display);
+  font-size: 1.1875rem;
+}
+
+.exits-bar-chord .mono {
+  font-size: 0.6875rem;
+  color: var(--fg-muted);
+}
+
 /* Faixa que oferece o outro idioma a quem chega com o navegador nele. */
 .lang-hint {
   margin: 16px var(--gutter-r) 0 var(--gutter-l);
@@ -1843,6 +1945,8 @@ input[type='range'] {
 
 .listen-bar h2.field-label {
   font-family: var(--font-display);
+  align-self: start;
+  padding-top: 14px;
 }
 
 .listen-actions {
@@ -1954,6 +2058,34 @@ input[type='range'] {
   .key-picker .field-row {
     grid-template-columns: minmax(0, 1fr);
     gap: 8px;
+  }
+}
+
+/* Celular deitado: saídas e próximo acorde lado a lado, como no Figma. */
+@media (max-height: 540px) and (orientation: landscape) and (min-width: 700px) {
+  .page-explore {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  .page-explore > *,
+  .explore-main > * {
+    grid-column: 1 / -1;
+  }
+  .explore-main > .note-exits {
+    grid-column: 1;
+    flex-direction: column;
+  }
+  .page-explore > .explore-side {
+    grid-column: 2;
+    grid-row: span 3;
+  }
+  .note-exits .suggestions {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .page-explore .fb-window-nav .icon-button {
+    width: 36px;
+    height: 36px;
   }
 }
 
@@ -2593,6 +2725,16 @@ input[type='range'] {
   .jam-side .side-block h2 {
     font-size: 1.25rem;
     line-height: 1.5rem;
+  }
+}
+
+@media (max-height: 540px) and (orientation: landscape) and (min-width: 700px) {
+  .jam-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  .jam-side > :first-child {
+    grid-row: span 2;
   }
 }
 

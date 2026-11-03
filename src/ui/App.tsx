@@ -5,6 +5,8 @@ import { SCALES } from '@/core/music';
 import { useMusicStore } from '@/store/useMusicStore';
 import { Icon } from './components/Icon';
 import { MicToggle } from './components/MicToggle';
+import { ChordStrip } from './components/ChordStrip';
+import { useLandscapePhone } from './hooks/useMediaQuery';
 import { useJamSync } from './hooks/useJamSync';
 import { useWakeLock } from './hooks/useWakeLock';
 import { ExplorePage } from './pages/ExplorePage';
@@ -105,6 +107,7 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
   useWakeLock(practiceOpen || jamPlaying);
   useA11ySettings();
   const pulse = useMusicStore((s) => s.settings.pulse);
+  const landscape = useLandscapePhone();
 
   // Título, descrição e idioma da página; o endereço acompanha (link antigo com # vira o
   // caminho novo, e trocar de idioma troca o caminho).
@@ -268,6 +271,11 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
             </div>
           </div>
           {menuOpen ? <div className="shell-scrim" aria-hidden="true" onClick={closeMenu} /> : null}
+          {tab === 'explorar' && landscape ? (
+            <div className="shell-pads">
+              <ChordStrip />
+            </div>
+          ) : null}
           {tab === 'explorar' ? <MicToggle /> : null}
           <button
             type="button"

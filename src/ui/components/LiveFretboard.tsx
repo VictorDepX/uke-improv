@@ -4,6 +4,7 @@ import { WINDOW_SIZE, maxWindowStart } from '@/core/fretboard';
 import type { FretPosition } from '@/core/types';
 import { useNoteContext, useNoteSuggestions } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
+import { useLandscapePhone } from '../hooks/useMediaQuery';
 import { Fretboard } from './Fretboard';
 import { Legend } from './Legend';
 import { NoteInfo } from './NoteInfo';
@@ -30,7 +31,10 @@ export function LiveFretboard({
   const [inspected, setInspected] = useState<FretPosition | null>(null);
   const closeInfo = useCallback(() => setInspected(null), []);
 
-  const { fretWindow, capo } = settings;
+  const { capo } = settings;
+  // Celular deitado: o braço inteiro não cabe; sem região escolhida, a janela segue a mão.
+  const landscape = useLandscapePhone();
+  const fretWindow = settings.fretWindow ?? (landscape ? 'auto' : null);
   const auto = fretWindow === 'auto';
   const windowStart: number | null = fretWindow === 'auto' ? autoWindowStart : fretWindow;
 
