@@ -269,7 +269,10 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
         <div className="content">
           <LangHint lang={lang} onSwitch={switchLang} />
           <main className="main" id="main">
-            <h1 className="sr-only">{current.h1[lang]}</h1>
+            {/* Nas ferramentas o título é visível (PageHead); aqui, só para leitores e buscadores. */}
+            {tab === 'explorar' || tab === 'jam' ? (
+              <h1 className="sr-only">{current.h1[lang]}</h1>
+            ) : null}
             <Suspense fallback={<PageSkeleton />}>
               {tab === 'explorar' ? (
                 <ExplorePage />

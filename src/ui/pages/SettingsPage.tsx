@@ -5,6 +5,8 @@ import { tx, useLang, useNames, useT, type Lang, type Txt } from '@/i18n';
 import { useMusicStore } from '@/store/useMusicStore';
 import { AccountPanel } from '../components/AccountPanel';
 import { Panel, Segmented, Select, Slider, Toggle } from '../components/controls';
+import { PageHead } from '../components/PageHead';
+import type { ReactNode } from 'react';
 
 const LABEL_OPTIONS: { value: LabelMode; label: Txt }[] = [
   { value: 'note', label: tx('Nota', 'Note') },
@@ -16,7 +18,7 @@ const CAPO_SOUNDS = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G'];
 
 const WEIGHT_LABELS: Record<keyof ScoreWeights, Txt> = {
   cls: tx('Classe da nota', 'Note class'),
-  proximity: tx('Proximidade (passos curtos)', 'Proximity (short steps)'),
+  proximity: tx('Proximidade', 'Proximity'),
   resolution: tx('Resolução de tensões', 'Tension resolution'),
   contour: tx('Contorno após saltos', 'Contour after leaps'),
 };
@@ -57,213 +59,216 @@ export function SettingsPage() {
     })),
   ];
 
+  const row = (control: ReactNode) => <div className="field-row settings-row">{control}</div>;
+
   return (
     <div className="page page-settings">
-      <Panel title={t('Idioma e nomes das notas', 'Language and note names')}>
-        <div className="ear-options-row">
-          <Segmented
-            label={t('Idioma', 'Language')}
-            value={lang}
-            options={[
-              { value: 'pt', label: 'Português' },
-              { value: 'en', label: 'English' },
-            ]}
-            onChange={(v: Lang) => update({ lang: v })}
-          />
-          <Segmented
-            label={t('Nomes das notas', 'Note names')}
-            value={settings.noteNames}
-            options={[
-              { value: 'letters', label: 'C D E' },
-              { value: 'solfege', label: lang === 'pt' ? 'Dó Ré Mi' : 'Do Re Mi' },
-            ]}
-            onChange={(noteNames: NoteNames) => update({ noteNames })}
-          />
+      <PageHead tab="ajustes" />
+      <div className="settings-cols">
+        <div className="settings-col">
+          <Panel
+            className="panel-sm"
+            title={t('Idioma e nomes das notas', 'Language and note names')}
+          >
+            <div className="stack-tight">
+              {row(
+                <Segmented
+                  label={t('Idioma', 'Language')}
+                  value={lang}
+                  options={[
+                    { value: 'pt', label: 'Português' },
+                    { value: 'en', label: 'English' },
+                  ]}
+                  onChange={(v: Lang) => update({ lang: v })}
+                />,
+              )}
+              {row(
+                <Segmented
+                  label={t('Notas', 'Notes')}
+                  value={settings.noteNames}
+                  options={[
+                    { value: 'letters', label: 'C D E' },
+                    { value: 'solfege', label: lang === 'pt' ? 'Dó Ré Mi' : 'Do Re Mi' },
+                  ]}
+                  onChange={(noteNames: NoteNames) => update({ noteNames })}
+                />,
+              )}
+            </div>
+          </Panel>
+          <Panel className="panel-sm" title={t('Acessibilidade', 'Accessibility')}>
+            <div className="stack-tight">
+              {row(
+                <Segmented
+                  label={t('Tema', 'Theme')}
+                  value={settings.theme}
+                  options={[
+                    { value: 'auto', label: t('Do sistema', 'System') },
+                    { value: 'light', label: t('Claro', 'Light') },
+                    { value: 'dark', label: t('Escuro', 'Dark') },
+                  ]}
+                  onChange={(theme: Theme) => update({ theme })}
+                />,
+              )}
+              <Toggle
+                id="set-contrast"
+                label={t('Alto contraste', 'High contrast')}
+                checked={settings.highContrast}
+                onChange={(highContrast) => update({ highContrast })}
+              />
+              <Toggle
+                id="set-colorblind"
+                label={t('Cores para daltonismo', 'Colorblind-friendly colors')}
+                hint={t(
+                  'Repouso em azul e tensão em vermelhão; as formas continuam',
+                  'Rest in blue and tension in vermilion; the shapes stay',
+                )}
+                checked={settings.colorblind}
+                onChange={(colorblind) => update({ colorblind })}
+              />
+              <Toggle
+                id="set-pulse"
+                label={t('Pulso visível e na vibração', 'Visible and vibrating pulse')}
+                hint={t(
+                  'O tempo da base pisca na tela e vibra no celular',
+                  'The backing track beat flashes on screen and vibrates the phone',
+                )}
+                checked={settings.pulse}
+                onChange={(pulse) => update({ pulse })}
+              />
+            </div>
+          </Panel>
+          {__ACCOUNTS__ ? <AccountPanel /> : null}
         </div>
-      </Panel>
-      <Panel title={t('Acessibilidade', 'Accessibility')}>
-        <div className="stack">
-          <Segmented
-            label={t('Tema', 'Theme')}
-            value={settings.theme}
-            options={[
-              { value: 'auto', label: t('Do sistema', 'System') },
-              { value: 'light', label: t('Claro', 'Light') },
-              { value: 'dark', label: t('Escuro', 'Dark') },
-            ]}
-            onChange={(theme: Theme) => update({ theme })}
-          />
-          <Toggle
-            id="set-contrast"
-            label={t('Alto contraste', 'High contrast')}
-            hint={t(
-              'Textos secundários e bordas mais fortes.',
-              'Stronger secondary text and borders.',
-            )}
-            checked={settings.highContrast}
-            onChange={(highContrast) => update({ highContrast })}
-          />
-          <Toggle
-            id="set-colorblind"
-            label={t('Cores para daltonismo', 'Colorblind-friendly colors')}
-            hint={t(
-              'Repouso azul, passagem amarelo, tensão vermelhão. As formas continuam.',
-              'Rest blue, passing yellow, tension vermilion. Shapes stay the same.',
-            )}
-            checked={settings.colorblind}
-            onChange={(colorblind) => update({ colorblind })}
-          />
-          <Toggle
-            id="set-pulse"
-            label={t('Pulso visível e na vibração', 'Visible and vibrating pulse')}
-            hint={t(
-              'Com a base tocando, a borda da tela pisca a cada tempo e o celular vibra (mais forte no 1).',
-              'With the backing track playing, the screen edge flashes on every beat and the phone vibrates (stronger on 1).',
-            )}
-            checked={settings.pulse}
-            onChange={(pulse) => update({ pulse })}
-          />
-        </div>
-      </Panel>
-      {__ACCOUNTS__ ? <AccountPanel /> : null}
-      <div className="columns">
-        <Panel title={t('Braço', 'Fretboard')}>
-          <div className="stack">
-            <Select
-              id="set-tuning"
-              label={t('Afinação', 'Tuning')}
-              value={settings.tuning}
-              options={tuningOptions}
-              onChange={(tuning) => update({ tuning })}
-            />
-            <Select
-              id="set-capo"
-              label={t('Capotraste', 'Capo')}
-              value={String(settings.capo)}
-              options={capoOptions}
-              onChange={(v) => update({ capo: Number(v) })}
-            />
-            {settings.capo ? (
+
+        <div className="settings-col">
+          <Panel className="panel-sm" title={t('Braço', 'Fretboard')}>
+            <div className="stack-tight">
+              {row(
+                <Select
+                  id="set-tuning"
+                  label={t('Afinação', 'Tuning')}
+                  value={settings.tuning}
+                  options={tuningOptions}
+                  onChange={(tuning) => update({ tuning })}
+                />,
+              )}
+              {row(
+                <Select
+                  id="set-capo"
+                  label={t('Capotraste', 'Capo')}
+                  value={String(settings.capo)}
+                  options={capoOptions}
+                  onChange={(v) => update({ capo: Number(v) })}
+                />,
+              )}
+              {settings.capo ? (
+                <p className="small muted">
+                  {t(
+                    `O braço começa no capo e as casas mostram a posição real. Os diagramas mostram a forma que a mão faz: com capo na casa ${settings.capo}, a forma de ${n('C')} soa ${n(CAPO_SOUNDS[settings.capo]!)}.`,
+                    `The fretboard starts at the capo and the frets show the real position. Chord diagrams show the shape your hand makes: with the capo on fret ${settings.capo}, the ${n('C')} shape sounds ${n(CAPO_SOUNDS[settings.capo]!)}.`,
+                  )}
+                </p>
+              ) : null}
+              {row(
+                <Select
+                  id="set-window"
+                  label={t('Região', 'Region')}
+                  value={settings.fretWindow === null ? 'all' : String(settings.fretWindow)}
+                  options={windowOptions}
+                  onChange={(v) =>
+                    update({ fretWindow: v === 'all' ? null : v === 'auto' ? 'auto' : Number(v) })
+                  }
+                />,
+              )}
+              {row(
+                <Segmented
+                  label={t('Rótulos', 'Labels')}
+                  value={settings.labels}
+                  options={LABEL_OPTIONS.map((o) => ({ ...o, label: t(o.label) }))}
+                  onChange={(labels) => update({ labels })}
+                />,
+              )}
+              <Toggle
+                id="set-left"
+                label={t('Canhoto', 'Left-handed')}
+                checked={settings.leftHanded}
+                onChange={(leftHanded) => update({ leftHanded })}
+              />
+              <Toggle
+                id="set-arpeggio"
+                label={t('Só arpejo', 'Arpeggio only')}
+                hint={t('Esconde as notas que não são do acorde', 'Hides notes outside the chord')}
+                checked={settings.arpeggio}
+                onChange={(arpeggio) => update({ arpeggio })}
+              />
+              <Toggle
+                id="set-shapes"
+                label={t('Formas além da cor', 'Shapes as well as color')}
+                hint={t(
+                  'Círculo, quadrado e losango diferenciam os tipos de nota',
+                  'Circle, square and diamond tell the note types apart',
+                )}
+                checked={settings.shapes}
+                onChange={(shapes) => update({ shapes })}
+              />
+            </div>
+          </Panel>
+
+          <Panel className="panel-sm" title={t('Pesos das sugestões', 'Suggestion weights')}>
+            <div className="stack-tight">
               <p className="small muted">
                 {t(
-                  `O braço começa no capo e as casas mostram a posição real. Os diagramas mostram a forma que a mão faz: com capo na casa ${settings.capo}, a forma de ${n('C')} soa ${n(CAPO_SOUNDS[settings.capo]!)}.`,
-                  `The fretboard starts at the capo and the frets show the real position. Chord diagrams show the shape your hand makes: with the capo on fret ${settings.capo}, the ${n('C')} shape sounds ${n(CAPO_SOUNDS[settings.capo]!)}.`,
+                  'Quanto cada critério conta na hora de ordenar as próximas notas.',
+                  'How much each criterion counts when ranking the next notes.',
                 )}
               </p>
-            ) : null}
-            <Segmented
-              label={t('Rótulos nas casas', 'Fret labels')}
-              value={settings.labels}
-              options={LABEL_OPTIONS.map((o) => ({ ...o, label: t(o.label) }))}
-              onChange={(labels) => update({ labels })}
-            />
-            <Toggle
-              id="set-left"
-              label={t('Canhoto', 'Left-handed')}
-              hint={t(
-                'Braço espelhado: casas da direita para a esquerda.',
-                'Mirrored fretboard: frets run right to left.',
-              )}
-              checked={settings.leftHanded}
-              onChange={(leftHanded) => update({ leftHanded })}
-            />
-            <Toggle
-              id="set-arpeggio"
-              label={t('Só arpejo', 'Arpeggio only')}
-              hint={t(
-                'Só as notas do acorde contam como dentro. Bom para treinar alvos.',
-                'Only chord tones count as inside. Good for practicing targets.',
-              )}
-              checked={settings.arpeggio}
-              onChange={(arpeggio) => update({ arpeggio })}
-            />
-            <Toggle
-              id="set-shapes"
-              label={t('Formas além da cor', 'Shapes as well as color')}
-              hint={t(
-                'Círculo = repouso, quadrado = passagem, losango = tensão.',
-                'Circle = rest, square = passing, diamond = tension.',
-              )}
-              checked={settings.shapes}
-              onChange={(shapes) => update({ shapes })}
-            />
-            <Select
-              id="set-window"
-              label={t('Região do braço', 'Fretboard region')}
-              value={settings.fretWindow === null ? 'all' : String(settings.fretWindow)}
-              options={windowOptions}
-              onChange={(v) =>
-                update({ fretWindow: v === 'all' ? null : v === 'auto' ? 'auto' : Number(v) })
-              }
-            />
-            <p className="small muted">
-              {t(
-                'Limitar a 5 casas ajuda a treinar uma "caixa" de improviso de cada vez. "Seguir a última nota" move a janela conforme você toca, pela tela ou pelo microfone.',
-                'Limiting to 5 frets helps you practice one improv "box" at a time. "Follow the last note" moves the window as you play, on screen or through the microphone.',
-              )}
-            </p>
-          </div>
-        </Panel>
+              {(Object.keys(WEIGHT_LABELS) as (keyof ScoreWeights)[]).map((k) => (
+                <Slider
+                  key={k}
+                  id={`weight-${k}`}
+                  label={t(WEIGHT_LABELS[k])}
+                  min={0}
+                  max={100}
+                  value={Math.round(settings.weights[k] * 100)}
+                  display={settings.weights[k].toFixed(2)}
+                  onChange={(v) => setWeights({ [k]: v / 100 })}
+                />
+              ))}
+              <div>
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  onClick={() => setWeights(DEFAULT_WEIGHTS)}
+                >
+                  {t('Restaurar padrão', 'Reset to default')}
+                </button>
+              </div>
+            </div>
+          </Panel>
 
-        <Panel
-          title={t('Pesos das sugestões', 'Suggestion weights')}
-          aside={
-            <button
-              type="button"
-              className="link-button"
-              onClick={() => setWeights(DEFAULT_WEIGHTS)}
-            >
-              {t('Restaurar', 'Reset')}
-            </button>
-          }
-        >
-          <div className="stack">
-            {(Object.keys(WEIGHT_LABELS) as (keyof ScoreWeights)[]).map((k) => (
-              <Slider
-                key={k}
-                id={`weight-${k}`}
-                label={t(WEIGHT_LABELS[k])}
-                min={0}
-                max={100}
-                value={Math.round(settings.weights[k] * 100)}
-                display={settings.weights[k].toFixed(2)}
-                onChange={(v) => setWeights({ [k]: v / 100 })}
+          <Panel className="panel-sm" title={t('Harmonia', 'Harmony')}>
+            <div className="stack-tight">
+              <Toggle
+                id="set-secondary"
+                label={t('Sugerir dominantes secundárias', 'Suggest secondary dominants')}
+                hint={t(`ex.: ${n('E7')} antes de ${n('Am')}`, `e.g. ${n('E7')} before ${n('Am')}`)}
+                checked={settings.extras.secondaryDominants}
+                onChange={(v) => setExtras({ secondaryDominants: v })}
               />
-            ))}
-            <p className="small muted">
-              {t(
-                'Ajuste de ouvido: suba "Resolução" para frases mais cadenciadas, "Proximidade" para melodias mais cantáveis.',
-                'Tune by ear: raise "Resolution" for more cadential phrases, "Proximity" for more singable melodies.',
-              )}
-            </p>
-          </div>
-        </Panel>
-      </div>
-
-      <Panel title={t('Harmonia', 'Harmony')}>
-        <div className="stack">
-          <Toggle
-            id="set-secondary"
-            label={t('Sugerir dominantes secundárias', 'Suggest secondary dominants')}
-            hint={t(
-              `Acordes de fora que preparam um acorde do tom, como ${n('E7')} → ${n('Am')} em ${n('C')} maior.`,
-              `Outside chords that set up a chord in the key, like ${n('E7')} → ${n('Am')} in ${n('C')} major.`,
-            )}
-            checked={settings.extras.secondaryDominants}
-            onChange={(v) => setExtras({ secondaryDominants: v })}
-          />
-          <Toggle
-            id="set-borrowed"
-            label={t('Sugerir empréstimo modal', 'Suggest modal borrowing')}
-            hint={t(
-              'No maior: iv, bVI e bVII do tom menor. No menor: IV maior (dórico).',
-              'In major: iv, bVI and bVII from the minor key. In minor: major IV (Dorian).',
-            )}
-            checked={settings.extras.modalBorrowing}
-            onChange={(v) => setExtras({ modalBorrowing: v })}
-          />
+              <Toggle
+                id="set-borrowed"
+                label={t('Sugerir empréstimo modal', 'Suggest modal borrowing')}
+                hint={t(
+                  `ex.: ${n('Fm')} ou ${n('Bb')} em ${n('C')} maior`,
+                  `e.g. ${n('Fm')} or ${n('Bb')} in ${n('C')} major`,
+                )}
+                checked={settings.extras.modalBorrowing}
+                onChange={(v) => setExtras({ modalBorrowing: v })}
+              />
+            </div>
+          </Panel>
         </div>
-      </Panel>
+      </div>
     </div>
   );
 }

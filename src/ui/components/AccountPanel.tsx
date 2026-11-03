@@ -2,7 +2,7 @@ import { useId, useState, type FormEvent } from 'react';
 import { useMusicStore } from '@/store/useMusicStore';
 import { ACCOUNT_LIMITS, signIn, signOut, signUp, syncNow } from '@/sync/sync';
 import { LOCALE, useLang, useT, type Lang } from '@/i18n';
-import { Panel, Segmented } from './controls';
+import { Panel } from './controls';
 
 const time = (ms: number, lang: Lang) =>
   new Date(ms).toLocaleTimeString(LOCALE[lang], { hour: '2-digit', minute: '2-digit' });
@@ -36,14 +36,14 @@ export function AccountPanel() {
 
   if (account.status === 'unknown')
     return (
-      <Panel title={t('Conta', 'Account')}>
+      <Panel className="panel-sm" title={t('Conta', 'Account')}>
         <p className="small muted">{t('Verificando a sessão…', 'Checking your session…')}</p>
       </Panel>
     );
 
   if (account.status === 'signedIn' && account.user)
     return (
-      <Panel title="Conta">
+      <Panel className="panel-sm" title={t('Conta', 'Account')}>
         <div className="stack">
           <p className="account-who">
             <strong>{account.user.name || account.user.email}</strong>
@@ -80,18 +80,14 @@ export function AccountPanel() {
     );
 
   return (
-    <Panel title={t('Conta', 'Account')}>
+    <Panel className="panel-sm" title={t('Conta', 'Account')}>
       <form className="stack account-form" onSubmit={(e) => void submit(e)}>
-        <Segmented
-          label={t('Acesso', 'Access')}
-          hideLabel
-          value={mode}
-          options={[
-            { value: 'in', label: t('Entrar', 'Sign in') },
-            { value: 'up', label: t('Criar conta', 'Create account') },
-          ]}
-          onChange={setMode}
-        />
+        <p className="small muted">
+          {t(
+            'Opcional. Com conta, suas progressões e ajustes passam para outros aparelhos. Sem conta, tudo fica salvo só neste aparelho.',
+            'Optional. With an account, your progressions and settings carry over to your other devices. Without one, everything stays on this device only.',
+          )}
+        </p>
         {mode === 'up' ? (
           <label className="field" htmlFor={ids.name}>
             <span className="field-label">{t('Nome', 'Name')}</span>
@@ -115,8 +111,12 @@ export function AccountPanel() {
             autoComplete="email"
             maxLength={ACCOUNT_LIMITS.email}
             value={email}
+            aria-describedby={`${ids.email}-hint`}
             onChange={(e) => setEmail(e.target.value)}
           />
+          <span id={`${ids.email}-hint`} className="field-hint">
+            {t('Usado só para entrar e sincronizar.', 'Used only to sign in and sync.')}
+          </span>
         </label>
         <label className="field" htmlFor={ids.password}>
           <span className="field-label">{t('Senha', 'Password')}</span>
@@ -129,15 +129,22 @@ export function AccountPanel() {
             maxLength={ACCOUNT_LIMITS.passwordMax}
             autoComplete={mode === 'up' ? 'new-password' : 'current-password'}
             value={password}
+            aria-describedby={`${ids.password}-hint`}
             onChange={(e) => setPassword(e.target.value)}
           />
+          <span id={`${ids.password}-hint`} className="field-hint">
+            {t(
+              `Pelo menos ${ACCOUNT_LIMITS.passwordMin} caracteres.`,
+              `At least ${ACCOUNT_LIMITS.passwordMin} characters.`,
+            )}
+          </span>
         </label>
         {account.error ? (
           <p className="notice" role="alert">
             {account.error}
           </p>
         ) : null}
-        <div className="editor-actions">
+        <div className="editor-actions account-actions">
           <button type="submit" className="button button-primary" disabled={busy}>
             {busy
               ? t('Aguarde…', 'Please wait…')
@@ -145,13 +152,16 @@ export function AccountPanel() {
                 ? t('Criar conta', 'Create account')
                 : t('Entrar', 'Sign in')}
           </button>
+          <button
+            type="button"
+            className="button button-ghost"
+            onClick={() => setMode(mode === 'up' ? 'in' : 'up')}
+          >
+            {mode === 'up'
+              ? t('Já tenho conta', 'I have an account')
+              : t('Criar conta', 'Create account')}
+          </button>
         </div>
-        <p className="small muted">
-          {t(
-            'Opcional. Com conta, seus ajustes, progressões e progresso ficam iguais em todos os aparelhos. Sem conta, tudo continua salvo só neste aparelho.',
-            'Optional. With an account, your settings, progressions and progress are the same on all your devices. Without one, everything stays saved on this device only.',
-          )}
-        </p>
       </form>
     </Panel>
   );
