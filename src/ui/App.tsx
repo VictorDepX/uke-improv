@@ -1,9 +1,10 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { preloadAudioWhenIdle } from '@/audio/engine/sound';
 import { startSync } from '@/sync/sync';
 import { SCALES } from '@/core/music';
 import { useMusicStore } from '@/store/useMusicStore';
-import { KeyPicker } from './components/KeyPicker';
+import { Icon } from './components/Icon';
+import { MicToggle } from './components/MicToggle';
 import { useJamSync } from './hooks/useJamSync';
 import { useWakeLock } from './hooks/useWakeLock';
 import { ExplorePage } from './pages/ExplorePage';
@@ -70,6 +71,17 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
   const t = useMemo(() => makeT(lang, names), [lang, names]);
   const [keyOpen, setKeyOpen] = useState(false);
   const [practiceOpen, setPracticeOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const menuClose = useRef<HTMLButtonElement>(null);
+  const closeMenu = useCallback(() => {
+    setMenuOpen(false);
+    menuButton.current?.focus();
+  }, []);
+  // Gaveta aberta: o foco entra nela (o botão de fechar) e Esc fecha.
+  useEffect(() => {
+    if (menuOpen) menuClose.current?.focus();
+  }, [menuOpen]);
   const closePractice = useCallback(() => setPracticeOpen(false), []);
   const key = useMusicStore((s) => s.key);
   const jamPlaying = useMusicStore((s) => s.jam.playing);
@@ -104,13 +116,6 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
     }
   }, [tab, lang, names]);
 
-  // No celular o menu rola de lado: a aba aberta fica sempre à vista.
-  useEffect(() => {
-    document
-      .querySelector('.tab[aria-current="page"]')
-      ?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
-  }, [tab]);
-
   // Voltar e avançar do navegador trocam de aba (e de idioma, se o endereço mudar).
   useEffect(() => {
     const onPop = () => {
@@ -122,6 +127,7 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
   }, []);
 
   const openTab = (id: TabId) => {
+    setMenuOpen(false);
     if (id === tab) return;
     if (USE_PATHS) history.pushState(null, '', `${TAB_PATHS[lang][id]}${window.location.search}`);
     setRoute({ tab: id, lang });
@@ -140,42 +146,74 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
 
   return (
     <LangProvider value={lang}>
-      <div className="app" data-shapes={shapes || undefined} lang={HTML_LANG[lang]}>
-        <header className="topbar">
-          <div className="topbar-inner">
-            <div className="brand">
-              <span className="brand-mark" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-                <span />
+      <div
+        className="app"
+        data-shapes={shapes || undefined}
+        data-tab={tab}
+        data-key-open={keyOpen || undefined}
+        lang={HTML_LANG[lang]}
+      >
+        {/*
+         * Uma estrutura só para os dois tamanhos: no desktop é o trilho lateral (marca, abas,
+         * idioma e Praticar); no celular é a barra do topo, e as abas abrem numa gaveta.
+         */}
+        <header className="shell">
+          <a className="shell-brand" href={hrefFor('explorar', lang)} onClick={(e) => {
+            e.preventDefault();
+            openTab('explorar');
+          }}>
+            Uke Improv
+          </a>
+          <button
+            ref={menuButton}
+            type="button"
+            className="shell-menu icon-button"
+            aria-expanded={menuOpen}
+            aria-controls="site-menu"
+            aria-label={t('Abrir menu', 'Open menu')}
+            onClick={() => setMenuOpen(true)}
+          >
+            <Icon name="menu" />
+          </button>
+          <div className="shell-title">
+            {tab === 'explorar' ? (
+              <button
+                type="button"
+                className="key-toggle"
+                aria-expanded={keyOpen}
+                aria-controls="key-picker"
+                onClick={() => setKeyOpen((o) => !o)}
+              >
+                <span className="key-toggle-tonic">{names(key.tonic)}</span>
+                <span className="key-toggle-scale">{t(SCALES[key.scale].label)}</span>
+                <span className="key-toggle-caret" aria-hidden="true" />
+              </button>
+            ) : (
+              <span className="shell-page" aria-hidden="true">
+                {current.label[lang]}
               </span>
-              <span className="brand-name">Uke Improv</span>
+            )}
+          </div>
+          <div
+            id="site-menu"
+            className="shell-panel"
+            data-open={menuOpen || undefined}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') closeMenu();
+            }}
+          >
+            <div className="shell-panel-head">
+              <button
+                ref={menuClose}
+                type="button"
+                className="icon-button"
+                aria-label={t('Fechar menu', 'Close menu')}
+                onClick={closeMenu}
+              >
+                <Icon name="close" />
+              </button>
+              <span className="shell-panel-brand">Uke Improv</span>
             </div>
-            {/* No celular o seletor de tom fica recolhido atrás deste botão. */}
-            <button
-              type="button"
-              className="key-toggle"
-              aria-expanded={keyOpen}
-              aria-controls="key-picker"
-              onClick={() => setKeyOpen((o) => !o)}
-            >
-              <span className="key-toggle-tonic">{names(key.tonic)}</span>
-              <span className="key-toggle-scale">{t(SCALES[key.scale].label)}</span>
-              <span className="key-toggle-caret" aria-hidden="true" />
-            </button>
-            <div id="key-picker" className="key-picker-slot" data-open={keyOpen || undefined}>
-              <KeyPicker />
-            </div>
-            <button
-              type="button"
-              className="practice-open"
-              onClick={() => setPracticeOpen(true)}
-              aria-label={t('Abrir modo prática', 'Open practice mode')}
-            >
-              <span className="practice-open-icon" aria-hidden="true" />
-              <span className="practice-open-label">{t('Praticar', 'Practice')}</span>
-            </button>
             <nav className="tabs" aria-label={t('Seções', 'Sections')}>
               {NAV_TABS.map((def) => (
                 <a
@@ -195,41 +233,61 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
                 {t('Guias', 'Guides')}
               </a>
             </nav>
-            <a
-              className="lang-switch"
-              href={hrefFor(tab, otherLang)}
-              hrefLang={HTML_LANG[otherLang]}
-              lang={HTML_LANG[otherLang]}
-              aria-label={otherLang === 'en' ? 'Switch to English' : 'Mudar para português'}
-              onClick={(e) => {
-                e.preventDefault();
-                switchLang(otherLang);
-              }}
-            >
-              {otherLang.toUpperCase()}
-            </a>
+            <div className="shell-panel-foot">
+              <a
+                className="lang-switch"
+                href={hrefFor(tab, otherLang)}
+                hrefLang={HTML_LANG[otherLang]}
+                lang={HTML_LANG[otherLang]}
+                aria-label={otherLang === 'en' ? 'Switch to English' : 'Mudar para português'}
+                onClick={(e) => {
+                  e.preventDefault();
+                  switchLang(otherLang);
+                }}
+              >
+                {otherLang === 'en' ? 'English' : 'Português'}
+              </a>
+              <p className="shell-code">
+                {t('Código aberto (MIT)', 'Open source (MIT)')} ·{' '}
+                <a href="https://github.com/VictorDepX/uke-improv">GitHub</a>
+              </p>
+            </div>
           </div>
+          {menuOpen ? (
+            <div className="shell-scrim" aria-hidden="true" onClick={closeMenu} />
+          ) : null}
+          {tab === 'explorar' ? <MicToggle /> : null}
+          <button
+            type="button"
+            className="practice-open button button-primary"
+            onClick={() => setPracticeOpen(true)}
+            aria-label={t('Abrir modo prática', 'Open practice mode')}
+          >
+            {t('Praticar', 'Practice')}
+          </button>
         </header>
-        <LangHint lang={lang} onSwitch={switchLang} />
-        <main className="main">
-          <h1 className="sr-only">{current.h1[lang]}</h1>
-          <Suspense fallback={<PageSkeleton />}>
-            {tab === 'explorar' ? (
-              <ExplorePage />
-            ) : tab === 'jam' ? (
-              <JamPage />
-            ) : tab === 'ouvido' ? (
-              <EarPage />
-            ) : tab === 'afinador' ? (
-              <TunerPage />
-            ) : tab === 'cifra' ? (
-              <ChartPage />
-            ) : (
-              <SettingsPage />
-            )}
-          </Suspense>
-        </main>
-        <AppFooter title={current.h1[lang]} about={current.about[lang]} />
+        <div className="content">
+          <LangHint lang={lang} onSwitch={switchLang} />
+          <main className="main" id="main">
+            <h1 className="sr-only">{current.h1[lang]}</h1>
+            <Suspense fallback={<PageSkeleton />}>
+              {tab === 'explorar' ? (
+                <ExplorePage />
+              ) : tab === 'jam' ? (
+                <JamPage />
+              ) : tab === 'ouvido' ? (
+                <EarPage />
+              ) : tab === 'afinador' ? (
+                <TunerPage />
+              ) : tab === 'cifra' ? (
+                <ChartPage />
+              ) : (
+                <SettingsPage />
+              )}
+            </Suspense>
+          </main>
+          <AppFooter title={current.h1[lang]} about={current.about[lang]} />
+        </div>
         {practiceOpen ? (
           <Suspense fallback={null}>
             <PracticeMode onClose={closePractice} />

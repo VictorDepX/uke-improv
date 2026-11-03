@@ -3,21 +3,28 @@ import { playChord } from '@/audio/engine/sound';
 import { chordToNumeral } from '@/core/harmony';
 import { useChordSuggestions, useVoicing } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
-import { useNames, useT } from '@/i18n';
+import { tx, useLang, useNames, useT, type Txt } from '@/i18n';
 import { FUNC_LABEL } from '../format';
+import { navigateTo } from '../routes';
 import { ChordDiagram } from './ChordDiagram';
-import { Panel, Toggle } from './controls';
+import { Toggle } from './controls';
+import { sentence } from './NoteSuggestions';
 
-const KIND_LABEL = {
-  diatonic: null,
-  secondary: { pt: 'secundária', en: 'secondary' },
-  borrowed: { pt: 'emprestado', en: 'borrowed' },
-} as const;
+/** Rótulo de função das sugestões fora do campo harmônico. */
+const KIND_FUNC: Record<'secondary' | 'borrowed', Txt> = {
+  secondary: tx('Dominante secundária', 'Secondary dominant'),
+  borrowed: tx('Empréstimo modal', 'Borrowed chord'),
+};
 
+/**
+ * Próximo acorde (lateral do Explorar): os 4 melhores a partir do atual, com diagrama, grau,
+ * função e o motivo. Tocar uma opção faz dela o acorde atual.
+ */
 export function ChordSuggestions() {
   const t = useT();
   const n = useNames();
-  const suggestions = useChordSuggestions(5);
+  const lang = useLang();
+  const suggestions = useChordSuggestions(4);
   const current = useMusicStore((s) => s.currentChord);
   const key = useMusicStore((s) => s.key);
   const capo = useMusicStore((s) => s.settings.capo);
@@ -25,52 +32,34 @@ export function ChordSuggestions() {
   const extras = useMusicStore((s) => s.settings.extras);
   const setExtras = useMusicStore((s) => s.setExtras);
   const setChord = useMusicStore((s) => s.setChord);
+  const loadChart = useMusicStore((s) => s.loadChart);
 
   const play = useCallback((symbol: string) => void playChord(voicing(symbol).midis), [voicing]);
+  const numeral = chordToNumeral(current, key);
 
-  const currentVoicing = voicing(current);
-  const currentShapes = currentVoicing.shapes;
+  // Volta curta para tocar no Jam: o atual, as duas primeiras saídas e de volta ao atual.
+  const loop = [current, ...suggestions.slice(0, 2).map((s) => s.symbol), current];
+  const loopLabel = loop.map(n).join(' → ');
+  const toJam = () => {
+    loadChart({ key, bars: loop.map((c) => [c]), name: loopLabel });
+    navigateTo('jam', lang);
+  };
 
   return (
-    <Panel title={t('Próximo acorde', 'Next chord')}>
-      <div className="current-chord">
-        <button
-          type="button"
-          className="current-chord-diagram"
-          onClick={() => play(current)}
-          aria-label={t(`Tocar ${n(current)}`, `Play ${n(current)}`)}
-        >
-          {currentShapes[0] ? <ChordDiagram shape={currentShapes[0]} label={n(current)} /> : null}
-        </button>
-        <div className="current-chord-text">
-          <span className="eyebrow">{t('Agora', 'Now')}</span>
-          <span className="current-chord-symbol">{n(current)}</span>
-          <span className="mono muted">{chordToNumeral(current, key)}</span>
-          {capo ? (
-            <span className="chord-shape-of">
-              {t('forma de', 'shape of')} <strong>{n(currentVoicing.shapeName)}</strong> · capo{' '}
-              {capo}
-            </span>
-          ) : null}
-          {currentShapes.length > 1 ? (
-            <span className="alt-shapes" aria-label={t('Outras formas', 'Other shapes')}>
-              <span className="alt-shapes-label" aria-hidden="true">
-                {t('outras:', 'others:')}
-              </span>
-              {currentShapes.slice(1).map((s) => (
-                <span key={s.join('')} className="mono">
-                  {s.join('')}
-                </span>
-              ))}
-            </span>
-          ) : null}
-        </div>
-      </div>
+    <section className="chord-next" aria-labelledby="chord-next-title">
+      <h2 id="chord-next-title">{t('Próximo acorde', 'Next chord')}</h2>
+      <p className="chord-next-lead">
+        {t(
+          `Agora em ${n(current)}, o ${numeral}. Toque um destes para ele virar o atual.`,
+          `Now on ${n(current)}, the ${numeral}. Tap one of these to make it the current chord.`,
+        )}
+      </p>
 
       <ol className="chord-suggestions">
         {suggestions.map((s) => {
           const v = voicing(s.symbol);
           const shape = v.shapes[0];
+          const kind = s.kind === 'diatonic' ? null : s.kind;
           return (
             <li key={s.symbol}>
               <button
@@ -82,23 +71,18 @@ export function ChordSuggestions() {
                   play(s.symbol);
                 }}
               >
-                {shape ? <ChordDiagram shape={shape} label={n(s.symbol)} size="sm" /> : null}
+                {shape ? <ChordDiagram shape={shape} label={n(s.symbol)} /> : null}
                 <span className="chord-suggestion-body">
                   <span className="chord-suggestion-head">
                     <strong>{n(s.symbol)}</strong>
-                    <span className="mono muted">{s.numeral}</span>
-                    {KIND_LABEL[s.kind] ? (
-                      <span className="tag">{t(KIND_LABEL[s.kind]!)}</span>
-                    ) : null}
-                    {capo ? (
-                      <span className="chord-shape-of">
-                        {t('forma de', 'shape of')} {n(v.shapeName)}
-                      </span>
-                    ) : null}
+                    <span className="mono">{s.numeral}</span>
                   </span>
-                  <span className="chord-suggestion-reason">{t(s.reason)}</span>
                   <span className="func-label" data-func={s.func}>
-                    {t(FUNC_LABEL[s.func])}
+                    {t(kind ? KIND_FUNC[kind] : FUNC_LABEL[s.func])}
+                  </span>
+                  <span className="chord-suggestion-reason">
+                    {sentence(t(s.reason))}
+                    {capo ? ` ${t('Forma de', 'Shape of')} ${n(v.shapeName)}.` : ''}
                   </span>
                 </span>
               </button>
@@ -126,6 +110,12 @@ export function ChordSuggestions() {
           onChange={(v) => setExtras({ modalBorrowing: v })}
         />
       </div>
-    </Panel>
+
+      {suggestions.length >= 2 ? (
+        <button type="button" className="button chord-next-jam" onClick={toJam}>
+          {t(`Levar ${loopLabel} para o Jam`, `Take ${loopLabel} to the Jam`)}
+        </button>
+      ) : null}
+    </section>
   );
 }

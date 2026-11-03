@@ -181,3 +181,15 @@ export function routeFromLocation(
 
 export const tabFromLocation = (pathname: string, hash: string): TabId =>
   routeFromLocation(pathname, hash).tab;
+
+/**
+ * Abre uma aba de dentro de uma página (ex.: "Levar para o Jam"): troca o endereço e avisa o
+ * App pelo mesmo evento do voltar/avançar do navegador.
+ */
+export function navigateTo(tab: TabId, lang: Lang): void {
+  const url = USE_PATHS
+    ? `${TAB_PATHS[lang][tab]}${window.location.search}`
+    : `${window.location.pathname}${window.location.search}${tab === 'explorar' ? '' : `#${tab}`}`;
+  history.pushState(null, '', url);
+  window.dispatchEvent(new PopStateEvent('popstate'));
+}

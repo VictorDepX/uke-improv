@@ -81,7 +81,7 @@ export const Fretboard = memo(function Fretboard({
   const cancelPress = () => {
     if (press.current) window.clearTimeout(press.current.timer);
   };
-  const vertical = useMediaQuery('(max-width: 640px)');
+  const vertical = useMediaQuery('(max-width: 640px) and (min-height: 541px)');
   const flats = prefersFlats(keyContext);
   const t = useT();
   const n = useNames();
@@ -239,7 +239,9 @@ export const Fretboard = memo(function Fretboard({
         style={
           vertical
             ? { gridTemplateRows: `auto repeat(${frets.length}, var(--fb-cell-v))` }
-            : { gridTemplateColumns: `auto repeat(${frets.length}, minmax(var(--fb-cell-h), 1fr))` }
+            : {
+                gridTemplateColumns: `34px 54px repeat(${frets.length - 1}, minmax(var(--fb-cell-h), 1fr))`,
+              }
         }
         role="group"
         aria-label={t('Braço do ukulele', 'Ukulele fretboard')}
@@ -281,6 +283,23 @@ export const Fretboard = memo(function Fretboard({
             {f === 0 ? (capo ? `C${capo}` : '') : f + capo}
           </span>
         ))}
+        {frets.flatMap((f, i) => {
+          if (f === 0 || !INLAY_FRETS.has(f + capo)) return [];
+          // Uma marcação no meio do braço; na 12ª, duas (entre as cordas de fora).
+          const spans = f + capo === 12 ? ['2 / span 2', '4 / span 2'] : ['3 / span 2'];
+          return spans.map((span) => (
+            <span
+              key={`inlay-${f}-${span}`}
+              className="fb-inlay"
+              aria-hidden="true"
+              style={
+                vertical
+                  ? { gridRow: i + 2, gridColumn: span }
+                  : { gridColumn: i + 2, gridRow: span }
+              }
+            />
+          ));
+        })}
         {strings.flatMap((s) => byString[s]!.filter((p) => frets.includes(p.fret)).map(cell))}
       </div>
     </div>

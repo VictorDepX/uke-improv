@@ -2,7 +2,7 @@ import { tx, type Txt } from '@/i18n/lang';
 import { mod12 } from './music';
 import type { FretPosition, TuningName } from './types';
 
-export const FRET_COUNT = 15;
+export const FRET_COUNT = 12;
 
 /** MIDI das cordas soltas, da 4ª (G) para a 1ª (A). */
 export const TUNINGS: Record<TuningName, { label: Txt; open: readonly number[] }> = {

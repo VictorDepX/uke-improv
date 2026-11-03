@@ -20,6 +20,10 @@ export function AppFooter({ title, about }: { title: string; about: string }) {
           {about.split('\n\n').map((p) => (
             <p key={p.slice(0, 24)}>{p}</p>
           ))}
+          <p className="app-footer-meta">
+            {t('Código aberto (MIT)', 'Open source (MIT)')} ·{' '}
+            <a href="https://github.com/VictorDepX/uke-improv">GitHub</a>
+          </p>
         </section>
         <nav aria-labelledby="guides-title">
           <h2 id="guides-title">{t('Guias', 'Guides')}</h2>
@@ -44,10 +48,6 @@ export function AppFooter({ title, about }: { title: string; about: string }) {
             </li>
           </ul>
         </nav>
-        <p className="app-footer-meta">
-          {t('Código aberto (MIT)', 'Open source (MIT)')} ·{' '}
-          <a href="https://github.com/VictorDepX/uke-improv">GitHub</a>
-        </p>
       </div>
     </footer>
   );
