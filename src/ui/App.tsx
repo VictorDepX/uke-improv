@@ -70,7 +70,17 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
   const names = useMemo(() => noteNamer(noteNames, lang), [noteNames, lang]);
   const t = useMemo(() => makeT(lang, names), [lang, names]);
   const [keyOpen, setKeyOpen] = useState(false);
-  const [practiceOpen, setPracticeOpen] = useState(false);
+  // "Praticar" das páginas de guia (sem JavaScript) chega como ?praticar e abre o modo prática.
+  const [practiceOpen, setPracticeOpen] = useState(
+    () =>
+      typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('praticar'),
+  );
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('praticar')) return;
+    url.searchParams.delete('praticar');
+    history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  }, []);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const menuClose = useRef<HTMLButtonElement>(null);
@@ -158,10 +168,14 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
          * idioma e Praticar); no celular é a barra do topo, e as abas abrem numa gaveta.
          */}
         <header className="shell">
-          <a className="shell-brand" href={hrefFor('explorar', lang)} onClick={(e) => {
-            e.preventDefault();
-            openTab('explorar');
-          }}>
+          <a
+            className="shell-brand"
+            href={hrefFor('explorar', lang)}
+            onClick={(e) => {
+              e.preventDefault();
+              openTab('explorar');
+            }}
+          >
             Uke Improv
           </a>
           <button
@@ -253,9 +267,7 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
               </p>
             </div>
           </div>
-          {menuOpen ? (
-            <div className="shell-scrim" aria-hidden="true" onClick={closeMenu} />
-          ) : null}
+          {menuOpen ? <div className="shell-scrim" aria-hidden="true" onClick={closeMenu} /> : null}
           {tab === 'explorar' ? <MicToggle /> : null}
           <button
             type="button"

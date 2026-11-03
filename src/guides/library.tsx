@@ -481,3 +481,33 @@ export const LIBRARY: Guide[] = LANGS.flatMap((lang) => [
   ...MAJOR_KEYS.map((t) => keyGuide(t, false, lang)),
   ...MINOR_KEYS.map((t) => keyGuide(t, true, lang)),
 ]);
+
+const byChroma = (a: string, b: string) => chromaOf(a) - chromaOf(b);
+
+/** Índice para a página de guias: uma linha por escala (ou por modo) com os tons que têm página. */
+export function libraryIndex(lang: GuideLang) {
+  const label = (s: LibScale) =>
+    lang === 'pt'
+      ? s === 'minor'
+        ? 'menor natural'
+        : SCALE_TEXT[s].pt
+      : s === 'minor'
+        ? 'natural minor'
+        : SCALE_TEXT[s].en;
+  return {
+    scales: SCALE_PAGES.map(([scale, tonics]) => ({
+      label: label(scale),
+      links: [...tonics].sort(byChroma).map((t) => ({ name: t, path: scalePath(scale, t, lang) })),
+    })),
+    keys: [
+      {
+        label: lang === 'pt' ? 'maior' : 'major',
+        links: MAJOR_KEYS.map((t) => ({ name: t, path: keyPath(t, false, lang) })),
+      },
+      {
+        label: lang === 'pt' ? 'menor' : 'minor',
+        links: MINOR_KEYS.map((t) => ({ name: t, path: keyPath(t, true, lang) })),
+      },
+    ],
+  };
+}

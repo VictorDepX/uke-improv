@@ -20,6 +20,36 @@ function setMeta(html, attr, key, value) {
   return html.replace(re, `$1${esc(value)}$2`);
 }
 
+const slug = (s) =>
+  s
+    .replace(/<[^>]+>/g, '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+/** Sumário do guia: os H2 do artigo ganham id e viram a lista "Neste guia". */
+function withToc(body) {
+  if (!body.includes('<ol class="guide-toc-list"></ol>')) return body;
+  const start = body.indexOf('<article');
+  const end = body.indexOf('</article>');
+  if (start < 0 || end < 0) return body;
+  const items = [];
+  const used = new Set();
+  const article = body.slice(start, end).replace(/<h2>([\s\S]*?)<\/h2>/g, (_, inner) => {
+    let id = slug(inner) || 'secao';
+    while (used.has(id)) id += '-2';
+    used.add(id);
+    items.push(`<li><a href="#${id}">${inner.replace(/<[^>]+>/g, '')}</a></li>`);
+    return `<h2 id="${id}">${inner}</h2>`;
+  });
+  return (body.slice(0, start) + article + body.slice(end)).replace(
+    '<ol class="guide-toc-list"></ol>',
+    `<ol class="guide-toc-list">${items.join('')}</ol>`,
+  );
+}
+
 function pageHtml(page) {
   let html = template;
   html = html.replace(/<html lang="[^"]*">/, `<html lang="${hreflang(page.lang)}">`);
@@ -107,7 +137,7 @@ function pageHtml(page) {
 
   html = html.replace('</head>', `${extraHead}</head>`);
   if (!html.includes('<div id="root"></div>')) throw new Error('#root vazio não encontrado');
-  return html.replace('<div id="root"></div>', `<div id="root">${page.html}</div>`);
+  return html.replace('<div id="root"></div>', `<div id="root">${withToc(page.html)}</div>`);
 }
 
 const pages = await renderPages();

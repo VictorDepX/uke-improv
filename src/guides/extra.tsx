@@ -2,6 +2,7 @@ import { PROGRESSIONS, meterOf, progressionBars } from '@/core/progressions';
 import type { KeyContext } from '@/core/types';
 import { GUIDES, type Guide } from './index';
 import { HUB_PATH, type GuideLang } from './links';
+import { libraryIndex } from './library';
 
 const BLURB: Record<string, { pt: string; en: string }> = {
   pop: {
@@ -106,49 +107,104 @@ export function ProgressionsBody({ lang }: { lang: GuideLang }) {
 const byKind = (lang: GuideLang, kind: Guide['kind']) =>
   GUIDES.filter((g) => g.lang === lang && g.kind === kind);
 
+const shortDate = (iso: string, lang: GuideLang) =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString(lang === 'pt' ? 'pt-BR' : 'en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+
 /** Índice de guias: liga todas as páginas de conteúdo (nenhuma fica órfã). */
 export function HubBody({ lang }: { lang: GuideLang }) {
   const L = (pt: string, en: string) => (lang === 'pt' ? pt : en);
-  const list = (items: Guide[]) => (
-    <ul>
-      {items.map((g) => (
-        <li key={g.path}>
-          <a href={g.path}>{g.title}</a>
-        </li>
+  const index = libraryIndex(lang);
+  const rows = (items: { label: string; links: { name: string; path: string }[] }[]) => (
+    <dl className="hub-rows">
+      {items.map((r) => (
+        <div key={r.label} className="hub-row">
+          <dt>{r.label}</dt>
+          <dd>
+            <ul>
+              {r.links.map((l) => (
+                <li key={l.path}>
+                  <a href={l.path}>{l.name}</a>
+                </li>
+              ))}
+            </ul>
+          </dd>
+        </div>
       ))}
-    </ul>
+    </dl>
   );
   return (
     <>
       <p className="guide-lead">
         {L(
-          'Guias para improvisar no ukulele, escalas por tom e os acordes de cada tom, com diagramas na afinação G C E A.',
-          'Guides to improvising on ukulele, scales in each key and the chords of every key, with diagrams in G C E A tuning.',
+          'Como improvisar, escalas por tom, campo harmônico de cada tom e progressões, com diagramas para ukulele.',
+          'How to improvise, scales in each key, the chords of every key and progressions, with ukulele diagrams.',
         )}
       </p>
-      <h2>{L('Guias', 'Guides')}</h2>
-      {list(byKind(lang, 'article'))}
-      <h2>{L('Escalas por tom', 'Scales by key')}</h2>
-      {list(byKind(lang, 'scale'))}
-      <h2>{L('Campo harmônico por tom', 'Chords by key')}</h2>
-      {list(byKind(lang, 'key'))}
-      <h2>{L('Ferramentas', 'Tools')}</h2>
-      <ul>
-        <li>
-          <a href={L('/afinador', '/en/tuner')}>{L('Afinador de ukulele', 'Ukulele tuner')}</a>
-        </li>
-        <li>
-          <a href={L('/analisar-cifra', '/en/chord-chart-analyzer')}>
-            {L('Descobrir o tom pela cifra', 'Find the key from a chord chart')}
-          </a>
-        </li>
-        <li>
-          <a href={L('/jam', '/en/jam')}>{L('Base para improvisar', 'Backing tracks')}</a>
-        </li>
-        <li>
-          <a href={L('/ouvido', '/en/ear')}>{L('Treino de ouvido', 'Ear training')}</a>
-        </li>
-      </ul>
+      <div className="hub-cols">
+        <div className="hub-col">
+          <section aria-labelledby="hub-guides">
+            <h2 id="hub-guides">{L('Guias', 'Guides')}</h2>
+            <ul className="hub-guides">
+              {byKind(lang, 'article').map((g) => (
+                <li key={g.path}>
+                  <a href={g.path}>{g.title}</a>
+                  <span>{g.description}</span>
+                  <span className="mono">
+                    {L('Atualizado em', 'Updated')} {shortDate(g.updated, lang)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+          <section aria-labelledby="hub-tools">
+            <h2 id="hub-tools">{L('Ferramentas', 'Tools')}</h2>
+            <ul className="hub-tools">
+              <li>
+                <a href={L('/afinador', '/en/tuner')}>
+                  {L('Afinador de ukulele', 'Ukulele tuner')}
+                </a>
+              </li>
+              <li>
+                <a href={L('/analisar-cifra', '/en/chord-chart-analyzer')}>
+                  {L('Descobrir o tom pela cifra', 'Find the key from a chord chart')}
+                </a>
+              </li>
+              <li>
+                <a href={L('/jam', '/en/jam')}>{L('Base para improvisar', 'Backing tracks')}</a>
+              </li>
+              <li>
+                <a href={L('/ouvido', '/en/ear')}>{L('Treino de ouvido', 'Ear training')}</a>
+              </li>
+            </ul>
+          </section>
+        </div>
+        <div className="hub-col">
+          <section aria-labelledby="hub-scales">
+            <h2 id="hub-scales">{L('Escalas por tom', 'Scales by key')}</h2>
+            <p className="hub-sub">
+              {L(
+                'Cada link abre a escala inteira no braço, com as notas de cada casa.',
+                'Each link opens the whole scale on the fretboard, with the note on every fret.',
+              )}
+            </p>
+            {rows(index.scales)}
+          </section>
+          <section aria-labelledby="hub-keys">
+            <h2 id="hub-keys">{L('Campo harmônico por tom', 'Chords by key')}</h2>
+            <p className="hub-sub">
+              {L(
+                'Os sete acordes de cada tom, com grau, função e diagrama.',
+                'The seven chords of each key, with degree, function and diagram.',
+              )}
+            </p>
+            {rows(index.keys)}
+          </section>
+        </div>
+      </div>
     </>
   );
 }
