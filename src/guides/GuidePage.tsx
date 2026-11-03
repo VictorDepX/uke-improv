@@ -130,7 +130,7 @@ export function GuidePage({ guide }: { guide: Guide }) {
           </nav>
           <div className="shell-panel-foot">
             {langLink}
-            <a className="button button-primary" href={`${t.homePath}?praticar`}>
+            <a className="button button-primary" href={`${t.homePath}#praticar`}>
               {t.practice}
             </a>
           </div>

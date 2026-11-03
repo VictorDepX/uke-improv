@@ -347,8 +347,8 @@ button:disabled {
   width: min(300px, 86vw);
   display: flex;
   flex-direction: column;
-  padding: max(12px, env(safe-area-inset-top, 0px)) 20px
-    max(24px, env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px));
+  padding: max(12px, env(safe-area-inset-top, 0px)) 20px max(24px, env(safe-area-inset-bottom, 0px))
+    max(20px, env(safe-area-inset-left, 0px));
   background: var(--surface);
   border-right: 1px solid var(--line);
   overflow-y: auto;
@@ -723,7 +723,7 @@ button:disabled {
   min-width: 0;
 }
 
-.settings-row {
+.field-row.settings-row {
   grid-template-columns: 112px minmax(0, 1fr);
 }
 
@@ -736,7 +736,7 @@ button:disabled {
 }
 
 @media (max-width: 640px) {
-  .settings-row {
+  .field-row.settings-row {
     grid-template-columns: minmax(0, 1fr);
     gap: 8px;
   }
@@ -2286,6 +2286,16 @@ input[type='range'] {
   width: 100%;
 }
 
+.panel-tool .mic-calibration .editor-actions {
+  margin-left: 0;
+  width: 100%;
+}
+
+.panel-tool .mic-calibration-head {
+  display: grid;
+  gap: 8px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tuner-needle {
     transition: none;
@@ -3771,7 +3781,6 @@ input[type='range'] {
   height: 40px;
   font-size: 0.875rem;
 }
-
 
 .note-info-title {
   display: grid;

@@ -19,7 +19,7 @@ import {
 import { chromaName } from '../music';
 
 describe('braço', () => {
-  it('tem 4 cordas × 16 posições (solta + 15 casas)', () => {
+  it('tem 4 cordas × 13 posições (solta + 12 casas)', () => {
     expect(fretPositions('GCEA')).toHaveLength(4 * (FRET_COUNT + 1));
   });
 
@@ -28,7 +28,7 @@ describe('braço', () => {
       .filter((p) => p.fret === 0)
       .map((p) => p.midi);
     expect(open).toEqual([67, 60, 64, 69]);
-    expect(midiRange('GCEA')).toEqual({ min: 60, max: 84 });
+    expect(midiRange('GCEA')).toEqual({ min: 60, max: 81 });
   });
 
   it('escolhe a posição mais próxima da última casa tocada', () => {
@@ -71,7 +71,7 @@ describe('capotraste', () => {
     const positions = fretPositions('GCEA', 2);
     expect(positions.filter((p) => p.fret === 0).map((p) => p.midi)).toEqual([69, 62, 66, 71]);
     expect(Math.max(...positions.map((p) => p.fret))).toBe(FRET_COUNT - 2);
-    expect(midiRange('GCEA', 2)).toEqual({ min: 62, max: 84 });
+    expect(midiRange('GCEA', 2)).toEqual({ min: 62, max: 81 });
   });
 
   it('com capo 2, D é tocado com a forma de C e soa D', () => {

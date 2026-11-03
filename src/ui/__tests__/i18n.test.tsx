@@ -150,7 +150,9 @@ describe('páginas avulsas', () => {
   it('/afinador mostra o título e o afinador, e aparece no menu como aba atual', async () => {
     window.history.replaceState(null, '', '/afinador');
     render(<App />);
-    expect(screen.getByRole('heading', { level: 1, name: 'Afinador de ukulele' })).toBeVisible();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Afinador de ukulele' }),
+    ).toBeVisible();
     expect(await screen.findByRole('button', { name: 'Ligar microfone' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Afinador' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Guias' })).toHaveAttribute('href', '/guias');

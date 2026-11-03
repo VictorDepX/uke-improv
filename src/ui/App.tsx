@@ -72,17 +72,11 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
   const names = useMemo(() => noteNamer(noteNames, lang), [noteNames, lang]);
   const t = useMemo(() => makeT(lang, names), [lang, names]);
   const [keyOpen, setKeyOpen] = useState(false);
-  // "Praticar" das páginas de guia (sem JavaScript) chega como ?praticar e abre o modo prática.
+  // "Praticar" das páginas de guia (sem JavaScript) chega como #praticar e abre o modo prática;
+  // o efeito do endereço, abaixo, tira o # depois.
   const [practiceOpen, setPracticeOpen] = useState(
-    () =>
-      typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('praticar'),
+    () => typeof window !== 'undefined' && window.location.hash === '#praticar',
   );
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    if (!url.searchParams.has('praticar')) return;
-    url.searchParams.delete('praticar');
-    history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
-  }, []);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const menuClose = useRef<HTMLButtonElement>(null);

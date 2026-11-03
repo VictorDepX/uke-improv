@@ -1,19 +1,9 @@
 import { chromaName, midiName, prefersFlats } from '@/core/music';
 import type { NoteClass } from '@/core/types';
-import { tx, useNames, useT, type Txt } from '@/i18n';
+import { useNames, useT } from '@/i18n';
+import { CLASS_TITLE, sentence } from '../format';
 import { useNoteSuggestions } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
-
-/** Título de cada saída: a função da nota sobre o acorde atual. */
-export const CLASS_TITLE: Record<NoteClass, Txt> = {
-  repouso: tx('Repouso', 'Rest'),
-  passagem: tx('Passagem', 'Passing'),
-  tensao: tx('Tensão', 'Tension'),
-  fora: tx('Fora', 'Outside'),
-};
-
-/** Frase com maiúscula e ponto, a partir do motivo curto do sugeridor. */
-export const sentence = (s: string) => `${s.charAt(0).toUpperCase()}${s.slice(1)}.`;
 
 /** Marcador de nota fora do braço: mesma cor e forma da casa. */
 export function NoteMark({ cls, label }: { cls: NoteClass; label: string }) {

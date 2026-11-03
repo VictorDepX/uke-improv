@@ -55,7 +55,7 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: /^B4, corda A, casa 2/ }));
     const list = screen.getAllByRole('listitem').filter((li) => li.querySelector('.suggestion'));
     expect(list[0]).toHaveTextContent('C5');
-    expect(list[0]).toHaveTextContent('resolve a sensível');
+    expect(list[0]).toHaveTextContent(/resolve a sensível/i);
   });
 
   it('as sugestões de acorde sobre G começam por C e Am (critério do Módulo 3)', async () => {
@@ -84,17 +84,14 @@ describe('App', () => {
     render(<App />);
     await openTab(user, 'Jam');
     const bars = screen.getByRole('list', { name: 'Compassos da progressão' });
-    expect(
+    const symbols = () =>
       within(bars)
         .getAllByRole('listitem')
-        .map((li) => li.querySelector('strong')!.textContent),
-    ).toEqual(['C', 'G', 'Am', 'F']);
-    await user.selectOptions(screen.getByLabelText('Tom'), 'G');
-    expect(
-      within(bars)
-        .getAllByRole('listitem')
-        .map((li) => li.querySelector('strong')!.textContent),
-    ).toEqual(['G', 'D', 'Em', 'C']);
+        .map((li) => li.querySelector('.chord-chip-symbol')!.textContent);
+    expect(symbols()).toEqual(['C', 'G', 'Am', 'F']);
+    // O tom vem do Explorar (e das bases prontas); a progressão acompanha.
+    act(() => useMusicStore.getState().setTonic('G'));
+    expect(symbols()).toEqual(['G', 'D', 'Em', 'C']);
   });
 
   it('monta e salva uma progressão própria', async () => {
@@ -124,7 +121,9 @@ describe('App', () => {
     await user.click(g7[g7.length - 1]!);
     const c = within(editor).getAllByRole('button', { name: 'C' });
     await user.click(c[c.length - 1]!);
-    expect(within(editor).getByLabelText('Compassos montados')).toHaveTextContent('Dm G7C');
+    const draft = within(editor).getByLabelText('Compassos montados');
+    expect(draft).toHaveTextContent('Dm G7');
+    expect(draft).toHaveTextContent('2 acordes');
     await user.click(within(editor).getByRole('button', { name: 'Salvar progressão' }));
     const saved = useMusicStore.getState().customProgressions[0]!;
     expect(saved.numerals).toEqual(['ii V7', 'I']);
@@ -134,8 +133,10 @@ describe('App', () => {
     expect(
       within(bars)
         .getAllByRole('listitem')
-        .map((li) => li.textContent),
-    ).toEqual(['1Dm G7', '2C']);
+        .map((li) =>
+          [...li.querySelectorAll('.chord-chip-symbol')].map((c) => c.textContent).join(' '),
+        ),
+    ).toEqual(['Dm G7', 'C']);
     expect(document.querySelectorAll('.beats .beat')).toHaveLength(3);
   });
 
@@ -158,36 +159,40 @@ describe('App', () => {
     );
     // Valsa em 3/4 só oferece os estilos de 3/4.
     await user.click(screen.getByRole('radio', { name: /Valsa \(I–IV–V7–I\)/ }));
-    expect(screen.getByRole('radiogroup', { name: 'Estilo (3/4)' })).toBeInTheDocument();
+    expect(screen.getByRole('radiogroup', { name: 'Estilo' })).toBeInTheDocument();
+    expect(screen.getByText(/· 3\/4/)).toBeInTheDocument();
     expect(screen.queryByRole('radio', { name: 'Swing' })).not.toBeInTheDocument();
   });
 
   it('analisa uma cifra colada e a transforma em progressão do jam', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await openTab(user, 'Jam');
-    const panel = screen.getByRole('region', { name: 'Analisar cifra' });
-    await user.click(within(panel).getByLabelText('Cifra'));
+    await openTab(user, 'Cifra');
+    await user.click(screen.getByLabelText('Cifra'));
     await user.paste('| Am | Dm | E7 | Am |\n| F | Dm | E7 | Am |');
-    await user.click(within(panel).getByRole('button', { name: 'Analisar' }));
-    const result = within(panel).getByRole('region', { name: 'Análise da cifra' });
+    await user.click(screen.getByRole('button', { name: 'Analisar' }));
+    const result = screen.getByRole('region', { name: 'Análise da cifra' });
     expect(result).toHaveTextContent('A menor natural');
     const e7 = within(result).getByText('E7').closest('li')!;
     expect(e7).toHaveTextContent('V7');
     expect(e7).toHaveTextContent('×2');
-    await user.click(within(panel).getByRole('button', { name: 'Usar no jam' }));
+    await user.click(within(result).getByRole('button', { name: 'Usar no Jam' }));
     const st = useMusicStore.getState();
     expect(st.key).toEqual({ tonic: 'A', scale: 'minor' });
     const prog = st.customProgressions.at(-1)!;
     expect(st.jam.progressionId).toBe(prog.id);
     expect(prog.numerals).toEqual(['i', 'iv', 'V7', 'i', 'bVI', 'iv', 'V7', 'i']);
-    const bars = screen.getByRole('list', { name: 'Compassos da progressão' });
+    // Leva para o Jam, com a progressão escolhida.
+    const bars = await screen.findByRole('list', { name: 'Compassos da progressão' });
+    expect(window.location.pathname).toBe('/jam');
     expect(
       within(bars)
         .getAllByRole('listitem')
-        .map((li) => li.textContent?.replace(/^\d+/, '')),
+        .map((li) => li.querySelector('.chord-chip-symbol')!.textContent),
     ).toEqual(['Am', 'Dm', 'E7', 'Am', 'F', 'Dm', 'E7', 'Am']);
-    expect(within(panel).getByRole('status')).toHaveTextContent('8 compassos em A menor natural');
+    expect(
+      screen.getByText('Progressão criada: 8 compassos em A menor natural.'),
+    ).toBeInTheDocument();
   });
 
   it('no treino de ouvido, acertar o intervalo marca a resposta e soma no placar', async () => {
@@ -246,8 +251,9 @@ describe('App', () => {
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await user.click(toggle);
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    expect(document.getElementById('key-picker')).toHaveAttribute('data-open', 'true');
-    await user.selectOptions(screen.getByLabelText('Tom'), 'A');
+    expect(document.querySelector('.app')).toHaveAttribute('data-key-open', 'true');
+    const picker = document.getElementById('key-picker')!;
+    await user.click(within(picker).getByRole('radio', { name: 'A' }));
     expect(screen.getByRole('button', { name: /A\s*Maior/ })).toBeInTheDocument();
   });
 
@@ -257,12 +263,13 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Abrir modo prática' }));
     const dialog = await screen.findByRole('dialog', { name: 'Modo prática' });
     expect(within(dialog).getByRole('group', { name: 'Braço do ukulele' })).toBeInTheDocument();
-    expect(within(dialog).getByText('Toque uma casa')).toBeInTheDocument();
+    expect(within(dialog).getByText('toque uma casa')).toBeInTheDocument();
 
-    await user.click(within(dialog).getByRole('radio', { name: 'G7' }));
+    await user.click(within(dialog).getByRole('radio', { name: /G7/ }));
     await user.click(within(dialog).getByRole('button', { name: /^B4, corda A, casa 2/ }));
-    const notes = within(dialog).getByRole('list', { name: 'Próximas notas sugeridas' });
-    expect(within(notes).getAllByRole('button')[0]).toHaveTextContent('C5');
+    // A melhor saída fica marcada no próprio braço, com o número 1.
+    const best = within(dialog).getAllByRole('button', { name: /sugestão 1$/ });
+    expect(best[0]).toHaveAccessibleName(/^C5,/);
 
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -292,7 +299,7 @@ describe('App', () => {
     expect(within(bars).getAllByRole('listitem')).toHaveLength(12);
     expect(within(bars).getAllByRole('listitem')[0]).toHaveTextContent('A7');
     expect(useMusicStore.getState().jam.bpm).toBe(96);
-    expect(screen.getByRole('button', { name: /A\s*Blues/ })).toBeInTheDocument();
+    expect(useMusicStore.getState().key).toEqual({ tonic: 'A', scale: 'blues' });
   });
 
   it('as formas por classe vêm ligadas e podem ser desligadas em Ajustes', async () => {
@@ -349,15 +356,13 @@ describe('App', () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /corda G, casa 16/ })).not.toBeInTheDocument();
     act(() => useMusicStore.getState().setTonic('D'));
-    expect(document.querySelector('.current-chord .chord-shape-of')).toHaveTextContent(
-      'forma de C · capo 2',
-    );
+    expect(screen.getByRole('region', { name: 'Visor' })).toHaveTextContent('forma de C');
   });
 
   it('um exercício guiado avalia as notas tocadas no braço', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole('button', { name: /Só repouso/ }));
+    await user.click(screen.getByRole('radio', { name: /Só repouso/ }));
     const bar = screen.getByRole('region', { name: 'Exercício: Só repouso' });
     expect(within(bar).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
     await user.click(screen.getByRole('button', { name: /^E4, corda C, casa 4/ }));
@@ -415,7 +420,7 @@ describe('App', () => {
     unmount();
     window.history.replaceState(null, '', '/#jam');
     render(<App />);
-    expect(await screen.findByLabelText('Tocar a base')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Tocar base' })).toBeInTheDocument();
     expect(window.location.pathname).toBe('/jam');
     expect(window.location.hash).toBe('');
     await openTab(userEvent.setup(), 'Ajustes');
@@ -424,6 +429,6 @@ describe('App', () => {
       window.history.back();
     });
     await waitFor(() => expect(window.location.pathname).toBe('/jam'));
-    expect(await screen.findByLabelText('Tocar a base')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Tocar base' })).toBeInTheDocument();
   });
 });

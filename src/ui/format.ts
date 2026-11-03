@@ -41,3 +41,14 @@ export const keyLabelOf = (key: KeyContext): Txt => {
     `${nm(key.tonic)} ${scale.en.toLowerCase()}`,
   );
 };
+
+/** Título de cada saída: a função da nota sobre o acorde atual. */
+export const CLASS_TITLE: Record<NoteClass, Txt> = {
+  repouso: tx('Repouso', 'Rest'),
+  passagem: tx('Passagem', 'Passing'),
+  tensao: tx('Tensão', 'Tension'),
+  fora: tx('Fora', 'Outside'),
+};
+
+/** Frase com maiúscula e ponto, a partir do motivo curto do sugeridor. */
+export const sentence = (s: string) => `${s.charAt(0).toUpperCase()}${s.slice(1)}.`;

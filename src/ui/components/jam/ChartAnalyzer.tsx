@@ -14,6 +14,7 @@ import { keyLabelOf } from '../../format';
 import { tx, useLang, useNames, useT, type Txt } from '@/i18n';
 import { SCALES } from '@/core/music';
 import { navigateTo } from '../../routes';
+import { toast } from '../../toast';
 
 const ROLE_LABEL: Record<ChordRole, Txt> = {
   diatonic: tx('diatônico', 'diatonic'),
@@ -53,7 +54,6 @@ export function ChartAnalyzer() {
   const [text, setText] = useState('');
   const [parsed, setParsed] = useState<ParsedChart | null>(null);
   const [force, setForce] = useState<KeyContext | undefined>(undefined);
-  const [loaded, setLoaded] = useState<string | null>(null);
   const loadChart = useMusicStore((s) => s.loadChart);
   const setTonic = useMusicStore((s) => s.setTonic);
   const setScale = useMusicStore((s) => s.setScale);
@@ -64,7 +64,6 @@ export function ChartAnalyzer() {
   const analyze = () => {
     setParsed(parseChart(text));
     setForce(undefined);
-    setLoaded(null);
   };
 
   const bars = parsed ? parsed.bars.slice(0, MAX_CHART_BARS) : [];
@@ -75,12 +74,13 @@ export function ChartAnalyzer() {
     const name = `${t('Cifra', 'Chart')}: ${bars.slice(0, 4).map(barLabel).join(' – ')}${bars.length > 4 ? ' …' : ''}`;
     loadChart({ key: analysis.key, bars, name });
     const k = keyLabelOf(analysis.key);
-    setLoaded(
+    toast.success(
       t(
-        `${bars.length} ${bars.length === 1 ? 'compasso' : 'compassos'} em ${t(tx(k.pt, k.pt))}`,
-        `${bars.length} ${bars.length === 1 ? 'bar' : 'bars'} in ${t(tx(k.en, k.en))}`,
+        `Progressão criada: ${bars.length} ${bars.length === 1 ? 'compasso' : 'compassos'} em ${t(tx(k.pt, k.pt))}.`,
+        `Progression created: ${bars.length} ${bars.length === 1 ? 'bar' : 'bars'} in ${t(tx(k.en, k.en))}.`,
       ),
     );
+    navigateTo('jam', lang);
   };
 
   const distinct = analysis?.chords.length ?? 0;
@@ -124,7 +124,6 @@ export function ChartAnalyzer() {
               setText('');
               setParsed(null);
               setForce(undefined);
-              setLoaded(null);
             }}
             disabled={!text && !parsed}
           >
@@ -236,11 +235,6 @@ export function ChartAnalyzer() {
                 `A base usa os ${MAX_CHART_BARS} primeiros compassos.`,
                 `The backing track uses the first ${MAX_CHART_BARS} bars.`,
               )}
-            </p>
-          ) : null}
-          {loaded ? (
-            <p className="small chart-loaded" role="status">
-              {t('Progressão criada e selecionada:', 'Progression created and selected:')} {loaded}.
             </p>
           ) : null}
         </div>

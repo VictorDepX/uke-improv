@@ -4,11 +4,10 @@ import { chordToNumeral } from '@/core/harmony';
 import { useChordSuggestions, useVoicing } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 import { tx, useLang, useNames, useT, type Txt } from '@/i18n';
-import { FUNC_LABEL } from '../format';
+import { FUNC_LABEL, sentence } from '../format';
 import { navigateTo } from '../routes';
 import { ChordDiagram } from './ChordDiagram';
 import { Toggle } from './controls';
-import { sentence } from './NoteSuggestions';
 
 /** Rótulo de função das sugestões fora do campo harmônico. */
 const KIND_FUNC: Record<'secondary' | 'borrowed', Txt> = {

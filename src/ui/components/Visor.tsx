@@ -2,7 +2,7 @@ import { classifyNote } from '@/core/classify';
 import { chordToNumeral, sameChord } from '@/core/harmony';
 import { chordInfo, midiName, mod12, prefersFlats, SCALES } from '@/core/music';
 import { tx, useNames, useT, type Txt } from '@/i18n';
-import { useDiatonicChords, useNoteContext } from '@/store/selectors';
+import { useDiatonicChords, useNoteContext, useVoicing } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 import { CLASS_SHORT, FUNC_LABEL } from '../format';
 import { useMicControl } from '../hooks/useMicControl';
@@ -52,8 +52,12 @@ export function Visor() {
   const on = status === 'on';
   const flats = prefersFlats(key);
 
+  const capo = useMusicStore((s) => s.settings.capo);
+  const voicing = useVoicing();
   const func = chords.find((c) => sameChord(c.symbol, current))?.func;
-  const chordDetail = [chordToNumeral(current, key), func ? t(FUNC_LABEL[func]) : null]
+  // Com capo, o visor diz também a forma que a mão faz (D com capo 2 = forma de C).
+  const shape = capo ? `${t('forma de', 'shape of')} ${n(voicing(current).shapeName)}` : null;
+  const chordDetail = [chordToNumeral(current, key), func ? t(FUNC_LABEL[func]) : null, shape]
     .filter(Boolean)
     .join(' · ');
 

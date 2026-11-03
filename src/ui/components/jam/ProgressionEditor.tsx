@@ -105,7 +105,9 @@ export function ProgressionEditor() {
               data-suggested={suggested.some((s) => s.symbol === d.symbol) || undefined}
               onClick={() => push(d.symbol)}
             >
-              <span className="chord-chip-numeral mono">{d.numeral}</span>
+              <span className="chord-chip-numeral mono" aria-hidden="true">
+                {d.numeral}
+              </span>
               <span className="chord-chip-symbol">{n(d.symbol)}</span>
             </button>
           ))}
