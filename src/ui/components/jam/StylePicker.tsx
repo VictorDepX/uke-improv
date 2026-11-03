@@ -14,7 +14,7 @@ export function StylePicker() {
   const current = resolveGroove(grooveId, meter);
   return (
     <Segmented
-      label={t(`Estilo (${meter})`, `Style (${meter})`)}
+      label={t('Estilo', 'Style')}
       value={current.id}
       options={options}
       onChange={(id) => setGroove(id)}

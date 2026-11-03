@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { MAX_LAYERS, looper } from '@/audio/looper/looper';
-import { METERS } from '@/core/rhythm';
 import { useActiveProgression } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 import { useLooper } from '../../hooks/useLooper';
 import { Select, Slider, Toggle } from '../controls';
 import { useT } from '@/i18n';
+import { Icon } from '../Icon';
 
 function Wave({ peaks }: { peaks: number[] }) {
   const w = peaks.length;
@@ -89,8 +89,9 @@ export function LooperPanel() {
           : t('Parado', 'Stopped');
 
   return (
-    <div className="looper">
-      <div className="looper-config">
+    <section className="side-block looper" aria-labelledby="looper-title">
+      <h2 id="looper-title">Looper</h2>
+      <div className="field-row looper-config">
         <Select
           id="looper-bars"
           label={t('Tamanho', 'Length')}
@@ -98,51 +99,50 @@ export function LooperPanel() {
           options={barOptions}
           onChange={(v) => setBars(Number(v))}
         />
-        <span className="small muted looper-tempo">
-          {bpm} BPM · {METERS[meter].label}
-          {empty ? t(' (os da base)', ' (from the backing track)') : ''}
-        </span>
-        <Toggle
-          id="looper-metronome"
-          label={t('Metrônomo', 'Metronome')}
-          hint={t('A contagem toca sempre.', 'The count-in always plays.')}
-          checked={metronome}
-          onChange={setMetronome}
-        />
       </div>
+      <Toggle
+        id="looper-metronome"
+        label={t('Metrônomo na gravação', 'Metronome while recording')}
+        checked={metronome}
+        onChange={setMetronome}
+      />
 
-      <div className="looper-transport">
-        <button
-          type="button"
-          className="button button-primary take-rec"
-          data-on={busy || undefined}
-          onClick={() => void record()}
-          disabled={busy || full}
-        >
-          <span className="take-rec-dot" aria-hidden="true" />
-          {empty
-            ? t('Gravar loop', 'Record loop')
-            : full
-              ? t('Camadas cheias', 'Layers full')
-              : t(
-                  `Gravar camada ${view.layers.length + 1}`,
-                  `Record layer ${view.layers.length + 1}`,
-                )}
-        </button>
-        {!empty ? (
-          <button type="button" className="button" onClick={() => looper.clear()}>
+      <button
+        type="button"
+        className="button take-rec looper-record"
+        data-on={busy || undefined}
+        onClick={() => void record()}
+        disabled={busy || full}
+      >
+        <Icon name="record" />
+        {empty
+          ? t('Gravar loop', 'Record loop')
+          : full
+            ? t('Camadas cheias', 'Layers full')
+            : t(
+                `Gravar camada ${view.layers.length + 1}`,
+                `Record layer ${view.layers.length + 1}`,
+              )}
+      </button>
+      {!empty ? (
+        <div className="looper-transport">
+          <span
+            className="looper-status mono"
+            role="status"
+            aria-live="polite"
+            data-status={view.status}
+          >
+            {status}
+          </span>
+          <button type="button" className="button button-ghost" onClick={() => looper.clear()}>
             {t('Parar e apagar', 'Stop and clear')}
           </button>
-        ) : null}
-        <span
-          className="looper-status mono"
-          role="status"
-          aria-live="polite"
-          data-status={view.status}
-        >
-          {status}
+        </div>
+      ) : (
+        <span className="sr-only" role="status" aria-live="polite">
+          {busy ? status : ''}
         </span>
-      </div>
+      )}
       {!empty ? (
         <div className="beats looper-beats" aria-hidden="true">
           {Array.from({ length: bars }, (_, b) => (
@@ -178,7 +178,7 @@ export function LooperPanel() {
               />
               <button
                 type="button"
-                className="button"
+                className="button button-ghost"
                 aria-pressed={l.muted}
                 onClick={() => looper.setLayer(l.id, { muted: !l.muted })}
               >
@@ -190,39 +190,28 @@ export function LooperPanel() {
                 aria-label={t(`Apagar camada ${i + 1}`, `Delete layer ${i + 1}`)}
                 onClick={() => looper.removeLayer(l.id)}
               >
-                ×
+                <Icon name="close" size={20} />
               </button>
             </li>
           ))}
         </ul>
       ) : null}
 
-      <details className="looper-latency">
-        <summary className="small">
-          {t('Ajuste de atraso', 'Latency adjustment')} ({Math.round(view.latency * 1000)} ms)
-        </summary>
-        <Slider
-          id="looper-latency"
-          label={t('Ajuste fino', 'Fine tune')}
-          min={-100}
-          max={200}
-          value={offsetMs}
-          display={`${offsetMs > 0 ? '+' : ''}${offsetMs} ms`}
-          onChange={setOffsetMs}
-        />
-        <p className="small muted">
-          {t(
-            'Se a camada gravada soar atrasada em relação ao metrônomo, aumente; adiantada, diminua.',
-            'If the recorded layer sounds late against the metronome, increase it; if early, decrease it.',
-          )}
-        </p>
-      </details>
-      <p className="small muted">
+      <Slider
+        id="looper-latency"
+        label={t('Ajuste de atraso', 'Latency adjustment')}
+        min={-100}
+        max={200}
+        value={offsetMs}
+        display={`${Math.round(view.latency * 1000) + offsetMs} ms`}
+        onChange={setOffsetMs}
+      />
+      <p className="side-hint">
         {t(
-          'Use fones: sem eles, o loop que toca entra no microfone quando você grava a próxima camada.',
-          'Use headphones: without them, the playing loop gets into the microphone when you record the next layer.',
+          'Use fones de ouvido: assim o microfone não grava a base junto. Se a camada soar atrasada, aumente o ajuste; adiantada, diminua.',
+          "Use headphones so the microphone doesn't record the backing track too. If the layer sounds late, raise the adjustment; early, lower it.",
         )}
       </p>
-    </div>
+    </section>
   );
 }

@@ -16,21 +16,26 @@ export function PresetBar() {
   const apply = useMusicStore((s) => s.applyPreset);
   const active = useActivePresetId();
   return (
-    <div className="preset-bar" role="radiogroup" aria-label="Presets">
-      {PRESETS.map((p) => (
-        <button
-          key={p.id}
-          type="button"
-          role="radio"
-          aria-checked={p.id === active}
-          className="preset"
-          onClick={() => apply(p)}
-        >
-          <span className="preset-name">{t(p.name)}</span>
-          <span className="preset-bpm mono">{p.bpm}</span>
-        </button>
-      ))}
-    </div>
+    <section className="preset-section" aria-labelledby="presets-title">
+      <h2 id="presets-title" className="field-label">
+        {t('Bases prontas', 'Ready-made backings')}
+      </h2>
+      <div className="preset-bar" role="radiogroup" aria-labelledby="presets-title">
+        {PRESETS.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            role="radio"
+            aria-checked={p.id === active}
+            className="preset"
+            onClick={() => apply(p)}
+          >
+            <span className="preset-name">{t(p.name)}</span>
+            <span className="preset-bpm mono">{p.bpm}</span>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 

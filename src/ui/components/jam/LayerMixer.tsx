@@ -13,7 +13,8 @@ export function LayerMixer() {
   const layers = useMusicStore((s) => s.jam.layers);
   const setVolume = useMusicStore((s) => s.setLayerVolume);
   return (
-    <div className="mixer">
+    <section className="side-block mixer" aria-labelledby="mixer-title">
+      <h2 id="mixer-title">Mixer</h2>
       {LAYERS.map((l) => (
         <Slider
           key={l.id}
@@ -26,6 +27,6 @@ export function LayerMixer() {
           onChange={(v) => setVolume(l.id, v / 100)}
         />
       ))}
-    </div>
+    </section>
   );
 }

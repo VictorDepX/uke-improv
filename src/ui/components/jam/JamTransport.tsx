@@ -1,59 +1,79 @@
+import { chordToNumeral } from '@/core/harmony';
 import { METERS } from '@/core/rhythm';
 import { useActiveProgression } from '@/store/selectors';
 import { BPM_RANGE, useMusicStore } from '@/store/useMusicStore';
 import { useJamPreview } from '../../hooks/useJamPreview';
 import { useToggleJam } from '../../hooks/useJamSync';
+import { Icon } from '../Icon';
 import { TapTempo } from './TapTempo';
 import { useNames, useT } from '@/i18n';
 
+/**
+ * Transporte do Jam: tocar/parar (56 px, usado com o uke no colo), visor com compasso, acorde
+ * e o próximo, pulsos do compasso e andamento.
+ */
 export function JamTransport() {
   const t = useT();
   const n = useNames();
   const { playing, ready, bpm, bar, beat } = useMusicStore((s) => s.jam);
+  const key = useMusicStore((s) => s.key);
   const preparing = playing && !ready;
   const setBpm = useMusicStore((s) => s.setBpm);
   const toggle = useToggleJam();
-  const { timeline, meter } = useActiveProgression();
+  const { timeline, meter, bars } = useActiveProgression();
   const live = useJamPreview();
   const info = METERS[meter];
   const counting = playing && bar < 0;
   const current = live.current ?? timeline[0]?.chord ?? '—';
   const next = live.next ?? timeline[1 % Math.max(1, timeline.length)]?.chord ?? '—';
+  const num = (c: string) => (c === '—' ? '' : chordToNumeral(c, key));
 
   return (
     <div className="transport">
       <button
         type="button"
-        className="play-button"
+        className="play-button button"
         aria-pressed={playing}
         aria-busy={preparing || undefined}
-        data-loading={preparing || undefined}
-        aria-label={
-          playing
-            ? t('Parar a base', 'Stop the backing track')
-            : t('Tocar a base', 'Play the backing track')
-        }
+        data-playing={playing || undefined}
         onClick={toggle}
       >
-        <span className="play-icon" data-playing={playing || undefined} aria-hidden="true" />
+        <Icon name={playing ? 'stop' : 'play'} />
+        {playing ? t('Parar', 'Stop') : t('Tocar base', 'Play backing')}
       </button>
 
-      <div className="transport-now" aria-live="polite">
-        <span className="eyebrow">
-          {preparing
-            ? t('Preparando o som…', 'Preparing the sound…')
-            : counting
-              ? t('Contagem', 'Count-in')
-              : playing
-                ? t(`Compasso ${bar + 1}`, `Bar ${bar + 1}`)
-                : t('Parado', 'Stopped')}
-        </span>
-        <span className="transport-chord">
-          {counting && !preparing ? info.beats - beat : n(current)}
-        </span>
-        <span className="transport-next">
-          {t('a seguir', 'next')} <strong>{n(next)}</strong>
-        </span>
+      <div className="transport-lcd" aria-live="polite">
+        <div className="visor-cell">
+          <span className="visor-label">
+            {preparing
+              ? t('Preparando', 'Preparing')
+              : counting
+                ? t('Contagem', 'Count-in')
+                : t('Compasso', 'Bar')}
+          </span>
+          <span className="visor-value">
+            <span className="visor-big">
+              {counting && !preparing ? info.beats - beat : playing ? (bar % bars.length) + 1 : '–'}
+            </span>
+            <span className="visor-detail">
+              {playing && !counting ? t(`de ${bars.length}`, `of ${bars.length}`) : ''}
+            </span>
+          </span>
+        </div>
+        <div className="visor-cell">
+          <span className="visor-label">{t('Acorde', 'Chord')}</span>
+          <span className="visor-value">
+            <span className="visor-big transport-chord">{n(current)}</span>
+            <span className="visor-detail">{num(current)}</span>
+          </span>
+        </div>
+        <div className="visor-cell">
+          <span className="visor-label">{t('A seguir', 'Next')}</span>
+          <span className="visor-value">
+            <span className="visor-big">{n(next)}</span>
+            <span className="visor-detail">{num(next)}</span>
+          </span>
+        </div>
       </div>
 
       <div className="beats" aria-hidden="true" data-meter={meter}>
@@ -74,32 +94,25 @@ export function JamTransport() {
           type="button"
           className="icon-button"
           aria-label={t('Diminuir andamento', 'Slower')}
+          disabled={bpm <= BPM_RANGE.min}
           onClick={() => setBpm(bpm - 5)}
         >
-          −
+          <Icon name="minus" />
         </button>
-        <label htmlFor="jam-bpm" className="bpm-value">
+        <span className="bpm-value">
           <span className="mono">{bpm}</span>
           <small>BPM{meter === '6/8' ? <span className="dotted-quarter"> ♩.</span> : null}</small>
-        </label>
+        </span>
         <button
           type="button"
           className="icon-button"
           aria-label={t('Aumentar andamento', 'Faster')}
+          disabled={bpm >= BPM_RANGE.max}
           onClick={() => setBpm(bpm + 5)}
         >
-          +
+          <Icon name="plus" />
         </button>
-        <TapTempo />
-        <input
-          id="jam-bpm"
-          type="range"
-          min={BPM_RANGE.min}
-          max={BPM_RANGE.max}
-          value={bpm}
-          onChange={(e) => setBpm(Number(e.target.value))}
-          aria-label={t('Andamento em BPM', 'Tempo in BPM')}
-        />
+        <TapTempo className="button" />
       </div>
     </div>
   );

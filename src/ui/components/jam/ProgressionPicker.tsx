@@ -1,39 +1,30 @@
 import type { Progression } from '@/core/types';
-import { PROGRESSIONS, barLabel, meterOf } from '@/core/progressions';
+import { findDiatonic } from '@/core/harmony';
+import { PROGRESSIONS, meterOf } from '@/core/progressions';
+import { chordToNumeral } from '@/core/harmony';
 import { useActiveProgression } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 import { toast } from '../../toast';
 import { encodeShare } from '@/core/share';
-import { TAB_PATHS } from '../../routes';
+import { TAB_PATHS, navigateTo } from '../../routes';
 import { useLang, useNames, useT } from '@/i18n';
+import { Icon } from '../Icon';
+import { StylePicker } from './StylePicker';
 
-export function ProgressionPicker() {
+/**
+ * Progressão da base (coluna principal do Jam): nome e compasso, estilo e os compassos como
+ * pads, com o tocando agora em destaque; colar uma cifra e compartilhar.
+ */
+export function ProgressionPanel() {
   const t = useT();
   const n = useNames();
-  const { bars, progression } = useActiveProgression();
   const lang = useLang();
+  const { bars, progression, meter } = useActiveProgression();
   const key = useMusicStore((s) => s.key);
   const bpm = useMusicStore((s) => s.jam.bpm);
   const grooveId = useMusicStore((s) => s.jam.grooveId);
-  const selected = useMusicStore((s) => s.jam.progressionId);
-  const custom = useMusicStore((s) => s.customProgressions);
   const { playing, bar } = useMusicStore((s) => s.jam);
-  const select = useMusicStore((s) => s.selectProgression);
-  const remove = useMusicStore((s) => s.removeCustomProgression);
-  const restore = useMusicStore((s) => s.addCustomProgression);
-
-  const removeWithUndo = (p: Progression) => {
-    const wasSelected = p.id === selected;
-    remove(p.id);
-    toast.info(t(`“${t(p.name)}” apagada.`, `“${t(p.name)}” deleted.`), {
-      label: t('Desfazer', 'Undo'),
-      run: () => {
-        restore(p);
-        if (!wasSelected) select(selected);
-      },
-    });
-  };
-  const active = playing && bar >= 0 ? bar % bars.length : -1;
+  const active = playing && bar >= 0 ? bar % bars.length : 0;
 
   // Link com tom, progressão, andamento e estilo; quem abre ganha a progressão já selecionada.
   const share = async () => {
@@ -57,30 +48,81 @@ export function ProgressionPicker() {
   };
 
   return (
-    <div className="progressions">
+    <section className="panel progression-panel" aria-labelledby="progression-title">
+      <header className="panel-head">
+        <h2 id="progression-title">{t('Progressão', 'Progression')}</h2>
+        <span className="panel-sub">
+          {t(progression.name)} · {meter}
+        </span>
+        <span className="panel-actions">
+          <button
+            type="button"
+            className="button button-ghost"
+            onClick={() => navigateTo('cifra', lang)}
+          >
+            {t('Colar uma cifra', 'Paste a chord chart')}
+          </button>
+          <button type="button" className="button button-ghost" onClick={() => void share()}>
+            {t('Compartilhar', 'Share')}
+          </button>
+        </span>
+      </header>
+      <div className="field-row">
+        <StylePicker />
+      </div>
       <ol className="bars" aria-label={t('Compassos da progressão', 'Bars of the progression')}>
         {bars.map((b, i) => (
           <li
-            key={`${barLabel(b)}-${i}`}
+            key={`${b.join('|')}-${i}`}
             className="bar"
             data-active={i === active || undefined}
-            data-split={b.length > 1 || undefined}
+            aria-current={(playing && i === active) || undefined}
           >
-            <span className="mono muted">{i + 1}</span>
-            <strong>{barLabel(b.map(n))}</strong>
+            <span className="bar-num mono">{i + 1}</span>
+            <span className="bar-chords">
+              {b.map((c, j) => (
+                <span
+                  key={`${c}-${j}`}
+                  className="chord-chip bar-chord"
+                  data-func={findDiatonic(c, key)?.func}
+                >
+                  <span className="chord-chip-numeral mono">{chordToNumeral(c, key)}</span>
+                  <span className="chord-chip-symbol">{n(c)}</span>
+                </span>
+              ))}
+            </span>
           </li>
         ))}
       </ol>
+    </section>
+  );
+}
 
-      <button type="button" className="link-button" onClick={() => void share()}>
-        {t('Compartilhar esta progressão', 'Share this progression')}
-      </button>
+/** Lista de progressões (lateral do Jam): prontas e próprias, com o tipo de cada uma. */
+export function ProgressionList() {
+  const t = useT();
+  const selected = useMusicStore((s) => s.jam.progressionId);
+  const custom = useMusicStore((s) => s.customProgressions);
+  const select = useMusicStore((s) => s.selectProgression);
+  const remove = useMusicStore((s) => s.removeCustomProgression);
+  const restore = useMusicStore((s) => s.addCustomProgression);
 
-      <div
-        className="progression-list"
-        role="radiogroup"
-        aria-label={t('Progressão', 'Progression')}
-      >
+  const removeWithUndo = (p: Progression) => {
+    const wasSelected = p.id === selected;
+    remove(p.id);
+    toast.info(t(`“${t(p.name)}” apagada.`, `“${t(p.name)}” deleted.`), {
+      label: t('Desfazer', 'Undo'),
+      run: () => {
+        restore(p);
+        if (!wasSelected) select(selected);
+      },
+    });
+  };
+
+  return (
+    <section className="side-block" aria-labelledby="progressions-title">
+      <h2 id="progressions-title">{t('Progressões', 'Progressions')}</h2>
+      <div className="progression-list" role="radiogroup" aria-labelledby="progressions-title">
         {[...PROGRESSIONS, ...custom].map((p) => (
           <div key={p.id} className="progression-item">
             <button
@@ -91,11 +133,12 @@ export function ProgressionPicker() {
               onClick={() => select(p.id)}
             >
               <span>{t(p.name)}</span>
-              <span className="progression-tags">
-                {meterOf(p) !== '4/4' ? <span className="tag">{meterOf(p)}</span> : null}
-                <span className="tag">
-                  {p.mode === 'major' ? t('maior', 'major') : t('menor', 'minor')}
-                </span>
+              <span className="progression-tag mono">
+                {meterOf(p) !== '4/4'
+                  ? meterOf(p)
+                  : p.mode === 'major'
+                    ? t('maior', 'major')
+                    : t('menor', 'minor')}
               </span>
             </button>
             {p.custom ? (
@@ -105,12 +148,12 @@ export function ProgressionPicker() {
                 aria-label={t(`Apagar ${t(p.name)}`, `Delete ${t(p.name)}`)}
                 onClick={() => removeWithUndo(p)}
               >
-                ×
+                <Icon name="close" size={20} />
               </button>
             ) : null}
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

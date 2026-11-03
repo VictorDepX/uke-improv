@@ -1,8 +1,8 @@
 import { toast } from '../../toast';
 import { useState } from 'react';
-import { toAbsoluteNumeral } from '@/core/harmony';
+import { chordToNumeral, toAbsoluteNumeral } from '@/core/harmony';
 import { modeOf } from '@/core/music';
-import { barLabel, makeCustomProgression } from '@/core/progressions';
+import { makeCustomProgression } from '@/core/progressions';
 import { MAX_CHORDS_PER_BAR, METERS, type Meter } from '@/core/rhythm';
 import { suggestNextChords } from '@/core/suggestChords';
 import { useDiatonicChords } from '@/store/selectors';
@@ -70,87 +70,126 @@ export function ProgressionEditor() {
     );
   };
 
-  return (
-    <div className="editor">
-      <Segmented
-        label={t('Compasso', 'Time signature')}
-        value={meter}
-        options={METER_OPTIONS}
-        onChange={setMeter}
-      />
-      <div
-        className="editor-draft"
-        aria-live="polite"
-        aria-label={t('Compassos montados', 'Bars so far')}
-      >
-        {draft.length === 0 ? (
-          <span className="muted">
-            {t('Escolha os acordes na ordem dos compassos.', 'Pick the chords in bar order.')}
-          </span>
-        ) : (
-          draft.map((bar, i) => (
-            <span
-              key={`${barLabel(bar)}-${i}`}
-              className="pill"
-              data-split={bar.length > 1 || undefined}
-            >
-              {barLabel(bar.map(n))}
-            </span>
-          ))
-        )}
-      </div>
+  const slots = Math.min(MAX_BARS, Math.max(3, draft.length + 1));
 
-      {suggested.length > 0 ? (
-        <div className="editor-row">
-          <span className="eyebrow">{t('Sugeridos', 'Suggested')}</span>
-          {suggested.map((s) => (
+  return (
+    <section className="panel editor" aria-labelledby="editor-title">
+      <header className="panel-head">
+        <h2 id="editor-title">{t('Montar progressão', 'Build a progression')}</h2>
+      </header>
+      <p className="panel-lead">
+        {t(
+          'Toque os acordes na ordem. Dois acordes no mesmo compasso dividem o tempo.',
+          'Tap the chords in order. Two chords in the same bar share its beats.',
+        )}
+      </p>
+      <div className="field-row">
+        <Segmented
+          label={t('Compasso', 'Time signature')}
+          value={meter}
+          options={METER_OPTIONS}
+          onChange={setMeter}
+        />
+      </div>
+      <div className="field-row">
+        <span className="field-label" id="editor-field">
+          {t('Campo', 'In key')}
+        </span>
+        <div className="editor-pads" role="group" aria-labelledby="editor-field">
+          {diatonic.map((d) => (
             <button
-              key={s.symbol}
+              key={d.numeral}
               type="button"
-              className="pill pill-suggested"
-              onClick={() => push(s.symbol)}
+              className="chord-chip editor-pad"
+              data-func={d.func}
+              data-suggested={suggested.some((s) => s.symbol === d.symbol) || undefined}
+              onClick={() => push(d.symbol)}
             >
-              {n(s.symbol)}
+              <span className="chord-chip-numeral mono">{d.numeral}</span>
+              <span className="chord-chip-symbol">{n(d.symbol)}</span>
             </button>
           ))}
         </div>
+      </div>
+      {suggested.length > 0 ? (
+        <div className="field-row">
+          <span className="field-label">{t('Sugeridos', 'Suggested')}</span>
+          <div className="editor-row">
+            {suggested.map((s) => (
+              <button
+                key={s.symbol}
+                type="button"
+                className="button editor-suggested"
+                onClick={() => push(s.symbol)}
+              >
+                {n(s.symbol)} <span className="mono muted">{s.numeral}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       ) : null}
-
-      <div className="editor-row">
-        <span className="eyebrow">{t('Campo', 'In key')}</span>
-        {diatonic.map((d) => (
-          <button key={d.numeral} type="button" className="pill" onClick={() => push(d.symbol)}>
-            {n(d.symbol)}
-          </button>
-        ))}
+      <div className="field-row editor-bottom">
+        <span className="field-label">{t('Rascunho', 'Draft')}</span>
+        <div className="editor-line">
+          <ol
+            className="transport-lcd editor-draft"
+            aria-live="polite"
+            aria-label={t('Compassos montados', 'Bars so far')}
+          >
+            {Array.from({ length: slots }, (_, i) => {
+              const bar = draft[i];
+              return (
+                <li key={i} className="visor-cell" data-empty={!bar || undefined}>
+                  <span className="visor-label">{t(`Compasso ${i + 1}`, `Bar ${i + 1}`)}</span>
+                  <span className="visor-value">
+                    {bar ? (
+                      <>
+                        <span className="visor-big">{bar.map(n).join(' ')}</span>
+                        <span className="visor-detail">
+                          {bar.length > 1
+                            ? t(`${bar.length} acordes`, `${bar.length} chords`)
+                            : chordToNumeral(bar[0]!, key)}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="visor-big">–</span>
+                        <span className="visor-detail">{t('vazio', 'empty')}</span>
+                      </>
+                    )}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+          <div className="editor-actions">
+            <button
+              type="button"
+              className="button button-ghost"
+              aria-pressed={split}
+              onClick={() => setSplit((v) => !v)}
+              disabled={!canSplit}
+              title={t(
+                'O próximo acorde divide o último compasso com o anterior',
+                'The next chord shares the last bar with the previous one',
+              )}
+            >
+              {t('2 acordes neste compasso', '2 chords in this bar')}
+            </button>
+            <button
+              type="button"
+              className="button button-ghost"
+              onClick={undo}
+              disabled={!draft.length}
+            >
+              {t('Desfazer', 'Undo')}
+            </button>
+            <button type="button" className="button" onClick={save} disabled={flat.length < 2}>
+              {t('Salvar progressão', 'Save progression')}
+            </button>
+          </div>
+        </div>
       </div>
-
-      <div className="editor-actions">
-        <button type="button" className="button" onClick={undo} disabled={!draft.length}>
-          {t('Desfazer', 'Undo')}
-        </button>
-        <button
-          type="button"
-          className="button"
-          aria-pressed={split}
-          onClick={() => setSplit((v) => !v)}
-          disabled={!canSplit}
-          title={t(
-            'O próximo acorde divide o último compasso com o anterior',
-            'The next chord shares the last bar with the previous one',
-          )}
-        >
-          {t('2 acordes neste compasso', '2 chords in this bar')}
-        </button>
-        <button
-          type="button"
-          className="button button-primary"
-          onClick={save}
-          disabled={flat.length < 2}
-        >
-          {t('Salvar progressão', 'Save progression')}
-        </button>
-      </div>
-    </div>
+    </section>
   );
 }
