@@ -1,6 +1,6 @@
 /// <reference types="vitest/config" />
 import { fileURLToPath, URL } from 'node:url';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { viteSingleFile } from 'vite-plugin-singlefile';
@@ -35,6 +35,34 @@ const apiProxy = {
   },
 };
 
+/**
+ * Pré-carrega as fontes do primeiro desenho (corpo, títulos e visor): sem isso, a troca da
+ * fonte de reserva pela Plex desloca o layout quando elas chegam.
+ */
+const FIRST_PAINT_FONTS = [
+  'ibm-plex-sans-latin-400-normal',
+  'ibm-plex-sans-latin-500-normal',
+  'ibm-plex-sans-condensed-latin-600-normal',
+  'ibm-plex-mono-latin-500-normal',
+];
+const preloadFonts = (): Plugin => ({
+  name: 'preload-fonts',
+  apply: 'build',
+  transformIndexHtml: {
+    order: 'post',
+    handler(_html, ctx) {
+      const files = Object.keys(ctx.bundle ?? {}).filter(
+        (f) => f.endsWith('.woff2') && FIRST_PAINT_FONTS.some((n) => f.includes(`/${n}-`)),
+      );
+      return files.map((f) => ({
+        tag: 'link',
+        attrs: { rel: 'preload', as: 'font', type: 'font/woff2', href: `/${f}`, crossorigin: '' },
+        injectTo: 'head' as const,
+      }));
+    },
+  },
+});
+
 export default defineConfig(({ isSsrBuild }) => ({
   // Raiz do domínio: as abas têm caminho próprio (/jam). A página única usa caminhos relativos.
   base: singleFile ? './' : '/',
@@ -45,7 +73,10 @@ export default defineConfig(({ isSsrBuild }) => ({
       ? []
       : singleFile
         ? [viteSingleFile()]
-        : [serviceWorker(publicDirOf(fileURLToPath(new URL('.', import.meta.url))))]),
+        : [
+            serviceWorker(publicDirOf(fileURLToPath(new URL('.', import.meta.url)))),
+            preloadFonts(),
+          ]),
   ],
   build: {
     copyPublicDir: !isSsrBuild,
