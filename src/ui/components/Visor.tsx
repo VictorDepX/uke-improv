@@ -6,6 +6,7 @@ import { useDiatonicChords, useNoteContext, useVoicing } from '@/store/selectors
 import { useMusicStore } from '@/store/useMusicStore';
 import { CLASS_SHORT, FUNC_LABEL } from '../format';
 import { useMicControl } from '../hooks/useMicControl';
+import { useKeyPicker } from '../keyPicker';
 
 /** Nome do intervalo da nota sobre a fundamental do acorde, quando ela é do acorde. */
 const CHORD_TONE: Record<number, Txt> = {
@@ -49,6 +50,8 @@ export function Visor() {
   const ctx = useNoteContext();
   const chords = useDiatonicChords();
   const { status, start, stop } = useMicControl();
+  const keyOpen = useKeyPicker((s) => s.open);
+  const toggleKey = useKeyPicker((s) => s.toggle);
   const on = status === 'on';
   const flats = prefersFlats(key);
 
@@ -73,13 +76,22 @@ export function Visor() {
 
   return (
     <section className="visor" aria-label={t('Visor', 'Display')}>
-      <div className="visor-cell">
-        <span className="visor-label">{t('Tom', 'Key')}</span>
+      <button
+        type="button"
+        className="visor-cell visor-key"
+        aria-expanded={keyOpen}
+        aria-controls="key-picker"
+        onClick={toggleKey}
+      >
+        <span className="visor-label">
+          {t('Tom', 'Key')}
+          <span className="key-toggle-caret" aria-hidden="true" />
+        </span>
         <span className="visor-value">
           <span className="visor-big">{n(key.tonic)}</span>
           <span className="visor-detail">{t(SCALES[key.scale].label).toLowerCase()}</span>
         </span>
-      </div>
+      </button>
       <div className="visor-cell">
         <span className="visor-label">{t('Acorde', 'Chord')}</span>
         <span className="visor-value" aria-live="polite">

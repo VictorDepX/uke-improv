@@ -30,6 +30,7 @@ import { useA11ySettings } from './hooks/useA11ySettings';
 import { HUB_PATH } from '@/guides/links';
 import { useShortcuts } from './hooks/useShortcuts';
 import { useSharedLink } from './hooks/useSharedLink';
+import { useKeyPicker } from './keyPicker';
 import { Welcome } from './components/Welcome';
 
 // Abas fora da inicial e o modo prática vêm em pacotes separados, baixados ao abrir.
@@ -71,7 +72,8 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
   const noteNames = useMusicStore((s) => s.settings.noteNames);
   const names = useMemo(() => noteNamer(noteNames, lang), [noteNames, lang]);
   const t = useMemo(() => makeT(lang, names), [lang, names]);
-  const [keyOpen, setKeyOpen] = useState(false);
+  const keyOpen = useKeyPicker((s) => s.open);
+  const toggleKey = useKeyPicker((s) => s.toggle);
   // "Praticar" das páginas de guia (sem JavaScript) chega como #praticar e abre o modo prática;
   // o efeito do endereço, abaixo, tira o # depois.
   const [practiceOpen, setPracticeOpen] = useState(
@@ -194,7 +196,7 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
                 className="key-toggle"
                 aria-expanded={keyOpen}
                 aria-controls="key-picker"
-                onClick={() => setKeyOpen((o) => !o)}
+                onClick={toggleKey}
               >
                 <span className="key-toggle-tonic">{names(key.tonic)}</span>
                 <span className="key-toggle-scale">{t(SCALES[key.scale].label)}</span>
@@ -319,7 +321,7 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
           </Suspense>
         ) : null}
         <Toaster />
-        <Welcome />
+        <Welcome lang={lang} onSwitchLang={switchLang} />
         {pulse ? <div id="pulse" className="pulse" aria-hidden="true" /> : null}
       </div>
     </LangProvider>

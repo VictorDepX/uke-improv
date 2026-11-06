@@ -8,6 +8,17 @@ const range = midiRange('GCEA');
 const C_MAJOR = { tonic: 'C', scale: 'major' as const };
 
 describe('suggestNextNotes', () => {
+  it('sempre sugere movimento: nunca a mesma nota, em nenhuma oitava, e sem nomes repetidos', () => {
+    for (const chord of ['C', 'G7', 'Am', 'F']) {
+      const ctx = buildNoteContext(C_MAJOR, chord);
+      for (let last = range.min; last <= range.max; last++) {
+        const top = suggestNextNotes([last], ctx, { range, count: 5 });
+        expect(top.map((s) => s.chroma)).not.toContain(chromaOf(midiName(last)));
+        expect(new Set(top.map((s) => s.chroma)).size).toBe(top.length);
+      }
+    }
+  });
+
   it('sem nota anterior, não sugere nada', () => {
     const ctx = buildNoteContext(C_MAJOR, 'C');
     expect(suggestNextNotes([], ctx, { range })).toEqual([]);
@@ -51,7 +62,8 @@ describe('suggestNextNotes', () => {
 
   it('classifica a pontuação em ordem decrescente', () => {
     const ctx = buildNoteContext({ tonic: 'A', scale: 'minorPentatonic' }, 'Am');
-    const top = suggestNextNotes([69], ctx, { range, count: 6 });
+    // A pentatônica tem 5 notas: tirando o próprio A, sobram 4 nomes dentro da escala.
+    const top = suggestNextNotes([69], ctx, { range, count: 4 });
     for (let i = 1; i < top.length; i++)
       expect(top[i - 1]!.score).toBeGreaterThanOrEqual(top[i]!.score);
     expect(top.every((s) => s.cls !== 'fora')).toBe(true);

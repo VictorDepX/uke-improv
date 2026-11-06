@@ -98,6 +98,7 @@ describe('App', () => {
     const user = userEvent.setup();
     render(<App />);
     await openTab(user, 'Jam');
+    await user.click(screen.getByRole('button', { name: 'Montar a sua progressão' }));
     const editor = screen.getByRole('region', { name: 'Montar progressão' });
     await user.click(within(editor).getByRole('button', { name: 'Am' }));
     // Depois de Am, F aparece também entre os sugeridos; qualquer um serve.
@@ -112,6 +113,7 @@ describe('App', () => {
     const user = userEvent.setup();
     render(<App />);
     await openTab(user, 'Jam');
+    await user.click(screen.getByRole('button', { name: 'Montar a sua progressão' }));
     const editor = screen.getByRole('region', { name: 'Montar progressão' });
     await user.click(within(editor).getByRole('radio', { name: '3/4' }));
     const field = within(editor).getAllByRole('button', { name: 'Dm' });
@@ -270,6 +272,13 @@ describe('App', () => {
     // A melhor saída fica marcada no próprio braço, com o número 1.
     const best = within(dialog).getAllByRole('button', { name: /sugestão 1$/ });
     expect(best[0]).toHaveAccessibleName(/^C5,/);
+    // Embaixo do braço, o guia das 3 próximas notas: nenhuma repete o B que acabou de soar.
+    const guide = within(dialog).getByRole('region', { name: 'Próximas notas depois de B' });
+    const items = within(guide).getAllByRole('listitem');
+    expect(items).toHaveLength(3);
+    const names = Array.from(guide.querySelectorAll('.note-mark'), (m) => m.textContent);
+    expect(names).toHaveLength(3);
+    expect(names).not.toContain('B');
 
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

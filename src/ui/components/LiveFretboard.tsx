@@ -9,14 +9,16 @@ import { Fretboard } from './Fretboard';
 import { Legend } from './Legend';
 import { NoteInfo } from './NoteInfo';
 import { nm, tx, useNames, useT } from '@/i18n';
+import { Icon } from './Icon';
 
 /** Braço ligado ao store: tocar uma casa soa a nota e alimenta as sugestões. */
 export function LiveFretboard({
   previewChord = null,
-  legend = true,
+  legend = 'full',
 }: {
   previewChord?: string | null;
-  legend?: boolean;
+  /** Legenda completa, compacta (uma linha) ou nenhuma. */
+  legend?: 'full' | 'compact' | false;
 }) {
   const t = useT();
   const ctx = useNoteContext();
@@ -64,7 +66,7 @@ export function LiveFretboard({
             disabled={windowStart <= 1}
             onClick={() => shiftWindow(-1, auto)}
           >
-            ‹
+            <Icon name="chevronLeft" />
           </button>
           <span className="fb-window-label" aria-live="polite">
             {t('Casas', 'Frets')} {windowStart + capo}–{windowStart + capo + WINDOW_SIZE - 1}
@@ -87,7 +89,7 @@ export function LiveFretboard({
             disabled={windowStart >= maxWindowStart(capo)}
             onClick={() => shiftWindow(1, auto)}
           >
-            ›
+            <Icon name="chevronRight" />
           </button>
         </div>
       ) : null}
@@ -119,7 +121,7 @@ export function LiveFretboard({
         onPlay={onPlay}
         onInspect={setInspected}
       />
-      {legend ? <Legend /> : null}
+      {legend ? <Legend compact={legend === 'compact'} /> : null}
       {inspected ? (
         <NoteInfo
           pos={inspected}

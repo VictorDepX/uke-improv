@@ -10,6 +10,7 @@ import { MicCalibrator } from '../components/MicCalibrator';
 import { PageHead } from '../components/PageHead';
 import { TakesPanel } from '../components/Takes';
 import { InputMeter } from '../components/Visor';
+import { MicProblem } from '../components/MicProblem';
 import { useMicControl } from '../hooks/useMicControl';
 
 const IN_TUNE = 5;
@@ -118,13 +119,7 @@ export function TunerPage() {
             </button>
           </div>
           {status === 'denied' || status === 'error' ? (
-            <p className="notice" role="alert">
-              {mic.error}{' '}
-              {t(
-                'Verifique a permissão do microfone no navegador.',
-                'Check the microphone permission in your browser.',
-              )}
-            </p>
+            <MicProblem alert onRetry={() => void start()} />
           ) : null}
 
           <div className="transport-lcd tuner-lcd" aria-live="polite">

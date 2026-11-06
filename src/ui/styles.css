@@ -242,6 +242,18 @@ button:disabled {
   font-size: 0.875rem;
 }
 
+.mic-problem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.mic-problem p {
+  flex: 1 1 32ch;
+  margin: 0;
+}
+
 /* ---------- Estrutura ---------- */
 /*
  * Celular (padrão): barra do topo com menu, tom (no Explorar) ou nome da página, microfone e
@@ -333,6 +345,38 @@ button:disabled {
   transition: transform 0.15s;
 }
 .key-toggle[aria-expanded='true'] .key-toggle-caret {
+  transform: rotate(180deg);
+}
+
+/*
+ * Tônica e escala ficam recolhidas atrás do tom (botão do topo no celular, casa "Tom" do
+ * visor no desktop): o braço e os acordes vêm primeiro; trocar de tom é um toque a mais.
+ */
+.key-picker-slot {
+  display: none;
+}
+.app[data-key-open] .key-picker-slot {
+  display: block;
+}
+
+.visor-key {
+  border: 0;
+  border-right: 1px solid var(--lcd-line);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.visor-key:hover {
+  background: rgb(255 255 255 / 0.04);
+}
+.visor-key .visor-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.visor-key[aria-expanded='true'] .key-toggle-caret {
   transform: rotate(180deg);
 }
 
@@ -576,7 +620,7 @@ button:disabled {
 }
 
 .shell-pads .chord-chip-numeral {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   line-height: 0.75rem;
 }
 
@@ -672,6 +716,28 @@ button:disabled {
 .lang-hint p {
   margin: 0;
   flex: 1 1 220px;
+}
+
+/* Celular deitado: uma linha fina, para o braço continuar inteiro na tela. */
+@media (orientation: landscape) and (max-height: 540px) {
+  .lang-hint {
+    flex-wrap: nowrap;
+    margin-top: 8px;
+    padding: 2px 4px 2px 12px;
+  }
+  .lang-hint p {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.welcome-lang {
+  margin: -8px 0 0;
+  font-size: 0.875rem;
+  color: var(--fg-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -919,7 +985,8 @@ button:disabled {
 }
 
 .segmented-option {
-  flex: 1 1 0;
+  /* Rótulos longos ("Pent. menor") ganham mais largura em vez de vazar. */
+  flex: 1 1 auto;
   min-width: 0;
   min-height: var(--touch);
   padding: 12px 8px;
@@ -1584,7 +1651,8 @@ input[type='range'] {
 [data-shapes] .note-mark[data-cls='tensao']::before {
   content: '';
   position: absolute;
-  inset: 5.5px;
+  /* Proporcional: o losango acompanha a marcação quando o braço encolhe. */
+  inset: 15%;
   z-index: -1;
   border-radius: 3px;
   background: var(--c-tens);
@@ -1717,6 +1785,22 @@ input[type='range'] {
 
 .legend-tip {
   flex-basis: 100%;
+  color: var(--fg-muted);
+}
+
+/* Compacta: uma linha encostada no braço, sem quebrar. */
+.legend[data-compact] {
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 4px 16px;
+  padding: 0;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.legend[data-compact] .legend-label {
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--fg-muted);
 }
 
@@ -2050,10 +2134,6 @@ input[type='range'] {
   }
   .key-picker-slot {
     order: -2;
-    display: none;
-  }
-  .app[data-key-open] .key-picker-slot {
-    display: block;
   }
   .page-explore .chord-strip {
     order: -1;
@@ -2111,10 +2191,6 @@ input[type='range'] {
     grid-template-columns: minmax(0, 1fr);
     gap: 12px;
   }
-  .page-explore .fb-window-nav .icon-button {
-    width: 36px;
-    height: 36px;
-  }
 }
 
 @media (max-width: 640px) and (min-height: 541px) {
@@ -2152,7 +2228,7 @@ input[type='range'] {
     gap: 0;
   }
   .chord-strip .chord-chip-numeral {
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
     line-height: 0.75rem;
   }
   .chord-strip .chord-chip-symbol {
@@ -2426,6 +2502,54 @@ input[type='range'] {
 .jam-side .side-block:not(:first-child) h2 {
   font-size: 1.25rem;
   line-height: 1.5rem;
+}
+
+/* Mixer e looper: recolhidos na lateral, abertos pelo título. */
+.side-details {
+  min-width: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.side-details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--touch);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.5rem;
+  list-style: none;
+  cursor: pointer;
+}
+
+.side-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.side-details > summary .icon {
+  color: var(--fg-muted);
+  transition: transform 0.15s;
+}
+
+.side-details[open] > summary .icon {
+  transform: rotate(180deg);
+}
+
+.side-details > .side-block {
+  padding-top: 8px;
+}
+
+/* O título já está no resumo; o da seção segue nomeando-a para leitores de tela. */
+.side-details > .side-block > h2 {
+  display: none;
+}
+
+.jam-build-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .side-hint {
@@ -2791,7 +2915,7 @@ input[type='range'] {
     gap: 0;
   }
   .bar-chord .chord-chip-numeral {
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
     line-height: 0.75rem;
   }
   .bar-chord .chord-chip-symbol {
@@ -3006,7 +3130,7 @@ input[type='range'] {
     gap: 0;
   }
   .practice-strip .chord-chip-numeral {
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
     line-height: 0.75rem;
   }
   .practice-strip .chord-chip-symbol {
@@ -3015,6 +3139,308 @@ input[type='range'] {
   }
   .practice-board {
     padding: 4px 8px;
+  }
+}
+
+/* Guia das 3 melhores próximas notas, embaixo do braço. */
+.practice-next {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px 16px;
+  min-width: 0;
+}
+
+.practice-next-label {
+  flex: none;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+.practice-next-empty {
+  margin: 0;
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+.practice-next-list {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.practice-next-item {
+  width: 100%;
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.practice-next-item:hover {
+  background: var(--surface-2);
+}
+
+.practice-next-rank {
+  flex: none;
+  width: 12px;
+  color: var(--accent-text);
+  font-weight: 600;
+  font-size: 0.8125rem;
+}
+
+.practice-next-body {
+  display: grid;
+  min-width: 0;
+}
+
+.practice-next-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.125rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.practice-next-move {
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+.practice-next-reason {
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  color: var(--fg-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* O botão "⋯" só existe onde falta altura: no resto, base e exercício ficam à vista embaixo. */
+.practice-options-toggle {
+  display: none;
+}
+
+/*
+ * Celular deitado (o jeito de tocar do app): o braço é a tela. Visor, transporte e opções
+ * cabem numa linha; base, exercício e chaves abrem num painel sobre o braço; as setas da
+ * janela de casas vão para as laterais do braço em vez de ocupar uma linha.
+ */
+@media (orientation: landscape) and (max-height: 540px) {
+  .practice {
+    gap: 6px;
+    padding: max(8px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+      max(8px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  }
+  .practice-head {
+    flex-wrap: nowrap;
+  }
+  .practice-head .play-button {
+    min-height: var(--touch);
+    padding-inline: 20px;
+  }
+  .practice-head .bpm-value small {
+    display: none;
+  }
+  .practice-lcd .visor-cell {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+    padding: 9px 12px;
+  }
+  .practice-lcd .visor-big {
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+  }
+  .practice-lcd .visor-label {
+    font-size: 0.6875rem;
+  }
+  /* O exercício em andamento já aparece na barra do exercício; grau e função, na faixa de acordes. */
+  .practice-lcd-exercise,
+  .practice-lcd .visor-detail {
+    display: none;
+  }
+  .practice-transport {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .practice-transport .bpm {
+    gap: 4px;
+  }
+  .practice-options-toggle {
+    display: grid;
+  }
+  .practice-options-toggle[data-open] {
+    background: var(--selected);
+    color: var(--on-selected);
+    border-color: var(--selected);
+  }
+  .practice-row {
+    display: none;
+  }
+  .practice-row[data-open] {
+    display: flex;
+    position: absolute;
+    z-index: 2;
+    inset-inline: max(16px, env(safe-area-inset-left, 0px))
+      max(16px, env(safe-area-inset-right, 0px));
+    bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  }
+  .practice-board .live-fretboard,
+  .page-explore .board-panel .live-fretboard {
+    display: grid;
+    grid-template-columns: var(--touch) minmax(0, 1fr) var(--touch);
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    column-gap: 8px;
+    row-gap: 2px;
+    flex: 1;
+    min-height: 0;
+  }
+  .practice-board .fb-window-nav,
+  .page-explore .board-panel .fb-window-nav {
+    display: contents;
+  }
+  .practice-board .fb-window-nav > .icon-button,
+  .page-explore .board-panel .fb-window-nav > .icon-button {
+    grid-row: 3;
+    align-self: center;
+  }
+  .practice-board .fb-window-nav > .icon-button:first-child,
+  .page-explore .board-panel .fb-window-nav > .icon-button:first-child {
+    grid-column: 1;
+  }
+  .practice-board .fb-window-nav > .icon-button:last-child,
+  .page-explore .board-panel .fb-window-nav > .icon-button:last-child {
+    grid-column: 3;
+  }
+  /* As casas já vêm numeradas no braço, e "Seguir a mão" fica no painel "⋯": a linha
+     "Casas 1–5" sai para o guia das próximas notas caber embaixo. */
+  .practice-board .fb-window-label,
+  .practice-board .fb-window-nav > .link-button,
+  .page-explore .board-panel .fb-window-label,
+  .page-explore .board-panel .fb-window-nav > .link-button {
+    display: none;
+  }
+  .practice-next-item {
+    padding-block: 2px;
+  }
+  .practice-next-note-mark,
+  .practice-next .note-mark {
+    width: 30px;
+    height: 30px;
+  }
+  .practice-board .fb-status,
+  .page-explore .board-panel .fb-status {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    font-size: 0.75rem;
+  }
+  .practice-board .fb-scroll,
+  .page-explore .board-panel .fb-scroll {
+    grid-row: 3;
+    grid-column: 2;
+  }
+  .practice-board .legend,
+  .page-explore .board-panel .legend {
+    grid-row: 4;
+    grid-column: 1 / -1;
+  }
+  /* Braço inteiro (sem janela): não há setas, então ele usa a largura toda. */
+  .practice-board .live-fretboard:not(:has(.fb-window-nav:not(.fb-capo-row))) .fb-scroll,
+  .page-explore
+    .board-panel
+    .live-fretboard:not(:has(.fb-window-nav:not(.fb-capo-row)))
+    .fb-scroll {
+    grid-column: 1 / -1;
+  }
+  /*
+   * Braço fluido: ocupa a altura que sobra e as cordas dividem o espaço (nunca abaixo de
+   * 28 px). As marcações seguem a altura da corda, medida pelo contêiner.
+   */
+  .practice-board .fb-scroll,
+  .page-explore .board-panel .fb-scroll {
+    container-type: size;
+    min-height: 0;
+    height: 100%;
+  }
+  .practice-board .fb[data-orientation='horizontal'],
+  .page-explore .board-panel .fb[data-orientation='horizontal'] {
+    height: 100%;
+    min-height: 0;
+    max-height: none;
+    grid-template-rows: 20px repeat(4, minmax(28px, 1fr));
+  }
+  /* Deitado o braço é sempre a janela de 5 casas, com mínimo próprio por coluna. */
+  .practice-board .fb[data-orientation='horizontal'],
+  .page-explore .board-panel .fb[data-orientation='horizontal'] {
+    min-width: 0;
+  }
+  .practice-board .fb-dot,
+  .page-explore .board-panel .fb-dot {
+    max-width: calc(20cqh - 8px);
+    max-height: calc(20cqh - 8px);
+  }
+  .practice-board .fb-dot[data-last]::after,
+  .page-explore .board-panel .fb-dot[data-last]::after {
+    width: calc(20cqh + 2px);
+    height: calc(20cqh + 2px);
+    margin: calc(-10cqh - 1px) 0 0 calc(-10cqh - 1px);
+    max-width: 52px;
+    max-height: 52px;
+  }
+  /* Explorar deitado: o painel do braço ocupa a tela abaixo da barra do topo. */
+  .page-explore .board-panel {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 50px - 16px - 8px);
+    min-height: 220px;
+  }
+  /* O guia das próximas notas fica numa linha: classe e direção bastam enquanto se toca. */
+  .practice-next-label,
+  .practice-next-reason {
+    display: none;
+  }
+  .practice-next-item {
+    min-height: 40px;
+  }
+}
+
+/* Celular deitado com a barra do navegador à vista: a legenda sai (o guia embaixo já nomeia
+   a classe de cada nota) para as cordas continuarem com altura de toque. */
+@media (orientation: landscape) and (max-height: 360px) {
+  .practice-strip .chord-chip {
+    min-height: 40px;
+  }
+  .practice-board .legend {
+    display: none;
   }
 }
 
@@ -3137,6 +3563,12 @@ input[type='range'] {
   font-size: 0.875rem;
   line-height: 1.375rem;
   resize: vertical;
+}
+
+.chart-input::placeholder,
+.input::placeholder {
+  color: var(--fg-muted);
+  opacity: 1;
 }
 
 .chart-input:focus-visible {
@@ -3729,6 +4161,10 @@ input[type='range'] {
   gap: 8px;
   overflow-x: auto;
   scrollbar-width: thin;
+  /* A borda direita esmaece: sinal de que há mais bases ao rolar. O respiro final deixa a
+     última sair inteira do esmaecido. */
+  padding-inline-end: 40px;
+  mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
 }
 
 .preset {
@@ -3822,8 +4258,7 @@ input[type='range'] {
 }
 
 .note-info-close {
-  width: 34px;
-  height: 34px;
+  justify-self: end;
 }
 
 .note-info-why {

@@ -14,7 +14,7 @@ export function NoteMark({ cls, label }: { cls: NoteClass; label: string }) {
   );
 }
 
-/** "Saídas de E": as 3 melhores próximas notas a partir da última tocada. */
+/** "Próximas notas depois de E": as 3 melhores próximas notas a partir da última tocada. */
 export function NoteSuggestions({ onPlayMidi }: { onPlayMidi: (midi: number) => void }) {
   const t = useT();
   const n = useNames();
@@ -31,8 +31,8 @@ export function NoteSuggestions({ onPlayMidi }: { onPlayMidi: (midi: number) => 
       <div className="note-exits-head">
         <h2 id="note-exits-title">
           {last === undefined
-            ? t('Saídas', 'Next notes')
-            : t(`Saídas de ${lastName}`, `After ${lastName}`)}
+            ? t('Próximas notas', 'Next notes')
+            : t(`Próximas notas depois de ${lastName}`, `Next notes after ${lastName}`)}
         </h2>
         {lastNotes.length > 0 ? (
           <p className="trail" aria-label={t('Últimas notas tocadas', 'Last notes played')}>

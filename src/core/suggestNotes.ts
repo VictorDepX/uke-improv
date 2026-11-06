@@ -23,7 +23,7 @@ const CLASS_VALUE: Record<NoteClass, number> = {
   fora: 0.1,
 };
 
-/** Passos de 1–2 semitons são os mais cantáveis; repetir a nota vale menos que andar. */
+/** Passos de 1–2 semitons são os mais cantáveis (repetir a nota nem chega a ser sugerido). */
 export function proximityValue(distance: number): number {
   const d = Math.abs(distance);
   if (d === 0) return 0.6;
@@ -81,7 +81,8 @@ export interface SuggestOptions {
 
 /**
  * Ranqueia as próximas notas a partir das últimas tocadas (mais recente por último).
- * Retorna vazio se nenhuma nota foi tocada ainda.
+ * Sempre sugere movimento: a própria nota, em qualquer oitava, não entra (para o improviso,
+ * "repita a nota" não é uma sugestão), e cada nota aparece uma vez só, na melhor oitava. Retorna vazio se nenhuma nota foi tocada ainda.
  */
 export function suggestNextNotes(
   lastNotes: readonly number[],
@@ -98,8 +99,10 @@ export function suggestNextNotes(
   const results: NoteSuggestion[] = [];
   const lo = Math.max(range.min, last - span);
   const hi = Math.min(range.max, last + span);
+  const lastChroma = mod12(last);
   for (let midi = lo; midi <= hi; midi++) {
     const chroma = mod12(midi);
+    if (chroma === lastChroma) continue;
     const cls = classifyNote(chroma, ctx);
     const move = midi - last;
     const resolves = tendency?.targets.includes(midi) ?? false;
@@ -118,8 +121,11 @@ export function suggestNextNotes(
       reason: reasonFor(cls, move, resolves, recovers, tendency),
     });
   }
+  // Uma nota por nome: a mesma nota em outra oitava não ocupa outra vaga entre as melhores.
+  const seen = new Set<number>();
   return results
     .sort((a, b) => b.score - a.score || Math.abs(a.midi - last) - Math.abs(b.midi - last))
+    .filter((s) => !seen.has(s.chroma) && seen.add(s.chroma))
     .slice(0, count);
 }
 
@@ -132,10 +138,7 @@ function reasonFor(
 ): Txt {
   if (resolves && tendency) return tendency.reason;
   if (recovers) return tx('volta em passo depois do salto', 'steps back after the leap');
-  if (cls === 'repouso')
-    return move === 0
-      ? tx('repete a nota do acorde', 'repeats the chord tone')
-      : tx('nota do acorde: soa estável', 'chord tone: sounds stable');
+  if (cls === 'repouso') return tx('nota do acorde: soa estável', 'chord tone: sounds stable');
   if (cls === 'passagem')
     return Math.abs(move) <= 2
       ? tx('passo suave dentro da escala', 'smooth step within the scale')
