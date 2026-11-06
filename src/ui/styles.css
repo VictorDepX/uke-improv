@@ -160,7 +160,8 @@ body::before {
   inset: 0 0 auto;
   height: env(safe-area-inset-top, 0px);
   z-index: 10;
-  background: var(--surface);
+  /* Mesma cor da barra do topo, que fica logo abaixo do recorte da tela. */
+  background: var(--bg);
 }
 
 h1,
@@ -179,10 +180,30 @@ select {
   color: inherit;
 }
 
-button {
-  cursor: pointer;
+/*
+ * Celular: sem o clarão cinza do toque (cada controle tem o seu :active), sem a fonte
+ * inflada ao deitar o aparelho e sem o "puxar para atualizar" no meio do improviso.
+ */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+button,
+a,
+[role='button'] {
   /* Sem atraso de toque duplo: casas e tap tempo respondem na hora. */
   touch-action: manipulation;
+}
+
+button {
+  cursor: pointer;
+  /* Segurar um botão não seleciona o rótulo nem abre o menu de copiar. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 button:disabled {
@@ -368,13 +389,22 @@ button:disabled {
   text-align: start;
   cursor: pointer;
 }
-.visor-key:hover {
+@media (hover: hover) and (pointer: fine) {
+  .visor-key:hover {
+    background: rgb(255 255 255 / 0.04);
+  }
+}
+
+.visor-key:active {
   background: rgb(255 255 255 / 0.04);
 }
 .visor-key .visor-label {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .visor-key[aria-expanded='true'] .key-toggle-caret {
   transform: rotate(180deg);
@@ -444,7 +474,13 @@ button:disabled {
   border-radius: 50%;
   border: 1.5px solid var(--line-muted);
 }
-.tab:hover {
+@media (hover: hover) and (pointer: fine) {
+  .tab:hover {
+    color: var(--fg);
+  }
+}
+
+.tab:active {
   color: var(--fg);
 }
 .tab[aria-current='page'] {
@@ -467,8 +503,10 @@ button:disabled {
   line-height: 1.25rem;
   color: var(--fg);
 }
-.lang-switch:hover {
-  color: var(--fg);
+@media (hover: hover) and (pointer: fine) {
+  .lang-switch:hover {
+    color: var(--fg);
+  }
 }
 .shell-code {
   margin: 0;
@@ -603,6 +641,9 @@ button:disabled {
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
+  /* Tom com 9 acordes não cabe: a borda direita esmaece, sinal de que a faixa rola. */
+  padding-inline-end: 24px;
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
 }
 
 .shell-pads .chord-strip {
@@ -611,8 +652,12 @@ button:disabled {
 }
 
 .shell-pads .chord-chip {
+  /* Na barra do topo a largura vem do nome (rola se não couber): sem encolher a letra. */
+  container-type: normal;
   flex: none;
-  width: 52px;
+  width: auto;
+  min-width: 52px;
+  padding-inline: 6px;
   height: 44px;
   padding: 3px 0 6px;
   align-items: center;
@@ -625,7 +670,8 @@ button:disabled {
 }
 
 .shell-pads .chord-chip-symbol {
-  font-size: 1.125rem;
+  --sym-size: 1.125rem;
+  font-size: var(--sym-size);
   line-height: 1.25rem;
 }
 
@@ -999,7 +1045,13 @@ button:disabled {
   white-space: nowrap;
 }
 
-.segmented-option:hover {
+@media (hover: hover) and (pointer: fine) {
+  .segmented-option:hover {
+    background: var(--surface-2);
+  }
+}
+
+.segmented-option:active {
   background: var(--surface-2);
 }
 
@@ -1122,7 +1174,13 @@ input[type='range'] {
   white-space: nowrap;
 }
 
-.button:hover {
+@media (hover: hover) and (pointer: fine) {
+  .button:hover {
+    background: var(--surface-2);
+  }
+}
+
+.button:active {
   background: var(--surface-2);
 }
 
@@ -1132,7 +1190,14 @@ input[type='range'] {
   color: var(--accent-fg);
 }
 
-.button-primary:hover {
+@media (hover: hover) and (pointer: fine) {
+  .button-primary:hover {
+    background: var(--accent-muted);
+    border-color: var(--accent-muted);
+  }
+}
+
+.button-primary:active {
   background: var(--accent-muted);
   border-color: var(--accent-muted);
 }
@@ -1156,7 +1221,13 @@ input[type='range'] {
   padding: 0;
 }
 
-.icon-button:hover {
+@media (hover: hover) and (pointer: fine) {
+  .icon-button:hover {
+    background: var(--surface-2);
+  }
+}
+
+.icon-button:active {
   background: var(--surface-2);
 }
 
@@ -1256,6 +1327,9 @@ input[type='range'] {
   flex: 1;
   border-right: 0;
   gap: 8px;
+  /* Com capo o acorde ganha "forma de …": quem encolhe é o detalhe dele (reticências),
+     não o medidor do microfone. */
+  min-width: 140px;
 }
 
 .input-meter {
@@ -1263,6 +1337,7 @@ input[type='range'] {
   align-items: flex-end;
   gap: 3px;
   height: 20px;
+  overflow: hidden;
 }
 
 .input-meter span {
@@ -1336,7 +1411,14 @@ input[type='range'] {
   color: var(--fg-muted);
 }
 
-.tonic-key:hover {
+@media (hover: hover) and (pointer: fine) {
+  .tonic-key:hover {
+    outline: 1px solid var(--line-muted);
+    outline-offset: -1px;
+  }
+}
+
+.tonic-key:active {
   outline: 1px solid var(--line-muted);
   outline-offset: -1px;
 }
@@ -1359,6 +1441,7 @@ input[type='range'] {
 }
 
 .chord-chip {
+  container-type: inline-size;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1383,7 +1466,13 @@ input[type='range'] {
   background: var(--f-color, var(--line));
 }
 
-.chord-chip:hover {
+@media (hover: hover) and (pointer: fine) {
+  .chord-chip:hover {
+    background: var(--surface-3);
+  }
+}
+
+.chord-chip:active {
   background: var(--surface-3);
 }
 
@@ -1415,7 +1504,12 @@ input[type='range'] {
 .chord-chip-symbol {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.875rem;
+  /*
+   * Nomes longos ("Sol#dim", "Fá#m7") encolhem para caber no botão em vez de serem
+   * cortados: o tamanho é o menor entre o do contexto (--sym-size) e o que a largura do
+   * botão comporta para o número de caracteres (--len, posto pelo componente).
+   */
+  font-size: min(var(--sym-size, 1.875rem), calc(100cqi / (var(--len, 3) * 0.5)));
   line-height: 2rem;
   white-space: nowrap;
 }
@@ -1569,6 +1663,12 @@ input[type='range'] {
 
 .fb-cell:focus-visible {
   outline: none;
+}
+
+/* Nomes de 4 letras ("Sol#", "Solb" em Dó Ré Mi): letra menor para caber na marcação. */
+.fb-dot[data-long] {
+  font-size: 0.6875rem;
+  letter-spacing: -0.04em;
 }
 
 .fb-cell:focus-visible .fb-dot {
@@ -1913,7 +2013,13 @@ input[type='range'] {
   color: var(--fg-muted);
 }
 
-.suggestion:hover .suggestion-title {
+@media (hover: hover) and (pointer: fine) {
+  .suggestion:hover .suggestion-title {
+    text-decoration: underline;
+  }
+}
+
+.suggestion:active .suggestion-title {
   text-decoration: underline;
 }
 
@@ -1995,7 +2101,13 @@ input[type='range'] {
   text-align: left;
 }
 
-.chord-suggestion:hover strong {
+@media (hover: hover) and (pointer: fine) {
+  .chord-suggestion:hover strong {
+    text-decoration: underline;
+  }
+}
+
+.chord-suggestion:active strong {
   text-decoration: underline;
 }
 
@@ -2232,7 +2344,7 @@ input[type='range'] {
     line-height: 0.75rem;
   }
   .chord-strip .chord-chip-symbol {
-    font-size: 1.1875rem;
+    --sym-size: 1.1875rem;
     line-height: 1.375rem;
   }
 }
@@ -2306,23 +2418,30 @@ input[type='range'] {
   outline-offset: 0;
 }
 
+/*
+ * Agulha: uma faixa da largura do trilho, deslocada por transform (só composição, sem
+ * recalcular o layout a cada leitura do microfone). A agulha visível é o ::before no centro.
+ */
 .tuner-needle {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: transform 0.08s linear;
+}
+
+.tuner-needle::before {
+  content: '';
   position: absolute;
   top: 0;
   bottom: 0;
+  left: 50%;
   width: 6px;
   margin-left: -3px;
   border-radius: 3px;
   background: var(--c-tens);
-  transition: left 0.08s linear;
 }
 
-.tuner-track .tuner-needle {
-  left: 50%;
-  margin-left: calc(-3px);
-}
-
-.tuner-needle[data-in-tune] {
+.tuner-needle[data-in-tune]::before {
   background: var(--c-rest);
 }
 
@@ -2423,7 +2542,13 @@ input[type='range'] {
   cursor: pointer;
 }
 
-.file-button:hover {
+@media (hover: hover) and (pointer: fine) {
+  .file-button:hover {
+    background: var(--surface-2);
+  }
+}
+
+.file-button:active {
   background: var(--surface-2);
 }
 
@@ -2588,7 +2713,13 @@ input[type='range'] {
   color: var(--accent-fg);
 }
 
-.play-button:hover {
+@media (hover: hover) and (pointer: fine) {
+  .play-button:hover {
+    background: var(--accent-muted);
+  }
+}
+
+.play-button:active {
   background: var(--accent-muted);
 }
 
@@ -2762,8 +2893,24 @@ input[type='range'] {
   text-align: left;
 }
 
-.progression-option:hover {
+@media (hover: hover) and (pointer: fine) {
+  .progression-option:hover {
+    background: var(--surface-2);
+  }
+}
+
+.progression-option:active {
   background: var(--surface-2);
+}
+
+/* Nomes longos (progressões vindas da cifra) ficam em até 2 linhas; o título mostra o resto. */
+.progression-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .progression-option[aria-checked='true'] {
@@ -2811,7 +2958,7 @@ input[type='range'] {
 }
 
 .editor-pad .chord-chip-symbol {
-  font-size: 1.1875rem;
+  --sym-size: 1.1875rem;
   line-height: 1.375rem;
 }
 
@@ -2919,7 +3066,7 @@ input[type='range'] {
     line-height: 0.75rem;
   }
   .bar-chord .chord-chip-symbol {
-    font-size: 1.1875rem;
+    --sym-size: 1.1875rem;
     line-height: 1.375rem;
   }
   .bpm {
@@ -3047,6 +3194,10 @@ input[type='range'] {
   font-size: 0.9375rem;
 }
 
+.practice-board .fb-dot[data-long] {
+  font-size: 0.8125rem;
+}
+
 .practice-board .fb-dot[data-last]::after {
   width: 52px;
   height: 52px;
@@ -3134,7 +3285,7 @@ input[type='range'] {
     line-height: 0.75rem;
   }
   .practice-strip .chord-chip-symbol {
-    font-size: 1.1875rem;
+    --sym-size: 1.1875rem;
     line-height: 1.375rem;
   }
   .practice-board {
@@ -3199,7 +3350,13 @@ input[type='range'] {
   cursor: pointer;
 }
 
-.practice-next-item:hover {
+@media (hover: hover) and (pointer: fine) {
+  .practice-next-item:hover {
+    background: var(--surface-2);
+  }
+}
+
+.practice-next-item:active {
   background: var(--surface-2);
 }
 
@@ -3565,6 +3722,13 @@ input[type='range'] {
   resize: vertical;
 }
 
+/* Abaixo de 16 px o iOS dá zoom no campo ao tocar e não volta. */
+@media (pointer: coarse) {
+  .chart-input {
+    font-size: 1rem;
+  }
+}
+
 .chart-input::placeholder,
 .input::placeholder {
   color: var(--fg-muted);
@@ -3791,14 +3955,22 @@ input[type='range'] {
   outline: 2px solid var(--accent);
 }
 
+/* Cursor: faixa da largura da linha do tempo, movida por transform (percentual da própria
+   largura = da linha); a linha visível é o ::before na borda esquerda. */
 .take-cursor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.take-cursor::before {
+  content: '';
   position: absolute;
   top: 0;
   bottom: 0;
+  left: -1px;
   width: 2px;
-  margin-left: -1px;
   background: var(--accent);
-  pointer-events: none;
 }
 
 .take-now {
@@ -3969,7 +4141,13 @@ input[type='range'] {
   text-align: left;
 }
 
-.ear-choice:hover:not(:disabled) {
+@media (hover: hover) and (pointer: fine) {
+  .ear-choice:hover:not(:disabled) {
+    border-color: var(--line-muted);
+  }
+}
+
+.ear-choice:active:not(:disabled) {
   border-color: var(--line-muted);
 }
 
@@ -4053,7 +4231,10 @@ input[type='range'] {
   height: 100%;
   border-radius: inherit;
   background: var(--accent);
-  transition: width 0.2s ease;
+  /* Cresce por escala a partir da esquerda (sem recalcular layout); --p vem do componente. */
+  transform: scaleX(var(--p, 0));
+  transform-origin: left;
+  transition: transform 0.2s ease;
 }
 
 .exercise-bar[data-done] .exercise-meter span {
@@ -4183,7 +4364,13 @@ input[type='range'] {
   line-height: 1.25rem;
 }
 
-.preset:hover {
+@media (hover: hover) and (pointer: fine) {
+  .preset:hover {
+    background: var(--surface-2);
+  }
+}
+
+.preset:active {
   background: var(--surface-2);
 }
 
@@ -4356,9 +4543,11 @@ input[type='range'] {
   cursor: pointer;
 }
 
-.toast-action:hover,
-.toast-close:hover {
-  background: var(--surface-2);
+@media (hover: hover) and (pointer: fine) {
+  .toast-action:hover,
+  .toast-close:hover {
+    background: var(--surface-2);
+  }
 }
 
 @keyframes toast-in {
@@ -4411,15 +4600,23 @@ input[type='range'] {
   gap: 16px;
 }
 
+/*
+ * Esqueleto: o brilho é uma camada que desliza por transform. Animar background-position
+ * repintava o bloco a cada quadro, justo enquanto a página nova carrega.
+ */
 .skeleton {
+  position: relative;
+  overflow: hidden;
   border-radius: var(--radius);
-  background: linear-gradient(
-    90deg,
-    var(--surface-2) 0%,
-    var(--surface) 50%,
-    var(--surface-2) 100%
-  );
-  background-size: 200% 100%;
+  background: var(--surface-2);
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, var(--surface) 50%, transparent 100%);
+  transform: translateX(-100%);
   animation: skeleton 1.2s ease-in-out infinite;
 }
 
@@ -4443,13 +4640,14 @@ input[type='range'] {
 
 @keyframes skeleton {
   to {
-    background-position: -200% 0;
+    transform: translateX(100%);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .skeleton {
+  .skeleton::after {
     animation: none;
+    display: none;
   }
 }
 
@@ -4556,6 +4754,7 @@ input[type='range'] {
 /* ---------- Guias (páginas estáticas) ---------- */
 .guide {
   min-height: 100vh;
+  min-height: 100svh;
 }
 
 .guide-bar {
@@ -4628,6 +4827,7 @@ input[type='range'] {
     position: sticky;
     top: 0;
     height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     padding: 24px 20px;
@@ -4707,8 +4907,10 @@ input[type='range'] {
   text-decoration: none;
 }
 
-.guide-toc-list a:hover {
-  color: var(--fg);
+@media (hover: hover) and (pointer: fine) {
+  .guide-toc-list a:hover {
+    color: var(--fg);
+  }
 }
 
 .guide-crumbs {
@@ -5103,24 +5305,8 @@ input[type='range'] {
   border: 6px solid var(--accent);
   opacity: 0;
 }
-.pulse.on {
-  animation: pulse-flash 0.18s ease-out;
-}
 .pulse[data-accent='true'] {
   border-color: var(--c-tens);
-}
-@keyframes pulse-flash {
-  from {
-    opacity: 0.9;
-  }
-  to {
-    opacity: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .pulse.on {
-    animation-duration: 0.4s;
-  }
 }
 
 /* Canhoto: o braço espelhado (casas da direita para a esquerda; no celular, cordas invertidas). */
@@ -5154,6 +5340,7 @@ input[type='range'] {
   z-index: 41;
   width: min(520px, 100%);
   max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
   overflow-y: auto;
   display: grid;
   gap: 20px;

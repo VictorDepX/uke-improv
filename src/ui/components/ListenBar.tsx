@@ -19,7 +19,7 @@ type Extra = 'calibrate' | 'record' | null;
 export function ListenBar() {
   const t = useT();
   const { status, start } = useMicControl();
-  const mic = useMusicStore((s) => s.mic);
+  const followChords = useMusicStore((s) => s.mic.followChords);
   const setMic = useMusicStore((s) => s.setMic);
   const [extra, setExtra] = useState<Extra>(null);
   const on = status === 'on';
@@ -62,7 +62,7 @@ export function ListenBar() {
           <Toggle
             id="mic-follow"
             label={t('Seguir acorde ouvido', 'Follow the chord I play')}
-            checked={mic.followChords}
+            checked={followChords}
             onChange={(v) => setMic({ followChords: v })}
           />
         </div>

@@ -3,6 +3,7 @@ import { playChord } from '@/audio/engine/sound';
 import { sameChord } from '@/core/harmony';
 import { useDiatonicChords, useVoicing } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
+import { ChordName } from './ChordName';
 import { useNames, useT } from '@/i18n';
 
 /** Campo harmônico do tom; tocar um acorde o torna o acorde atual. */
@@ -35,7 +36,7 @@ export function ChordStrip() {
           onClick={() => choose(c.symbol)}
         >
           <span className="chord-chip-numeral mono">{c.numeral}</span>
-          <span className="chord-chip-symbol">{n(c.symbol)}</span>
+          <ChordName label={n(c.symbol)} />
         </button>
       ))}
     </div>

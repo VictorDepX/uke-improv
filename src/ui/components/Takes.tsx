@@ -1,6 +1,6 @@
 import { blobToWav } from '@/audio/engine/wav';
 import { toast } from '../toast';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildNoteContext } from '@/core/classify';
 import { midiName, prefersFlats } from '@/core/music';
 import { noteIndexAt, summarizeTake, takeAdvice } from '@/core/take';
@@ -22,12 +22,23 @@ function TakePlayer({ take, onRemove }: { take: Take; onRemove: () => void }) {
   const t = useT();
   const nn = useNames();
   const audio = useRef<HTMLAudioElement>(null);
-  const [time, setTime] = useState(0);
+  // Índice da nota sob o cursor: só ele vira estado (re-render ao trocar de nota). O cursor anda
+  // por transform direto no elemento, a cada quadro, sem passar pelo React.
+  const [idx, setIdx] = useState(() => noteIndexAt(take.notes, 0));
+  const cursor = useRef<HTMLSpanElement>(null);
   const [playing, setPlaying] = useState(false);
   const settings = useMusicStore((s) => s.settings);
   const flats = prefersFlats(take.key);
   const summary = useMemo(() => summarizeTake(take.notes), [take.notes]);
-  const idx = noteIndexAt(take.notes, time);
+  const place = useCallback(
+    (at: number) => {
+      const frac = Math.min(1, at / Math.max(take.duration, 0.1));
+      if (cursor.current) cursor.current.style.transform = `translateX(${frac * 100}%)`;
+      const i = noteIndexAt(take.notes, at);
+      setIdx((prev) => (prev === i ? prev : i));
+    },
+    [take.duration, take.notes],
+  );
   const note = idx >= 0 ? take.notes[idx]! : null;
   const chord = note?.chord ?? take.notes[0]?.chord ?? null;
   const ctx = useMemo(
@@ -40,16 +51,16 @@ function TakePlayer({ take, onRemove }: { take: Take; onRemove: () => void }) {
     if (!playing) return;
     let raf = 0;
     const tick = () => {
-      if (audio.current) setTime(audio.current.currentTime);
+      if (audio.current) place(audio.current.currentTime);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [playing]);
+  }, [playing, place]);
 
   const seek = (at: number) => {
     if (audio.current) audio.current.currentTime = at;
-    setTime(at);
+    place(at);
   };
 
   const save = (href: string, ext: string) => {
@@ -89,7 +100,7 @@ function TakePlayer({ take, onRemove }: { take: Take; onRemove: () => void }) {
           onPlay={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
           onEnded={() => setPlaying(false)}
-          onSeeked={(e) => setTime(e.currentTarget.currentTime)}
+          onSeeked={(e) => place(e.currentTarget.currentTime)}
         />
         {__PWA__ ? (
           // A página avulsa (artifact) não pode oferecer download de arquivo.
@@ -124,11 +135,7 @@ function TakePlayer({ take, onRemove }: { take: Take; onRemove: () => void }) {
             title={`${nn(midiName(n.midi, flats))} · ${nn(n.chord)}`}
           />
         ))}
-        <span
-          className="take-cursor"
-          aria-hidden="true"
-          style={{ left: `${Math.min(1, time / Math.max(take.duration, 0.1)) * 100}%` }}
-        />
+        <span ref={cursor} className="take-cursor" aria-hidden="true" />
       </div>
 
       <p className="take-now small" aria-live="polite">

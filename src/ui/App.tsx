@@ -33,6 +33,11 @@ import { useSharedLink } from './hooks/useSharedLink';
 import { useKeyPicker } from './keyPicker';
 import { Welcome } from './components/Welcome';
 
+// Chave de dados de teste (break-ui): carregada só em desenvolvimento, fora do build.
+const DevDataToggle = import.meta.env.DEV
+  ? lazy(() => import('../dev/DevDataToggle').then((m) => ({ default: m.DevDataToggle })))
+  : () => null;
+
 // Abas fora da inicial e o modo prática vêm em pacotes separados, baixados ao abrir.
 const PracticeMode = lazy(() =>
   import('./components/practice/PracticeMode').then((m) => ({ default: m.PracticeMode })),
@@ -322,6 +327,11 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
         ) : null}
         <Toaster />
         <Welcome lang={lang} onSwitchLang={switchLang} />
+        {import.meta.env.DEV ? (
+          <Suspense fallback={null}>
+            <DevDataToggle />
+          </Suspense>
+        ) : null}
         {pulse ? <div id="pulse" className="pulse" aria-hidden="true" /> : null}
       </div>
     </LangProvider>

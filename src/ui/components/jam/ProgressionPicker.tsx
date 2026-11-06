@@ -9,6 +9,7 @@ import { encodeShare } from '@/core/share';
 import { TAB_PATHS, navigateTo } from '../../routes';
 import { useLang, useNames, useT } from '@/i18n';
 import { Icon } from '../Icon';
+import { ChordName } from '../ChordName';
 import { StylePicker } from './StylePicker';
 
 /**
@@ -87,7 +88,7 @@ export function ProgressionPanel() {
                   data-func={findDiatonic(c, key)?.func}
                 >
                   <span className="chord-chip-numeral mono">{chordToNumeral(c, key)}</span>
-                  <span className="chord-chip-symbol">{n(c)}</span>
+                  <ChordName label={n(c)} />
                 </span>
               ))}
             </span>
@@ -132,7 +133,9 @@ export function ProgressionList() {
               className="progression-option"
               onClick={() => select(p.id)}
             >
-              <span>{t(p.name)}</span>
+              <span className="progression-name" title={t(p.name)}>
+                {t(p.name)}
+              </span>
               <span className="progression-tag mono">
                 {meterOf(p) !== '4/4'
                   ? meterOf(p)
