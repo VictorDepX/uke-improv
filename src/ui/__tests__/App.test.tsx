@@ -98,6 +98,7 @@ describe('App', () => {
     const user = userEvent.setup();
     render(<App />);
     await openTab(user, 'Jam');
+    await user.click(screen.getByRole('button', { name: 'Montar a sua progressão' }));
     const editor = screen.getByRole('region', { name: 'Montar progressão' });
     await user.click(within(editor).getByRole('button', { name: 'Am' }));
     // Depois de Am, F aparece também entre os sugeridos; qualquer um serve.
@@ -112,6 +113,7 @@ describe('App', () => {
     const user = userEvent.setup();
     render(<App />);
     await openTab(user, 'Jam');
+    await user.click(screen.getByRole('button', { name: 'Montar a sua progressão' }));
     const editor = screen.getByRole('region', { name: 'Montar progressão' });
     await user.click(within(editor).getByRole('radio', { name: '3/4' }));
     const field = within(editor).getAllByRole('button', { name: 'Dm' });

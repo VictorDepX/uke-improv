@@ -6,6 +6,7 @@ import { useMicControl } from '../hooks/useMicControl';
 import { Toggle } from './controls';
 import { Icon } from './Icon';
 import { MicCalibrator } from './MicCalibrator';
+import { MicProblem } from './MicProblem';
 import { RecordingAnalyzer } from './RecordingAnalyzer';
 import { TakesPanel } from './Takes';
 
@@ -68,13 +69,7 @@ export function ListenBar() {
       </div>
       <div id="listen-extra" className="listen-extra" hidden={extra === null}>
         {status === 'denied' || status === 'error' ? (
-          <p className="notice" role="status">
-            {mic.error}{' '}
-            {t(
-              'Verifique a permissão do microfone no navegador.',
-              'Check the microphone permission in your browser.',
-            )}
-          </p>
+          <MicProblem onRetry={() => void start()} />
         ) : !on ? (
           <p className="muted">{t('Ligando o microfone…', 'Turning the microphone on…')}</p>
         ) : extra === 'calibrate' ? (

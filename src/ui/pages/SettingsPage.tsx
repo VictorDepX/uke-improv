@@ -251,7 +251,10 @@ export function SettingsPage() {
               <Toggle
                 id="set-secondary"
                 label={t('Sugerir dominantes secundárias', 'Suggest secondary dominants')}
-                hint={t(`ex.: ${n('E7')} antes de ${n('Am')}`, `e.g. ${n('E7')} before ${n('Am')}`)}
+                hint={t(
+                  `acordes de fora que puxam para um acorde do tom, ex.: ${n('E7')} antes de ${n('Am')}`,
+                  `chords from outside the key that pull into a chord of the key, e.g. ${n('E7')} before ${n('Am')}`,
+                )}
                 checked={settings.extras.secondaryDominants}
                 onChange={(v) => setExtras({ secondaryDominants: v })}
               />
@@ -259,12 +262,32 @@ export function SettingsPage() {
                 id="set-borrowed"
                 label={t('Sugerir empréstimo modal', 'Suggest modal borrowing')}
                 hint={t(
-                  `ex.: ${n('Fm')} ou ${n('Bb')} em ${n('C')} maior`,
-                  `e.g. ${n('Fm')} or ${n('Bb')} in ${n('C')} major`,
+                  `acordes emprestados do tom menor, ex.: ${n('Fm')} ou ${n('Bb')} em ${n('C')} maior`,
+                  `chords borrowed from the minor key, e.g. ${n('Fm')} or ${n('Bb')} in ${n('C')} major`,
                 )}
                 checked={settings.extras.modalBorrowing}
                 onChange={(v) => setExtras({ modalBorrowing: v })}
               />
+            </div>
+          </Panel>
+
+          <Panel className="panel-sm" title={t('Ajuda', 'Help')}>
+            <div className="stack-tight">
+              <p className="small muted">
+                {t(
+                  'Os três passos do começo: tom e acorde, o que cada cor e forma quer dizer, e a base.',
+                  'The three first steps: key and chord, what each color and shape means, and the backing track.',
+                )}
+              </p>
+              <div>
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  onClick={() => update({ onboarded: false })}
+                >
+                  {t('Rever as boas-vindas', 'Show the welcome again')}
+                </button>
+              </div>
             </div>
           </Panel>
         </div>

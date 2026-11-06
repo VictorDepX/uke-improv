@@ -36,7 +36,7 @@ export function ExplorePage() {
         </div>
         {landscape ? null : <ChordStrip />}
         <div className="board-panel">
-          <LiveFretboard legend={!landscape} />
+          <LiveFretboard legend={landscape ? 'compact' : 'full'} />
           {landscape ? <ExitsBar /> : null}
         </div>
         <NoteSuggestions onPlayMidi={playMidi} />

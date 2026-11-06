@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useSyncExternalStore } from 'react';
-import { useT } from '@/i18n';
+import { useT, type Lang } from '@/i18n';
+import { useLangSuggestion } from '../hooks/useLangSuggestion';
+import { WelcomeLang } from './LangHint';
 import { useMusicStore } from '@/store/useMusicStore';
 
 const noop = () => () => undefined;
@@ -8,7 +10,7 @@ const noop = () => () => undefined;
  * Boas-vindas na primeira visita: três passos e os atalhos, num diálogo sobre o app. Só no
  * navegador: o HTML pré-renderizado não sabe se a pessoa já viu.
  */
-export function Welcome() {
+export function Welcome({ lang, onSwitchLang }: { lang: Lang; onSwitchLang: (l: Lang) => void }) {
   const t = useT();
   const id = useId();
   const start = useRef<HTMLButtonElement>(null);
@@ -20,7 +22,9 @@ export function Welcome() {
     () => false,
   );
   const open = client && !onboarded;
-  const close = () => update({ onboarded: true });
+  const suggestLang = useLangSuggestion(lang);
+  // Começar sem trocar de idioma conta como escolha: a faixa de idioma não volta depois.
+  const close = () => update(suggestLang ? { onboarded: true, lang } : { onboarded: true });
 
   useEffect(() => {
     if (open) start.current?.focus();
@@ -29,8 +33,8 @@ export function Welcome() {
   if (!open) return null;
   const steps = [
     t(
-      'Escolha a tônica e um acorde na faixa de acordes.',
-      'Pick the tonic and a chord in the chord strip.',
+      'Escolha o tom (no botão com o tom atual, como "C maior") e um acorde na faixa de acordes.',
+      'Pick the key (on the button that shows the current key, like "C major") and a chord in the chord strip.',
     ),
     t(
       'Toque uma casa: o círculo repousa, o quadrado passa, o losango pede resolução. Os números são as melhores próximas notas.',
@@ -44,7 +48,10 @@ export function Welcome() {
   const keys: [string, string][] = [
     [t('espaço', 'space'), t('toca ou para a base', 'plays or stops the backing track')],
     ['P', t('abre o modo prática', 'opens practice mode')],
-    [t('1 a 7', '1 to 7'), t('escolhem o acorde', 'pick the chord')],
+    [
+      t('1 a 7', '1 to 7'),
+      t('escolhem o acorde pelo grau (5 = V)', 'pick the chord by degree (5 = V)'),
+    ],
     ['?', t('mostra a lista', 'shows the list')],
   ];
   return (
@@ -60,6 +67,7 @@ export function Welcome() {
         }}
       >
         <h2 id={id}>{t('Bem-vindo ao Uke Improv', 'Welcome to Uke Improv')}</h2>
+        <WelcomeLang lang={lang} onSwitch={onSwitchLang} />
         <ol className="welcome-steps">
           {steps.map((s, i) => (
             <li key={i}>

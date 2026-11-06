@@ -26,8 +26,8 @@ export function useShortcuts(openPractice: () => void): void {
       } else if (e.key === '?')
         toast.info(
           tNow(
-            'Atalhos: espaço toca/para a base · P modo prática · 1–7 acorde do campo · setas andam no braço (Enter toca, I explica).',
-            'Shortcuts: space plays/stops the backing track · P practice mode · 1–7 chord in the key · arrows move on the fretboard (Enter plays, I explains).',
+            'Atalhos: espaço toca/para a base · P modo prática · 1–7 acorde pelo grau (5 = V) · setas andam no braço (Enter toca, I explica).',
+            'Shortcuts: space plays/stops the backing track · P practice mode · 1–7 chord by degree (5 = V) · arrows move on the fretboard (Enter plays, I explains).',
           ),
         );
     };

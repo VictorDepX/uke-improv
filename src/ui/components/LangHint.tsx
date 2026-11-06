@@ -1,18 +1,6 @@
-import { useSyncExternalStore } from 'react';
 import { HTML_LANG, type Lang } from '@/i18n';
 import { useMusicStore } from '@/store/useMusicStore';
-
-/** Idioma do navegador, entre os do app; null se não for nenhum dos dois. */
-function browserLang(): Lang | null {
-  for (const l of navigator.languages ?? [navigator.language]) {
-    const base = l.toLowerCase().slice(0, 2);
-    if (base === 'pt') return 'pt';
-    if (base === 'en') return 'en';
-  }
-  return null;
-}
-
-const noop = () => () => undefined;
+import { useLangSuggestion } from '../hooks/useLangSuggestion';
 
 const TEXT: Record<Lang, { body: string; go: string; stay: string }> = {
   en: {
@@ -27,26 +15,38 @@ const TEXT: Record<Lang, { body: string; go: string; stay: string }> = {
   },
 };
 
+/** Oferta de idioma dentro das boas-vindas: uma linha, sem competir com "Começar". */
+export function WelcomeLang({ lang, onSwitch }: { lang: Lang; onSwitch: (l: Lang) => void }) {
+  const suggest = useLangSuggestion(lang);
+  if (!suggest) return null;
+  const text = TEXT[suggest];
+  return (
+    <p className="welcome-lang" lang={HTML_LANG[suggest]}>
+      {text.body}{' '}
+      <button type="button" className="link-button" onClick={() => onSwitch(suggest)}>
+        {text.go}
+      </button>
+    </p>
+  );
+}
+
 /**
- * Quem chega com o navegador em outro idioma vê uma faixa oferecendo trocar. Não redireciona
- * sozinho: o buscador e quem abriu o link de propósito ficam na página que pediram. Fechar a
- * faixa conta como escolha, e ela não volta.
+ * Quem chega com o navegador em outro idioma vê a oferta nas boas-vindas; esta faixa só
+ * aparece depois delas, para quem ainda não escolheu. Não redireciona sozinho: o buscador e
+ * quem abriu o link de propósito ficam na página que pediram. Fechar a faixa conta como
+ * escolha, e ela não volta.
  */
 export function LangHint({ lang, onSwitch }: { lang: Lang; onSwitch: (l: Lang) => void }) {
-  const chosen = useMusicStore((s) => s.settings.lang);
+  const onboarded = useMusicStore((s) => s.settings.onboarded);
   const updateSettings = useMusicStore((s) => s.updateSettings);
-  // Só no navegador: o HTML pré-renderizado não sabe o idioma de quem abre.
-  const browser = useSyncExternalStore(noop, browserLang, () => undefined);
-  // Navegador em outro idioma (nem pt nem en): o inglês serve mais que o português.
-  const want = browser === undefined ? null : (browser ?? 'en');
-  const suggest = want && want !== lang ? want : null;
+  const suggest = useLangSuggestion(lang);
 
-  if (chosen || !suggest) return null;
+  if (!onboarded || !suggest) return null;
   const text = TEXT[suggest];
   return (
     <div className="lang-hint" role="region" aria-label={text.body} lang={HTML_LANG[suggest]}>
       <p>{text.body}</p>
-      <button type="button" className="button button-primary" onClick={() => onSwitch(suggest)}>
+      <button type="button" className="button" onClick={() => onSwitch(suggest)}>
         {text.go}
       </button>
       <button

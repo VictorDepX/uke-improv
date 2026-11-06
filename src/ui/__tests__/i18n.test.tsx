@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeT, noteNamer, tx } from '@/i18n';
@@ -93,8 +93,23 @@ describe('App em dois idiomas', () => {
     const user = userEvent.setup();
     setBrowserLanguages(['en-US', 'en']);
     render(<App />);
-    expect(screen.getByText('Uke Improv is also available in English.')).toBeInTheDocument();
+    // Primeira visita: a oferta vem dentro das boas-vindas, sem faixa empurrando o braço.
+    const welcome = screen.getByRole('dialog', { name: 'Bem-vindo ao Uke Improv' });
+    expect(within(welcome).getByRole('button', { name: 'Switch to English' })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: /English/ })).toBeNull();
     expect(window.location.pathname).toBe('/');
+    // Começar sem trocar conta como escolha.
+    await user.click(within(welcome).getByRole('button', { name: 'Começar' }));
+    expect(screen.queryByText(/also available in English/)).toBeNull();
+    expect(useMusicStore.getState().settings.lang).toBe('pt');
+  });
+
+  it('quem já passou pelas boas-vindas sem escolher idioma vê a faixa e pode fechá-la', async () => {
+    const user = userEvent.setup();
+    setBrowserLanguages(['en-US', 'en']);
+    useMusicStore.getState().updateSettings({ onboarded: true });
+    render(<App />);
+    expect(screen.getByText('Uke Improv is also available in English.')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Dismiss' }));
     expect(screen.queryByText('Uke Improv is also available in English.')).toBeNull();
     expect(useMusicStore.getState().settings.lang).toBe('pt');

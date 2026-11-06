@@ -6,6 +6,7 @@ import { midiName, prefersFlats } from '@/core/music';
 import type { FretPosition, KeyContext } from '@/core/types';
 import { tx, useNames, useT, type Txt } from '@/i18n';
 import { CLASS_SHORT, keyLabelOf } from '../format';
+import { Icon } from './Icon';
 
 interface NoteInfoProps {
   pos: FretPosition;
@@ -82,11 +83,11 @@ export function NoteInfo({
         <button
           ref={closeRef}
           type="button"
-          className="practice-close note-info-close"
+          className="icon-button note-info-close"
           onClick={onClose}
           aria-label={t('Fechar explicação', 'Close explanation')}
         >
-          <span aria-hidden="true" />
+          <Icon name="close" />
         </button>
       </div>
       <p className="note-info-why">{t(e.why)}</p>

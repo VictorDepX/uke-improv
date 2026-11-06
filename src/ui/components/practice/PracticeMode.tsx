@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { chordToNumeral, findDiatonic, sameChord } from '@/core/harmony';
 import { exerciseDef, exerciseProgress } from '@/core/exercises';
 import { METERS } from '@/core/rhythm';
@@ -9,6 +9,8 @@ import { barLabel } from '@/core/progressions';
 import { useActiveProgression, useDiatonicChords } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 import { useJamPreview } from '../../hooks/useJamPreview';
+import { useLatest } from '../../hooks/useLatest';
+import { useLandscapePhone } from '../../hooks/useMediaQuery';
 import { useToggleJam } from '../../hooks/useJamSync';
 import { ExerciseBar, ExerciseSelect } from '../ExerciseBar';
 import { LiveFretboard } from '../LiveFretboard';
@@ -54,13 +56,20 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
   const t = useT();
   const n = useNames();
   const closeRef = useRef<HTMLButtonElement>(null);
+  // Celular deitado: base, exercício e chaves ficam num painel que abre por cima do braço.
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  const optionsId = useId();
+  const optionsOpenRef = useLatest(optionsOpen);
   const current = useMusicStore((s) => s.currentChord);
   const key = useMusicStore((s) => s.key);
   const jam = useMusicStore((s) => s.jam);
   const exercise = useMusicStore((s) => s.exercise);
   const setChord = useMusicStore((s) => s.setChord);
   const setBpm = useMusicStore((s) => s.setBpm);
-  const followHand = useMusicStore((s) => s.settings.fretWindow === 'auto');
+  const fretWindowSetting = useMusicStore((s) => s.settings.fretWindow);
+  // Igual ao braço: no celular deitado, sem região escolhida, a janela já segue a mão.
+  const landscape = useLandscapePhone();
+  const followHand = fretWindowSetting === 'auto' || (fretWindowSetting === null && landscape);
   const updateSettings = useMusicStore((s) => s.updateSettings);
   const arpeggio = useMusicStore((s) => s.settings.arpeggio);
   const lastNotes = useMusicStore((s) => s.lastNotes);
@@ -80,7 +89,10 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key !== 'Escape') return;
+      // Esc fecha primeiro o painel de opções; só depois sai do modo prática.
+      if (optionsOpenRef.current) setOptionsOpen(false);
+      else onClose();
     };
     window.addEventListener('keydown', onKey);
     return () => {
@@ -91,7 +103,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
       const s = useMusicStore.getState();
       if (s.jam.playing && s.jam.startedBy === 'practice') s.setJamPlaying(false);
     };
-  }, [onClose]);
+  }, [onClose, optionsOpenRef]);
 
   return (
     <div
@@ -132,7 +144,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
               </span>
             </div>
           ) : null}
-          <div className="visor-cell">
+          <div className="visor-cell practice-lcd-exercise">
             <span className="visor-label">{t('Exercício', 'Exercise')}</span>
             <span className="visor-value">
               <span className="visor-big">{def ? t(def.title) : t('Livre', 'Free')}</span>
@@ -190,6 +202,17 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
             </button>
             <TapTempo className="button practice-tap" />
           </div>
+          <button
+            type="button"
+            className="icon-button practice-options-toggle"
+            aria-label={t('Base, exercício e opções', 'Backing, exercise and options')}
+            aria-expanded={optionsOpen}
+            aria-controls={optionsId}
+            data-open={optionsOpen || undefined}
+            onClick={() => setOptionsOpen((o) => !o)}
+          >
+            <Icon name={optionsOpen ? 'close' : 'more'} />
+          </button>
         </div>
       </div>
 
@@ -239,7 +262,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
       <ExerciseBar />
 
       <div className="practice-board">
-        <LiveFretboard previewChord={previewChord} legend={false} />
+        <LiveFretboard previewChord={previewChord} legend="compact" />
       </div>
       <p className="practice-rotate">
         {t(
@@ -248,7 +271,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
         )}
       </p>
 
-      <div className="practice-row">
+      <div className="practice-row" id={optionsId} data-open={optionsOpen || undefined}>
         <PresetSelect />
         <ExerciseSelect />
         <div className="practice-toggles">
@@ -262,7 +285,16 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
             id="practice-follow"
             label={t('Seguir a mão', 'Follow your hand')}
             checked={followHand}
-            onChange={(v) => updateSettings({ fretWindow: v ? 'auto' : null })}
+            onChange={(v) =>
+              updateSettings({
+                // Deitado, desligar prende a janela onde está (sem região, ela voltaria a seguir).
+                fretWindow: v
+                  ? 'auto'
+                  : landscape
+                    ? useMusicStore.getState().autoWindowStart
+                    : null,
+              })
+            }
           />
         </div>
       </div>

@@ -94,7 +94,10 @@ export function ChordSuggestions() {
         <Toggle
           id="extra-secondary"
           label={t('Dominantes secundárias', 'Secondary dominants')}
-          hint={t(`ex.: ${n('E7')} antes de ${n('Am')}`, `e.g. ${n('E7')} before ${n('Am')}`)}
+          hint={t(
+            `acordes de fora que puxam para um acorde do tom, ex.: ${n('E7')} antes de ${n('Am')}`,
+            `chords from outside the key that pull into a chord of the key, e.g. ${n('E7')} before ${n('Am')}`,
+          )}
           checked={extras.secondaryDominants}
           onChange={(v) => setExtras({ secondaryDominants: v })}
         />
@@ -102,8 +105,8 @@ export function ChordSuggestions() {
           id="extra-borrowed"
           label={t('Empréstimo modal', 'Modal borrowing')}
           hint={t(
-            `ex.: ${n('Fm')} ou ${n('Bb')} em ${n('C')} maior`,
-            `e.g. ${n('Fm')} or ${n('Bb')} in ${n('C')} major`,
+            `acordes emprestados do tom menor, ex.: ${n('Fm')} ou ${n('Bb')} em ${n('C')} maior`,
+            `chords borrowed from the minor key, e.g. ${n('Fm')} or ${n('Bb')} in ${n('C')} major`,
           )}
           checked={extras.modalBorrowing}
           onChange={(v) => setExtras({ modalBorrowing: v })}
