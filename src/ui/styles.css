@@ -1651,7 +1651,8 @@ input[type='range'] {
 [data-shapes] .note-mark[data-cls='tensao']::before {
   content: '';
   position: absolute;
-  inset: 5.5px;
+  /* Proporcional: o losango acompanha a marcação quando o braço encolhe. */
+  inset: 15%;
   z-index: -1;
   border-radius: 3px;
   background: var(--c-tens);
@@ -3257,11 +3258,18 @@ input[type='range'] {
   .practice-head {
     flex-wrap: nowrap;
   }
+  .practice-head .play-button {
+    min-height: var(--touch);
+    padding-inline: 20px;
+  }
+  .practice-head .bpm-value small {
+    display: none;
+  }
   .practice-lcd .visor-cell {
     flex-direction: row;
     align-items: baseline;
     gap: 8px;
-    padding: 8px 12px;
+    padding: 9px 12px;
   }
   .practice-lcd .visor-big {
     font-size: 1.25rem;
@@ -3306,30 +3314,39 @@ input[type='range'] {
     border-radius: var(--radius);
     box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
   }
-  .practice-board .live-fretboard {
+  .practice-board .live-fretboard,
+  .page-explore .board-panel .live-fretboard {
     display: grid;
     grid-template-columns: var(--touch) minmax(0, 1fr) var(--touch);
     grid-template-rows: auto auto minmax(0, 1fr) auto;
     column-gap: 8px;
     row-gap: 2px;
+    flex: 1;
+    min-height: 0;
   }
-  .practice-board .fb-window-nav {
+  .practice-board .fb-window-nav,
+  .page-explore .board-panel .fb-window-nav {
     display: contents;
   }
-  .practice-board .fb-window-nav > .icon-button {
+  .practice-board .fb-window-nav > .icon-button,
+  .page-explore .board-panel .fb-window-nav > .icon-button {
     grid-row: 3;
     align-self: center;
   }
-  .practice-board .fb-window-nav > .icon-button:first-child {
+  .practice-board .fb-window-nav > .icon-button:first-child,
+  .page-explore .board-panel .fb-window-nav > .icon-button:first-child {
     grid-column: 1;
   }
-  .practice-board .fb-window-nav > .icon-button:last-child {
+  .practice-board .fb-window-nav > .icon-button:last-child,
+  .page-explore .board-panel .fb-window-nav > .icon-button:last-child {
     grid-column: 3;
   }
   /* As casas já vêm numeradas no braço, e "Seguir a mão" fica no painel "⋯": a linha
      "Casas 1–5" sai para o guia das próximas notas caber embaixo. */
   .practice-board .fb-window-label,
-  .practice-board .fb-window-nav > .link-button {
+  .practice-board .fb-window-nav > .link-button,
+  .page-explore .board-panel .fb-window-label,
+  .page-explore .board-panel .fb-window-nav > .link-button {
     display: none;
   }
   .practice-next-item {
@@ -3340,35 +3357,73 @@ input[type='range'] {
     width: 30px;
     height: 30px;
   }
-  .practice-board .fb-status {
+  .practice-board .fb-status,
+  .page-explore .board-panel .fb-status {
     grid-row: 2;
     grid-column: 1 / -1;
     font-size: 0.75rem;
   }
-  .practice-board .fb-scroll {
+  .practice-board .fb-scroll,
+  .page-explore .board-panel .fb-scroll {
     grid-row: 3;
     grid-column: 2;
   }
-  .practice-board .legend {
+  .practice-board .legend,
+  .page-explore .board-panel .legend {
     grid-row: 4;
     grid-column: 1 / -1;
   }
   /* Braço inteiro (sem janela): não há setas, então ele usa a largura toda. */
-  .practice-board .live-fretboard:not(:has(.fb-window-nav:not(.fb-capo-row))) .fb-scroll {
+  .practice-board .live-fretboard:not(:has(.fb-window-nav:not(.fb-capo-row))) .fb-scroll,
+  .page-explore
+    .board-panel
+    .live-fretboard:not(:has(.fb-window-nav:not(.fb-capo-row)))
+    .fb-scroll {
     grid-column: 1 / -1;
   }
-  .practice-board .fb[data-orientation='horizontal'] {
+  /*
+   * Braço fluido: ocupa a altura que sobra e as cordas dividem o espaço (nunca abaixo de
+   * 28 px). As marcações seguem a altura da corda, medida pelo contêiner.
+   */
+  .practice-board .fb-scroll,
+  .page-explore .board-panel .fb-scroll {
+    container-type: size;
+    min-height: 0;
+    height: 100%;
+  }
+  .practice-board .fb[data-orientation='horizontal'],
+  .page-explore .board-panel .fb[data-orientation='horizontal'] {
+    height: 100%;
     min-height: 0;
     max-height: none;
-    grid-template-rows: 22px repeat(4, minmax(40px, 1fr));
+    grid-template-rows: 20px repeat(4, minmax(28px, 1fr));
   }
-}
-
-/* Celular deitado com a barra do navegador à vista: cada corda abre mão de alguns pixels. */
-@media (orientation: landscape) and (max-height: 360px) {
-  /* O guia das próximas notas já nomeia a classe de cada nota: a legenda sai, o guia
-     fica numa linha. */
-  .practice-board .legend,
+  /* Deitado o braço é sempre a janela de 5 casas, com mínimo próprio por coluna. */
+  .practice-board .fb[data-orientation='horizontal'],
+  .page-explore .board-panel .fb[data-orientation='horizontal'] {
+    min-width: 0;
+  }
+  .practice-board .fb-dot,
+  .page-explore .board-panel .fb-dot {
+    max-width: calc(20cqh - 8px);
+    max-height: calc(20cqh - 8px);
+  }
+  .practice-board .fb-dot[data-last]::after,
+  .page-explore .board-panel .fb-dot[data-last]::after {
+    width: calc(20cqh + 2px);
+    height: calc(20cqh + 2px);
+    margin: calc(-10cqh - 1px) 0 0 calc(-10cqh - 1px);
+    max-width: 52px;
+    max-height: 52px;
+  }
+  /* Explorar deitado: o painel do braço ocupa a tela abaixo da barra do topo. */
+  .page-explore .board-panel {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 50px - 16px - 8px);
+    min-height: 220px;
+  }
+  /* O guia das próximas notas fica numa linha: classe e direção bastam enquanto se toca. */
   .practice-next-label,
   .practice-next-reason {
     display: none;
@@ -3376,25 +3431,16 @@ input[type='range'] {
   .practice-next-item {
     min-height: 40px;
   }
+}
+
+/* Celular deitado com a barra do navegador à vista: a legenda sai (o guia embaixo já nomeia
+   a classe de cada nota) para as cordas continuarem com altura de toque. */
+@media (orientation: landscape) and (max-height: 360px) {
   .practice-strip .chord-chip {
     min-height: 40px;
   }
-  .practice-board .fb[data-orientation='horizontal'] {
-    grid-template-rows: 18px repeat(4, minmax(32px, 1fr));
-  }
-  .practice-board .fb-dot[data-cls='repouso'],
-  [data-shapes] .practice-board .fb-dot[data-cls='repouso'] {
-    width: 32px;
-    height: 32px;
-  }
-  [data-shapes] .practice-board .fb-dot[data-cls='passagem'],
-  .practice-board .fb-dot[data-cls='passagem'] {
-    width: 30px;
-    height: 30px;
-  }
-  [data-shapes] .practice-board .fb-dot[data-cls='tensao'] {
-    width: 32px;
-    height: 32px;
+  .practice-board .legend {
+    display: none;
   }
 }
 
