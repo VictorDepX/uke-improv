@@ -221,6 +221,7 @@ export const Fretboard = memo(function Fretboard({
           data-last={isLast || undefined}
           data-alt={isAlt || undefined}
           data-preview={inPreview ? (common ? 'common' : 'next') : undefined}
+          data-long={[...label].length >= 4 || undefined}
         >
           {cls !== 'fora' || isLast || isAlt || r ? label : ''}
         </span>

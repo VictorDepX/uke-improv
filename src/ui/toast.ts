@@ -26,7 +26,17 @@ export const useToasts = create<ToastState>((set, get) => ({
   toasts: [],
   push: (t) => {
     const id = nextId++;
-    set((s) => ({ toasts: [...s.toasts, { ...t, id }].slice(-MAX_VISIBLE) }));
+    // O mesmo aviso de novo (ex.: a sincronização falhando a cada tentativa) substitui o
+    // anterior em vez de empilhar cópias: ele vai para o fim e o tempo recomeça.
+    for (const old of get().toasts.filter((o) => o.message === t.message)) {
+      clearTimeout(timers.get(old.id));
+      timers.delete(old.id);
+    }
+    set((s) => ({
+      toasts: [...s.toasts.filter((o) => o.message !== t.message), { ...t, id }].slice(
+        -MAX_VISIBLE,
+      ),
+    }));
     const ms = t.action ? TOAST_MS.action : TOAST_MS[t.kind];
     timers.set(
       id,

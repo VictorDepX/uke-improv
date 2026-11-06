@@ -8,6 +8,7 @@ import { suggestNextChords } from '@/core/suggestChords';
 import { useDiatonicChords } from '@/store/selectors';
 import { useMusicStore } from '@/store/useMusicStore';
 import { Segmented } from '../controls';
+import { ChordName } from '../ChordName';
 import { useNames, useT } from '@/i18n';
 
 const MAX_BARS = 16;
@@ -108,7 +109,7 @@ export function ProgressionEditor() {
               <span className="chord-chip-numeral mono" aria-hidden="true">
                 {d.numeral}
               </span>
-              <span className="chord-chip-symbol">{n(d.symbol)}</span>
+              <ChordName label={n(d.symbol)} />
             </button>
           ))}
         </div>

@@ -11,7 +11,7 @@ import { barLabel } from '@/core/progressions';
 import type { KeyContext } from '@/core/types';
 import { useMusicStore } from '@/store/useMusicStore';
 import { keyLabelOf } from '../../format';
-import { tx, useLang, useNames, useT, type Txt } from '@/i18n';
+import { nm, tx, useLang, useNames, useT, type Txt } from '@/i18n';
 import { SCALES } from '@/core/music';
 import { navigateTo } from '../../routes';
 import { toast } from '../../toast';
@@ -71,7 +71,11 @@ export function ChartAnalyzer() {
 
   const toJam = () => {
     if (!analysis) return;
-    const name = `${t('Cifra', 'Chart')}: ${bars.slice(0, 4).map(barLabel).join(' – ')}${bars.length > 4 ? ' …' : ''}`;
+    // Acordes marcados (nm): a lista mostra no formato de nomes escolhido (C#7 ou Dó#7).
+    const name = `${t('Cifra', 'Chart')}: ${bars
+      .slice(0, 4)
+      .map((b) => barLabel(b.map(nm)))
+      .join(' – ')}${bars.length > 4 ? ' …' : ''}`;
     loadChart({ key: analysis.key, bars, name });
     const k = keyLabelOf(analysis.key);
     toast.success(

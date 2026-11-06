@@ -17,6 +17,7 @@ import { LiveFretboard } from '../LiveFretboard';
 import { PresetSelect } from '../PresetBar';
 import { TapTempo } from '../jam/TapTempo';
 import { PracticeNext } from './PracticeNext';
+import { ChordName } from '../ChordName';
 import { useNames, useT } from '@/i18n';
 
 interface PracticeModeProps {
@@ -233,7 +234,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
               <span className="chord-chip-numeral mono">
                 {b.map((c) => chordToNumeral(c, key)).join(' ')}
               </span>
-              <span className="chord-chip-symbol">{barLabel(b.map(n))}</span>
+              <ChordName label={barLabel(b.map(n))} />
             </li>
           ))}
         </ol>
@@ -254,7 +255,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
               onClick={() => setChord(d.symbol)}
             >
               <span className="chord-chip-numeral mono">{d.numeral}</span>
-              <span className="chord-chip-symbol">{n(d.symbol)}</span>
+              <ChordName label={n(d.symbol)} />
             </button>
           ))}
         </div>

@@ -15,7 +15,7 @@ import { Segmented } from '../components/controls';
 import { Icon } from '../components/Icon';
 import { PageHead } from '../components/PageHead';
 import { keyLabelOf } from '../format';
-import { tNow, tx, useT, type Txt } from '@/i18n';
+import { LOCALE, tNow, tx, useLang, useT, type Txt } from '@/i18n';
 import { toast } from '../toast';
 
 const MODE_OPTIONS: { value: EarMode; label: Txt }[] = [
@@ -42,6 +42,9 @@ const MODE_HINT: Record<EarMode, Txt> = {
 /** Treino de ouvido: intervalos, qualidade de acorde e função harmônica. */
 export function EarPage() {
   const t = useT();
+  const lang = useLang();
+  // Placar com separador de milhar do idioma (1.284 / 1,284).
+  const num = (v: number) => v.toLocaleString(LOCALE[lang]);
   const key = useMusicStore((s) => s.key);
   const voicing = useVoicing();
   const [mode, setMode] = useState<EarMode>('interval');
@@ -108,7 +111,7 @@ export function EarPage() {
           <span className="visor-label">{t('Placar', 'Score')}</span>
           <span className="visor-value">
             <span className="visor-big">
-              {score.correct}/{score.total}
+              {num(score.correct)}/{num(score.total)}
             </span>
             <span className="visor-detail">{t('acertos', 'correct')}</span>
           </span>
@@ -116,14 +119,14 @@ export function EarPage() {
         <div className="visor-cell">
           <span className="visor-label">{t('Sequência', 'Streak')}</span>
           <span className="visor-value">
-            <span className="visor-big">{score.streak}</span>
+            <span className="visor-big">{num(score.streak)}</span>
             <span className="visor-detail">{t('seguidas', 'in a row')}</span>
           </span>
         </div>
         <div className="visor-cell">
           <span className="visor-label">{t('Melhor', 'Best')}</span>
           <span className="visor-value">
-            <span className="visor-big">{score.best}</span>
+            <span className="visor-big">{num(score.best)}</span>
             <span className="visor-detail">{t('seguidas', 'in a row')}</span>
           </span>
         </div>

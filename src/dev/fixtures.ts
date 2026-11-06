@@ -5,6 +5,7 @@
  */
 import { analyzeChart, MAX_CHART_BARS, parseChart } from '@/core/chart';
 import { barLabel } from '@/core/progressions';
+import { nm } from '@/i18n';
 import { useMusicStore } from '@/store/useMusicStore';
 
 export type DevDataset = 'demo' | 'worst' | 'one';
@@ -31,7 +32,10 @@ function loadFromChart(text: string): void {
   if (!analysis) return;
   const bars = parsed.bars.slice(0, MAX_CHART_BARS);
   // Mesmo nome que o analisador de cifra dá (ChartAnalyzer).
-  const name = `Cifra: ${bars.slice(0, 4).map(barLabel).join(' – ')}${bars.length > 4 ? ' …' : ''}`;
+  const name = `Cifra: ${bars
+    .slice(0, 4)
+    .map((b) => barLabel(b.map(nm)))
+    .join(' – ')}${bars.length > 4 ? ' …' : ''}`;
   useMusicStore.getState().loadChart({ key: analysis.key, bars, name });
 }
 
