@@ -109,6 +109,9 @@ export function AccountPanel() {
             type="email"
             required
             autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             maxLength={ACCOUNT_LIMITS.email}
             value={email}
             aria-describedby={`${ids.email}-hint`}

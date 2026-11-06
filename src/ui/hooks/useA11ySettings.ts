@@ -1,6 +1,20 @@
 import { useEffect } from 'react';
 import { useMusicStore } from '@/store/useMusicStore';
 
+/** Cor da barra de status por tema; igual ao fundo da barra do topo (--bg). */
+const THEME_COLOR = { light: '#eeebe4', dark: '#16181a' } as const;
+
+/**
+ * Tema escolhido à mão nos Ajustes: as duas metas theme-color passam a usar a cor dele, senão
+ * o celular em modo escuro pintaria a barra de status escura sobre o app claro (e vice-versa).
+ */
+function syncThemeColor(theme: 'auto' | 'light' | 'dark'): void {
+  for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
+    const scheme = meta.media.includes('dark') ? 'dark' : 'light';
+    meta.content = THEME_COLOR[theme === 'auto' ? scheme : theme];
+  }
+}
+
 /** Tema, contraste e paleta dos Ajustes viram atributos do <html>, que o CSS lê. */
 export function useA11ySettings(): void {
   const theme = useMusicStore((s) => s.settings.theme);
@@ -17,6 +31,7 @@ export function useA11ySettings(): void {
     else delete d.palette;
     if (leftHanded) d.hand = 'left';
     else delete d.hand;
+    syncThemeColor(theme);
   }, [theme, highContrast, colorblind, leftHanded]);
 
   // Pulso: a cada tempo da base, vibra (onde houver) e pisca a borda da tela.

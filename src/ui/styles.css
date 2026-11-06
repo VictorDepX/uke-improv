@@ -160,7 +160,8 @@ body::before {
   inset: 0 0 auto;
   height: env(safe-area-inset-top, 0px);
   z-index: 10;
-  background: var(--surface);
+  /* Mesma cor da barra do topo, que fica logo abaixo do recorte da tela. */
+  background: var(--bg);
 }
 
 h1,
@@ -179,10 +180,30 @@ select {
   color: inherit;
 }
 
-button {
-  cursor: pointer;
+/*
+ * Celular: sem o clarão cinza do toque (cada controle tem o seu :active), sem a fonte
+ * inflada ao deitar o aparelho e sem o "puxar para atualizar" no meio do improviso.
+ */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+button,
+a,
+[role='button'] {
   /* Sem atraso de toque duplo: casas e tap tempo respondem na hora. */
   touch-action: manipulation;
+}
+
+button {
+  cursor: pointer;
+  /* Segurar um botão não seleciona o rótulo nem abre o menu de copiar. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 button:disabled {
@@ -368,7 +389,13 @@ button:disabled {
   text-align: start;
   cursor: pointer;
 }
-.visor-key:hover {
+@media (hover: hover) and (pointer: fine) {
+  .visor-key:hover {
+    background: rgb(255 255 255 / 0.04);
+  }
+}
+
+.visor-key:active {
   background: rgb(255 255 255 / 0.04);
 }
 .visor-key .visor-label {
@@ -444,7 +471,13 @@ button:disabled {
   border-radius: 50%;
   border: 1.5px solid var(--line-muted);
 }
-.tab:hover {
+@media (hover: hover) and (pointer: fine) {
+  .tab:hover {
+    color: var(--fg);
+  }
+}
+
+.tab:active {
   color: var(--fg);
 }
 .tab[aria-current='page'] {
@@ -467,8 +500,10 @@ button:disabled {
   line-height: 1.25rem;
   color: var(--fg);
 }
-.lang-switch:hover {
-  color: var(--fg);
+@media (hover: hover) and (pointer: fine) {
+  .lang-switch:hover {
+    color: var(--fg);
+  }
 }
 .shell-code {
   margin: 0;
@@ -999,7 +1034,13 @@ button:disabled {
   white-space: nowrap;
 }
 
-.segmented-option:hover {
+@media (hover: hover) and (pointer: fine) {
+  .segmented-option:hover {
+    background: var(--surface-2);
+  }
+}
+
+.segmented-option:active {
   background: var(--surface-2);
 }
 
@@ -1122,7 +1163,13 @@ input[type='range'] {
   white-space: nowrap;
 }
 
-.button:hover {
+@media (hover: hover) and (pointer: fine) {
+  .button:hover {
+    background: var(--surface-2);
+  }
+}
+
+.button:active {
   background: var(--surface-2);
 }
 
@@ -1132,7 +1179,14 @@ input[type='range'] {
   color: var(--accent-fg);
 }
 
-.button-primary:hover {
+@media (hover: hover) and (pointer: fine) {
+  .button-primary:hover {
+    background: var(--accent-muted);
+    border-color: var(--accent-muted);
+  }
+}
+
+.button-primary:active {
   background: var(--accent-muted);
   border-color: var(--accent-muted);
 }
@@ -1156,7 +1210,13 @@ input[type='range'] {
   padding: 0;
 }
 
-.icon-button:hover {
+@media (hover: hover) and (pointer: fine) {
+  .icon-button:hover {
+    background: var(--surface-2);
+  }
+}
+
+.icon-button:active {
   background: var(--surface-2);
 }
 
@@ -1336,7 +1396,14 @@ input[type='range'] {
   color: var(--fg-muted);
 }
 
-.tonic-key:hover {
+@media (hover: hover) and (pointer: fine) {
+  .tonic-key:hover {
+    outline: 1px solid var(--line-muted);
+    outline-offset: -1px;
+  }
+}
+
+.tonic-key:active {
   outline: 1px solid var(--line-muted);
   outline-offset: -1px;
 }
@@ -1383,7 +1450,13 @@ input[type='range'] {
   background: var(--f-color, var(--line));
 }
 
-.chord-chip:hover {
+@media (hover: hover) and (pointer: fine) {
+  .chord-chip:hover {
+    background: var(--surface-3);
+  }
+}
+
+.chord-chip:active {
   background: var(--surface-3);
 }
 
@@ -1913,7 +1986,13 @@ input[type='range'] {
   color: var(--fg-muted);
 }
 
-.suggestion:hover .suggestion-title {
+@media (hover: hover) and (pointer: fine) {
+  .suggestion:hover .suggestion-title {
+    text-decoration: underline;
+  }
+}
+
+.suggestion:active .suggestion-title {
   text-decoration: underline;
 }
 
@@ -1995,7 +2074,13 @@ input[type='range'] {
   text-align: left;
 }
 
-.chord-suggestion:hover strong {
+@media (hover: hover) and (pointer: fine) {
+  .chord-suggestion:hover strong {
+    text-decoration: underline;
+  }
+}
+
+.chord-suggestion:active strong {
   text-decoration: underline;
 }
 
@@ -2423,7 +2508,13 @@ input[type='range'] {
   cursor: pointer;
 }
 
-.file-button:hover {
+@media (hover: hover) and (pointer: fine) {
+  .file-button:hover {
+    background: var(--surface-2);
+  }
+}
+
+.file-button:active {
   background: var(--surface-2);
 }
 
@@ -2588,7 +2679,13 @@ input[type='range'] {
   color: var(--accent-fg);
 }
 
-.play-button:hover {
+@media (hover: hover) and (pointer: fine) {
+  .play-button:hover {
+    background: var(--accent-muted);
+  }
+}
+
+.play-button:active {
   background: var(--accent-muted);
 }
 
@@ -2762,7 +2859,13 @@ input[type='range'] {
   text-align: left;
 }
 
-.progression-option:hover {
+@media (hover: hover) and (pointer: fine) {
+  .progression-option:hover {
+    background: var(--surface-2);
+  }
+}
+
+.progression-option:active {
   background: var(--surface-2);
 }
 
@@ -3199,7 +3302,13 @@ input[type='range'] {
   cursor: pointer;
 }
 
-.practice-next-item:hover {
+@media (hover: hover) and (pointer: fine) {
+  .practice-next-item:hover {
+    background: var(--surface-2);
+  }
+}
+
+.practice-next-item:active {
   background: var(--surface-2);
 }
 
@@ -3563,6 +3672,13 @@ input[type='range'] {
   font-size: 0.875rem;
   line-height: 1.375rem;
   resize: vertical;
+}
+
+/* Abaixo de 16 px o iOS dá zoom no campo ao tocar e não volta. */
+@media (pointer: coarse) {
+  .chart-input {
+    font-size: 1rem;
+  }
 }
 
 .chart-input::placeholder,
@@ -3969,7 +4085,13 @@ input[type='range'] {
   text-align: left;
 }
 
-.ear-choice:hover:not(:disabled) {
+@media (hover: hover) and (pointer: fine) {
+  .ear-choice:hover:not(:disabled) {
+    border-color: var(--line-muted);
+  }
+}
+
+.ear-choice:active:not(:disabled) {
   border-color: var(--line-muted);
 }
 
@@ -4183,7 +4305,13 @@ input[type='range'] {
   line-height: 1.25rem;
 }
 
-.preset:hover {
+@media (hover: hover) and (pointer: fine) {
+  .preset:hover {
+    background: var(--surface-2);
+  }
+}
+
+.preset:active {
   background: var(--surface-2);
 }
 
@@ -4356,9 +4484,11 @@ input[type='range'] {
   cursor: pointer;
 }
 
-.toast-action:hover,
-.toast-close:hover {
-  background: var(--surface-2);
+@media (hover: hover) and (pointer: fine) {
+  .toast-action:hover,
+  .toast-close:hover {
+    background: var(--surface-2);
+  }
 }
 
 @keyframes toast-in {
@@ -4556,6 +4686,7 @@ input[type='range'] {
 /* ---------- Guias (páginas estáticas) ---------- */
 .guide {
   min-height: 100vh;
+  min-height: 100svh;
 }
 
 .guide-bar {
@@ -4628,6 +4759,7 @@ input[type='range'] {
     position: sticky;
     top: 0;
     height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     padding: 24px 20px;
@@ -4707,8 +4839,10 @@ input[type='range'] {
   text-decoration: none;
 }
 
-.guide-toc-list a:hover {
-  color: var(--fg);
+@media (hover: hover) and (pointer: fine) {
+  .guide-toc-list a:hover {
+    color: var(--fg);
+  }
 }
 
 .guide-crumbs {
@@ -5154,6 +5288,7 @@ input[type='range'] {
   z-index: 41;
   width: min(520px, 100%);
   max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
   overflow-y: auto;
   display: grid;
   gap: 20px;

@@ -106,6 +106,8 @@ export function ChartAnalyzer() {
             placeholder={t(PLACEHOLDER)}
             onChange={(e) => setText(e.target.value)}
             spellCheck={false}
+            autoCapitalize="none"
+            autoCorrect="off"
           />
         </label>
         <div className="editor-actions">
