@@ -3141,6 +3141,103 @@ input[type='range'] {
   }
 }
 
+/* Guia das 3 melhores próximas notas, embaixo do braço. */
+.practice-next {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px 16px;
+  min-width: 0;
+}
+
+.practice-next-label {
+  flex: none;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+.practice-next-empty {
+  margin: 0;
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+}
+
+.practice-next-list {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.practice-next-item {
+  width: 100%;
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.practice-next-item:hover {
+  background: var(--surface-2);
+}
+
+.practice-next-rank {
+  flex: none;
+  width: 12px;
+  color: var(--accent-text);
+  font-weight: 600;
+  font-size: 0.8125rem;
+}
+
+.practice-next-body {
+  display: grid;
+  min-width: 0;
+}
+
+.practice-next-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.125rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.practice-next-move {
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+.practice-next-reason {
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  color: var(--fg-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* O botão "⋯" só existe onde falta altura: no resto, base e exercício ficam à vista embaixo. */
 .practice-options-toggle {
   display: none;
@@ -3229,17 +3326,19 @@ input[type='range'] {
   .practice-board .fb-window-nav > .icon-button:last-child {
     grid-column: 3;
   }
-  .practice-board .fb-window-label {
-    grid-row: 1;
-    grid-column: 2;
-    justify-self: center;
-    font-size: 0.75rem;
-  }
+  /* As casas já vêm numeradas no braço, e "Seguir a mão" fica no painel "⋯": a linha
+     "Casas 1–5" sai para o guia das próximas notas caber embaixo. */
+  .practice-board .fb-window-label,
   .practice-board .fb-window-nav > .link-button {
-    grid-row: 1;
-    grid-column: 2;
-    justify-self: end;
-    min-height: 0;
+    display: none;
+  }
+  .practice-next-item {
+    padding-block: 2px;
+  }
+  .practice-next-note-mark,
+  .practice-next .note-mark {
+    width: 30px;
+    height: 30px;
   }
   .practice-board .fb-status {
     grid-row: 2;
@@ -3267,11 +3366,21 @@ input[type='range'] {
 
 /* Celular deitado com a barra do navegador à vista: cada corda abre mão de alguns pixels. */
 @media (orientation: landscape) and (max-height: 360px) {
+  /* O guia das próximas notas já nomeia a classe de cada nota: a legenda sai, o guia
+     fica numa linha. */
+  .practice-board .legend,
+  .practice-next-label,
+  .practice-next-reason {
+    display: none;
+  }
+  .practice-next-item {
+    min-height: 40px;
+  }
   .practice-strip .chord-chip {
     min-height: 40px;
   }
   .practice-board .fb[data-orientation='horizontal'] {
-    grid-template-rows: 20px repeat(4, minmax(34px, 1fr));
+    grid-template-rows: 18px repeat(4, minmax(32px, 1fr));
   }
   .practice-board .fb-dot[data-cls='repouso'],
   [data-shapes] .practice-board .fb-dot[data-cls='repouso'] {

@@ -16,6 +16,7 @@ import { ExerciseBar, ExerciseSelect } from '../ExerciseBar';
 import { LiveFretboard } from '../LiveFretboard';
 import { PresetSelect } from '../PresetBar';
 import { TapTempo } from '../jam/TapTempo';
+import { PracticeNext } from './PracticeNext';
 import { useNames, useT } from '@/i18n';
 
 interface PracticeModeProps {
@@ -264,6 +265,7 @@ export function PracticeMode({ onClose }: PracticeModeProps) {
       <div className="practice-board">
         <LiveFretboard previewChord={previewChord} legend="compact" />
       </div>
+      <PracticeNext />
       <p className="practice-rotate">
         {t(
           'Gire o celular para ver o braço inteiro.',
