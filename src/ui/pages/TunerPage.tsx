@@ -9,7 +9,7 @@ import { Icon } from '../components/Icon';
 import { MicCalibrator } from '../components/MicCalibrator';
 import { PageHead } from '../components/PageHead';
 import { TakesPanel } from '../components/Takes';
-import { InputMeter } from '../components/Visor';
+import { LiveInputMeter } from '../components/Visor';
 import { MicProblem } from '../components/MicProblem';
 import { useMicControl } from '../hooks/useMicControl';
 
@@ -35,7 +35,7 @@ function TunerMeter({ cents, active }: { cents: number; active: boolean }) {
         {active ? (
           <span
             className="tuner-needle"
-            style={{ left: `${50 + clamped}%` }}
+            style={{ transform: `translateX(${clamped}%)` }}
             data-in-tune={Math.abs(cents) <= IN_TUNE || undefined}
           />
         ) : null}
@@ -55,11 +55,14 @@ export function TunerPage() {
   const n = useNames();
   const lang = useLang();
   const { status, start, stop } = useMicControl();
-  const mic = useMusicStore((s) => s.mic);
+  // Campos separados: o nível do microfone (que muda a cada leitura) fica com o medidor.
+  const micNote = useMusicStore((s) => s.mic.note);
+  const micChord = useMusicStore((s) => s.mic.chord);
+  const followChords = useMusicStore((s) => s.mic.followChords);
   const setMic = useMusicStore((s) => s.setMic);
   const tuning = useMusicStore((s) => s.settings.tuning);
   const on = status === 'on';
-  const note = on ? mic.note : null;
+  const note = on ? micNote : null;
   const cents = note?.cents ?? 0;
   const open = TUNINGS[tuning].open;
   const nearest = note
@@ -106,7 +109,7 @@ export function TunerPage() {
                   ? t('Abrindo…', 'Opening…')
                   : t('Microfone desligado', 'Microphone off')}
             </span>
-            <InputMeter level={on ? mic.level : 0} />
+            <LiveInputMeter />
             <button
               type="button"
               className="button button-ghost tuner-mic-switch"
@@ -148,10 +151,10 @@ export function TunerPage() {
             <div className="visor-cell">
               <span className="visor-label">{t('Acorde', 'Chord')}</span>
               <span className="visor-value">
-                <span className="visor-big">{on && mic.chord ? n(mic.chord.symbol) : '–'}</span>
+                <span className="visor-big">{on && micChord ? n(micChord.symbol) : '–'}</span>
                 <span className="visor-detail">
-                  {on && mic.chord
-                    ? `${Math.round(mic.chord.score * 100)}%`
+                  {on && micChord
+                    ? `${Math.round(micChord.score * 100)}%`
                     : t('toque 3 cordas ou mais', 'play 3 strings or more')}
                 </span>
               </span>
@@ -242,7 +245,7 @@ export function TunerPage() {
               'O acorde detectado vira o acorde atual do braço',
               'The detected chord becomes the current chord',
             )}
-            checked={mic.followChords}
+            checked={followChords}
             onChange={(v) => setMic({ followChords: v })}
           />
         </aside>

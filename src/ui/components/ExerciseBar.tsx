@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { EXERCISES, exerciseDef, exerciseProgress, type ExerciseId } from '@/core/exercises';
 import { useMusicStore } from '@/store/useMusicStore';
 import { useToggleJam } from '../hooks/useJamSync';
@@ -52,7 +53,7 @@ export function ExerciseBar() {
           aria-valuemax={def.target}
           aria-valuenow={progress}
         >
-          <span style={{ width: `${(progress / def.target) * 100}%` }} />
+          <span style={{ '--p': progress / def.target } as CSSProperties} />
         </div>
         <span className="exercise-count mono">
           {progress}/{def.target}

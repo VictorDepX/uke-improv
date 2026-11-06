@@ -46,9 +46,14 @@ export function useA11ySettings(): void {
         const el = document.getElementById('pulse');
         if (!el) return;
         el.dataset.accent = String(accent);
-        el.classList.remove('on');
-        void el.offsetWidth; // reinicia a animação
-        el.classList.add('on');
+        // Web Animations: recomeça a cada tempo sem forçar recálculo de layout (o antigo
+        // remove/offsetWidth/add) e a opacidade roda fora da thread principal.
+        const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        el.getAnimations?.().forEach((a) => a.cancel());
+        el.animate?.([{ opacity: 0.9 }, { opacity: 0 }], {
+          duration: reduce ? 400 : 180,
+          easing: 'ease-out',
+        });
       }),
     [],
   );

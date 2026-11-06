@@ -37,6 +37,15 @@ export function InputMeter({ level }: { level: number }) {
 }
 
 /**
+ * Medidor ligado ao microfone. Lê o nível sozinho: o nível muda ~15 vezes por segundo, e
+ * assim só as 20 barras re-renderizam, não o visor ou a página inteira.
+ */
+export function LiveInputMeter() {
+  const level = useMusicStore((s) => (s.mic.status === 'on' ? s.mic.level : 0));
+  return <InputMeter level={level} />;
+}
+
+/**
  * Visor do topo (desktop): tom, acorde, última nota e o microfone, em leitura rápida.
  * O que está aqui não se repete em outro painel da mesma tela.
  */
@@ -46,7 +55,6 @@ export function Visor() {
   const key = useMusicStore((s) => s.key);
   const current = useMusicStore((s) => s.currentChord);
   const lastNotes = useMusicStore((s) => s.lastNotes);
-  const level = useMusicStore((s) => s.mic.level);
   const ctx = useNoteContext();
   const chords = useDiatonicChords();
   const { status, start, stop } = useMicControl();
@@ -110,7 +118,7 @@ export function Visor() {
       </div>
       <div className="visor-cell visor-mic">
         <span className="visor-label">{t('Microfone', 'Microphone')}</span>
-        <InputMeter level={on ? level : 0} />
+        <LiveInputMeter />
       </div>
       <button
         type="button"
