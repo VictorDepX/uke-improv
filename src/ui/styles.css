@@ -508,6 +508,38 @@ button:disabled {
     color: var(--fg);
   }
 }
+/* Feedback: link de texto, com o peso do idioma e do "Código aberto"; sem cor de destaque. */
+.shell-feedback,
+.app-footer-feedback {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fg-muted);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.shell-feedback {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+  margin-block: -12px;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+@media (hover: hover) and (pointer: fine) {
+  .shell-feedback:hover,
+  .app-footer-feedback:hover {
+    color: var(--fg);
+    text-decoration: underline;
+  }
+}
+.shell-feedback:active,
+.app-footer-feedback:active {
+  color: var(--fg);
+}
+
 .shell-code {
   margin: 0;
   font-size: 0.875rem;
@@ -5418,6 +5450,70 @@ kbd {
 /* Sem teclado (toque), os atalhos não servem. */
 @media (pointer: coarse) {
   .welcome-keys {
+    display: none;
+  }
+}
+
+/* Feedback: diálogo no centro, na mesma camada das boas-vindas (nunca abrem juntos). */
+.feedback-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.feedback {
+  position: relative;
+  z-index: 41;
+  width: min(480px, 100%);
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.feedback h2 {
+  font-size: 1.5rem;
+  line-height: 1.75rem;
+}
+
+.feedback .field-hint {
+  margin: 0;
+}
+
+/* 16 px no campo: abaixo disso o iOS dá zoom ao tocar. */
+.feedback-text {
+  min-height: 120px;
+  resize: vertical;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.feedback-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Celular deitado: menos respiro, para o diálogo caber sem rolar na altura curta. */
+@media (orientation: landscape) and (max-height: 540px) {
+  .feedback {
+    gap: 12px;
+    padding: 16px 20px;
+  }
+  /* Altura fixa: as 5 linhas do campo não cabem na altura curta. */
+  .feedback-text {
+    height: 72px;
+    min-height: 72px;
+  }
+  .feedback .field-hint {
     display: none;
   }
 }

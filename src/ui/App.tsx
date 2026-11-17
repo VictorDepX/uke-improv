@@ -32,6 +32,7 @@ import { useShortcuts } from './hooks/useShortcuts';
 import { useSharedLink } from './hooks/useSharedLink';
 import { useKeyPicker } from './keyPicker';
 import { Welcome } from './components/Welcome';
+import { FeedbackDialog, FeedbackLink } from './components/Feedback';
 
 // Chave de dados de teste (break-ui): carregada só em desenvolvimento, fora do build.
 const DevDataToggle = import.meta.env.DEV
@@ -266,6 +267,8 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
               >
                 {otherLang === 'en' ? 'English' : 'Português'}
               </a>
+              {/* Na gaveta, fecha antes: o foco volta ao botão do menu quando o diálogo fechar. */}
+              <FeedbackLink className="shell-feedback" onOpen={closeMenu} />
               <p className="shell-code">
                 {t('Código aberto (MIT)', 'Open source (MIT)')} ·{' '}
                 <a href="https://github.com/VictorDepX/uke-improv">GitHub</a>
@@ -325,6 +328,7 @@ export function App({ initialTab, initialLang }: { initialTab?: TabId; initialLa
             <PracticeMode onClose={closePractice} />
           </Suspense>
         ) : null}
+        <FeedbackDialog />
         <Toaster />
         <Welcome lang={lang} onSwitchLang={switchLang} />
         {import.meta.env.DEV ? (
