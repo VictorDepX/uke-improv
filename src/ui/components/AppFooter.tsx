@@ -1,6 +1,8 @@
 import { ARTICLES, HUB_PATH } from '@/guides/links';
 import { TAB_PATHS } from '../routes';
 import { useT, useLang } from '@/i18n';
+import { feedbackAvailable } from '@/monitoring';
+import { FeedbackLink } from './Feedback';
 
 /**
  * Rodapé das páginas do app: diz em texto o que o app faz (para quem chega pela busca e para os
@@ -23,6 +25,12 @@ export function AppFooter({ title, about }: { title: string; about: string }) {
           <p className="app-footer-meta">
             {t('Código aberto (MIT)', 'Open source (MIT)')} ·{' '}
             <a href="https://github.com/VictorDepX/uke-improv">GitHub</a>
+            {feedbackAvailable ? (
+              <>
+                {' · '}
+                <FeedbackLink className="app-footer-feedback" />
+              </>
+            ) : null}
           </p>
         </section>
         <nav aria-labelledby="guides-title">
